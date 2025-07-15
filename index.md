@@ -27,7 +27,6 @@ title: "欢迎来到 Zack 的个人博客"
 ## 🌟 文章推荐 / 热门文章
 
 <ul>
-  <!-- 可以手动推荐，也可以改成统计阅读数后自动推荐 -->
   <li><a href="/posts/ai-trend-2025">2025年AI趋势解析</a></li>
   <li><a href="/posts/ue5-quickstart">UE5快速上手攻略</a></li>
   <li><a href="/posts/python-tips">10个提升效率的Python小技巧</a></li>
@@ -37,16 +36,17 @@ title: "欢迎来到 Zack 的个人博客"
 
 ## 💬 最新评论
 
-<!-- 
-如果你用 Gitalk/Giscus/Waline，可以在这里嵌入最新评论 JS 组件，或跳转留言区
-推荐写成一个入口（因为 GitHub Pages 静态站点不支持直接渲染动态最新评论） 
--->
-<p>欢迎在每篇文章底部参与讨论~</p>
-<p>
-  <a href="/comments" style="background:#f2f2f2;border-radius:8px;padding:4px 12px;color:#0078e7;">查看所有评论</a>
-</p>
-
-<!-- 进阶玩法：嵌入第三方评论系统提供的“最新评论”小部件。Giscus/Waline/Gitalk/Disqus等都支持。 -->
+<!-- Waline 最新评论小部件 start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@waline/client/dist/waline.css"/>
+<div id="waline-recent-comments"></div>
+<script type="module">
+  import { RecentComments } from 'https://cdn.jsdelivr.net/npm/@waline/client/dist/widget.mjs'
+  RecentComments({
+    el: '#waline-recent-comments',
+    serverURL: 'https://你的-waline-服务端地址' // 这里换成你的 Waline 服务端地址
+  })
+</script>
+<!-- Waline 最新评论小部件 end -->
 
 ---
 
