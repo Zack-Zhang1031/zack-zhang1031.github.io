@@ -58,7 +58,7 @@ title: "欢迎来到 Zack 的个人博客"
     </li>
   {% endfor %}
 </ul>
-<p style="text-align:right"><a href="/_posts">查看更多…</a></p>
+<p style="text-align:right"><a href="/archive">查看更多…</a></p>
 
 ---
 
