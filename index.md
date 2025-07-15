@@ -3,9 +3,6 @@ layout: home
 title: "欢迎来到 Zack 的个人博客"
 ---
 
-<!-- 随机头图 -->
-<img src="https://source.unsplash.com/1200x350/?blog,code,ai,notebook" alt="Banner" style="width:100%; border-radius: 12px; margin-bottom: 1em;">
-
 # 👋 Hi，欢迎访问我的博客！
 
 > 记录AI、编程、成长与生活点滴。
