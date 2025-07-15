@@ -1,0 +1,20 @@
+---
+layout: page
+title: "归档"
+permalink: /archive
+---
+
+# 🗂️ 文章归档
+
+{% assign postsByYear = site.posts | group_by_exp:"post", "post.date | date: '%Y'" %}
+{% for year in postsByYear %}
+  <h2>{{ year.name }}</h2>
+  <ul>
+    {% for post in year.items %}
+      <li>
+        <a href="{{ post.url }}">{{ post.title }}</a>
+        <small style="color:#888;">({{ post.date | date: "%Y-%m-%d" }})</small>
+      </li>
+    {% endfor %}
+  </ul>
+{% endfor %}
