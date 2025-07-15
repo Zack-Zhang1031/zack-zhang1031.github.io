@@ -24,8 +24,9 @@ title: "欢迎来到 Zack 的个人博客"
 
 ## 📝 最新文章
 
+
 <ul>
-  {% for post in site.posts limit:8 %}
+  {% for post in site.posts %}
     <li>
       <a href="{{ post.url }}">{{ post.title }}</a>
       <small style="color:#888;">({{ post.date | date: "%Y-%m-%d" }})</small>
@@ -35,7 +36,7 @@ title: "欢迎来到 Zack 的个人博客"
     </li>
   {% endfor %}
 </ul>
-<p style="text-align:right"><a href="/archive">查看更多…</a></p>
+<p style="text-align:right"><a href="/_posts">查看更多…</a></p>
 
 ---
 
