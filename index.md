@@ -36,28 +36,7 @@ title: "欢迎来到 Zack 的个人博客"
     </li>
   {% endfor %}
 </ul>
-<ul>
-  {% for post in site.posts %}
-    <li>
-      <a href="{{ post.url }}">{{ post.title }}</a>
-      <small style="color:#888;">({{ post.date | date: "%Y-%m-%d" }})</small>
-      {% if post.tags %}
-        <span style="color:#0af;">#{{ post.tags | join: ', ' }}</span>
-      {% endif %}
-    </li>
-  {% endfor %}
-</ul>
-<ul>
-  {% for post in site.posts %}
-    <li>
-      <a href="{{ post.url }}">{{ post.title }}</a>
-      <small style="color:#888;">({{ post.date | date: "%Y-%m-%d" }})</small>
-      {% if post.tags %}
-        <span style="color:#0af;">#{{ post.tags | join: ', ' }}</span>
-      {% endif %}
-    </li>
-  {% endfor %}
-</ul>
+
 <p style="text-align:right"><a href="/archive">查看更多…</a></p>
 
 ---
