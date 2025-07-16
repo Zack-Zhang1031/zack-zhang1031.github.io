@@ -1,5 +1,5 @@
 ---
-layout: post  # 或 page
+layout: past  # 或 page
 title: "Python Advance Basics"
 date: 2025-07-16
 description: "一篇关于 Python 进阶基础的学习记录"
