@@ -1,8 +1,8 @@
 ---
 layout: default
-title: "Milvus"
+title: "milvus neo4j rag"
 date: 2025-07-16
-description: "Milvus"
+description: "milvus neo4j rag"
 tags: ["Python", "基础"]
 ---
 **Milvus** 是一个开源的**向量数据库（Vector Database）**，专门为大规模、高性能的相似度搜索和分析而设计，常用于 AI、机器学习、自然语言处理等场景，比如图片检索、文本语义检索、推荐系统、语音识别等。
