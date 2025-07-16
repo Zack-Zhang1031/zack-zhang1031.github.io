@@ -1,5 +1,5 @@
 ---
-layout: page  # 或 page
+layout: default
 title: "Milvus"
 date: 2025-07-16
 description: "Milvus"
