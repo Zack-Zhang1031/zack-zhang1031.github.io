@@ -1,0 +1,22 @@
+name: Rebuild Jekyll Site Daily
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 每天 00:00 UTC（北京时间 08:00）
+  workflow_dispatch:     # 允许手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - name: Trigger GitHub Pages rebuild
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "🕒 Scheduled rebuild"
+          git push origin HEAD:master
