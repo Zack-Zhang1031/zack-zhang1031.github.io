@@ -1,6 +1,6 @@
 title: 我的博客
 show_downloads: False
-google_analytics: G-6F8KXXXXXX
+google_analytics:
 theme: jekyll-theme-midnight
 nav:
   - name: 归档
