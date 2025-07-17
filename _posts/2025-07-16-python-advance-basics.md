@@ -2,7 +2,6 @@
 ---
 layout: default
 date: 2025-07-16
-description: "milvus neo4j rag"
 tags: ["Python", "基础"]
 ---
 作者：JensenHY
