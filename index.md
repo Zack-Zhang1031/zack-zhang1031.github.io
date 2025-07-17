@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: default
 title: "欢迎来到 Zack 的个人博客"
 ---
 
