@@ -1,8 +1,8 @@
-title: Cayman theme
-description: Cayman is a clean, responsive theme for GitHub Pages.
-show_downloads: true
+title: Merlot theme
+description: Merlot is a clean, responsive theme for GitHub Pages.
+show_downloads: False
 google_analytics:
-theme: jekyll-theme-merlot
+theme: jekyll-theme-midnight
 nav:
   - name: 归档
     link: /archive
