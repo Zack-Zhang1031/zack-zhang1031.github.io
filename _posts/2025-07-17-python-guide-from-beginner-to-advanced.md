@@ -1,5 +1,5 @@
 ---
-layout: default
+layout: home
 title: "Python编程从入门到精通全指南"
 date: 2025-07-17
 author: "Zack-Zhang1031"
