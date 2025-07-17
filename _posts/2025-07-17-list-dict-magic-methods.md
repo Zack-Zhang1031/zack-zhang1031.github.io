@@ -1,4 +1,8 @@
-
+---
+layout: default
+date: 2025-07-16
+tags: ["Python", "基础"]
+---
 ---
 
 ## 二、容器类(list、dict)的实现与魔术方法
