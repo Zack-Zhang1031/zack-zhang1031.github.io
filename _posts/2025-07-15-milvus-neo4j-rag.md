@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: default
 title: "milvus neo4j rag"
 date: 2025-07-16
 description: "milvus neo4j rag"
