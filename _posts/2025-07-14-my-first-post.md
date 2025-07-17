@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: default
 title: "2025-07-14 第一天博客"
 date: 2025-07-14 22:10:00 +0800
 categories: 日常
