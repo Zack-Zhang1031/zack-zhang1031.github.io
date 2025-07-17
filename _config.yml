@@ -1,7 +1,6 @@
-title: Merlot theme
-description: Merlot is a clean, responsive theme for GitHub Pages.
+title: 我的博客
 show_downloads: False
-google_analytics:
+google_analytics: G-6F8KXXXXXX
 theme: jekyll-theme-midnight
 nav:
   - name: 归档
