@@ -3,7 +3,7 @@
 title: "Python编程从入门到精通全指南"
 date: 2025-07-17T19:00:00+08:00
 author: "Zack-Zhang1031"
-tags: \["Python", "开发语言"]
+tags: ["Python", "开发语言"]
 draft: false
 ------------
 
