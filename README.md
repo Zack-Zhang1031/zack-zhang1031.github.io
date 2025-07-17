@@ -1,3 +1,3 @@
 # 关于我
 
-这里是你的自我介绍...
+Start from the beginning
