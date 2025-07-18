@@ -2,3 +2,83 @@
 ---
 
 @import 'jekyll-theme-cayman';
+
+/* 整体渐变背景 */
+body {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
+  background-attachment: fixed;
+}
+
+/* 顶部标题增强 */
+.header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+.header h1 {
+  font-size: 2.8rem;
+  letter-spacing: 0.04em;
+  color: #52306e;
+  text-shadow: 0 2px 12px #fff9;
+}
+.header p {
+  font-size: 1.25rem;
+  color: #463463cc;
+}
+
+/* 内容主卡片浮层样式 */
+.main-content {
+  background: rgba(255,255,255,0.92);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px 0 rgba(74,58,145,0.15);
+  margin: 2rem auto;
+  padding: 2.5rem 2rem;
+  max-width: 900px;
+  border: 1.5px solid #eee3;
+  transition: box-shadow .3s;
+}
+.main-content:hover {
+  box-shadow: 0 12px 48px 0 rgba(74,58,145,0.20);
+}
+
+/* 代码高亮风格微调 */
+pre, code {
+  background: #f8f6fc !important;
+  border-radius: 8px;
+  color: #391e5f !important;
+  font-size: 1em;
+  padding: 0.2em 0.4em;
+}
+
+/* 标题下横线 */
+h2, h3, h4 {
+  border-bottom: 2px solid #d7c3ec44;
+  padding-bottom: .25em;
+  margin-bottom: 0.7em;
+}
+
+/* 按钮美化 */
+.btn {
+  background: linear-gradient(90deg, #a1c4fd, #c2e9fb);
+  border: none;
+  border-radius: 24px;
+  color: #512c7c;
+  font-weight: bold;
+  box-shadow: 0 2px 16px #baa7f866;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn:hover {
+  background: linear-gradient(90deg, #d4fc79 0%, #96e6a1 100%);
+  color: #45386e;
+  box-shadow: 0 4px 24px #baa7f8cc;
+}
+
+/* 响应式调整 */
+@media (max-width: 800px) {
+  .main-content {
+    padding: 1.2rem 0.5rem;
+  }
+  .header h1 {
+    font-size: 2rem;
+  }
+}
