@@ -2,7 +2,6 @@
 layout: default
 title: "欢迎来到 Zack 的个人博客"
 description: "Zack 的学习与成长"
-theme: jekyll-theme-cayman
 ---
 
 # 👋 Hi，欢迎访问我的博客！
