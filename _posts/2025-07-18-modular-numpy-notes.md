@@ -1,8 +1,7 @@
 ---
 layout: default
 title: "2025-07-18 模块化编程与NumPy基础"
-date: 2025-07-18 10:10:00 +0800
-categories: 学习笔记
+date: 2025-07-18
 tags: [Python, NumPy, 模块化, 系统模块, 第三方库]
 ---
 
