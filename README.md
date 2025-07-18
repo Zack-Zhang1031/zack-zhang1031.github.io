@@ -1,3 +1,3 @@
 # about me
 
-Start from the beginning 2025.07.18
+Start from the beginning 2025.07.10
