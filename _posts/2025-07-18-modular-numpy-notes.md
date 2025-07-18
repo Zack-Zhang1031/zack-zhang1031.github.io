@@ -213,7 +213,6 @@ my_package/
   c = a + b  # b会自动扩展为(2,3)
   ```
 
-  ![广播机制示意图](https://numpy.org/doc/stable/_images/broadcasting.png)
 
 * **实际应用：**
 
