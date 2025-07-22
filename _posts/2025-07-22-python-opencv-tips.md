@@ -1,12 +1,9 @@
 ---
-
-# Python + OpenCV 日常小技巧与常见坑整理
-
-> **作者：Zack-Zhang1031**
-> **日期：2025-07-22**
->
-> 记录今日关于 Python OpenCV 学习过程中遇到的常见问题、底层原理，以及字符串处理等技巧，便于日后查阅。
-
+layout: default
+title: "Python + OpenCV 日常小技巧与常见坑整理"
+date: 2025-07-16
+description: "Python + OpenCV 日常小技巧与常见坑整理"
+tags: ["Python", "基础"]
 ---
 
 ## 1. OpenCV 读取与显示图片的正确姿势
