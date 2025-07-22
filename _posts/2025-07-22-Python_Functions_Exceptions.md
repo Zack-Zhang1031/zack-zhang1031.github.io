@@ -1,13 +1,10 @@
 ---
-
-# 玩转 Python 基本数据类型：列表、元组、range、集合与字典全解析
-
-> 作者：Zack-Zhang1031
-> 更新时间：2025年7月
-> 标签：Python基础、容器类型、可变与不可变对象、内置数据结构
-
+layout: default
+title: "玩转 Python 基本数据类型：列表、元组、range、集合与字典全解析"
+date: 2025-07-16
+description: "Python基础、容器类型、可变与不可变对象、内置数据结构"
+tags: ["Python", "基础"]
 ---
-
 ## 前言
 
 在学习完字符串与数字类型之后，Python的「容器类型」是你通往进阶之路的必经之门。今天我们一起来系统梳理和掌握 **列表（list）、元组（tuple）、range对象、集合（set/frozenset）以及字典（dict）** 的核心用法和差异。
