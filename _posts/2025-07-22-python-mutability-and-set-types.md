@@ -1,13 +1,12 @@
 ---
 
-# 深入理解 Python 核心机制：集合类型与可变对象详解
-
-> 🧑‍💻 作者：xw3373409564
-> 📅 更新时间：2025-07-22
-> 📖 阅读量：累计突破千人
-> 📌 标签：Python、set、frozenset、mutable、immutable
-> 📜 版权声明：CC 4.0 BY-SA，转载请注明原文链接和作者信息
-
+# 
+---
+layout: default
+title: "深入理解 Python 核心机制：集合类型与可变对象详解"
+date: 2025-07-16
+description: "深入理解 Python 核心机制：集合类型与可变对象详解"
+tags: ["Python", "基础"]
 ---
 
 ## 前言：为什么这些概念重要？
