@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "深入理解 Python 核心机制：集合类型与可变对象详解"
-date: 2025-07-16
+date: 2025-07-22
 description: "深入理解 Python 核心机制：集合类型与可变对象详解"
 tags: ["Python", "基础"]
 ---
