@@ -37,7 +37,7 @@ description: "Zack 的学习与成长"
     </li>
   {% endfor %}
 </ul>
-<a href="/2025-07-22-python-opencv-tips-tricks.html" target="_blank">
+<a href="_post/2025-07-22-python-opencv-tips-tricks.html" target="_blank">
   Python + OpenCV 日常小技巧与常见坑整理
 </a>
 
