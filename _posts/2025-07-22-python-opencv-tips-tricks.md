@@ -54,131 +54,65 @@ cv2.destroyAllWindows()
 
 ---
 
+---
+
 ## 3. 常见二维变换矩阵的推导
 
 ### 3.1 平移（Translation）
 
-不能用 2×2 方阵实现，需齐次坐标：
+* 不能用2x2方阵实现，需齐次坐标：
 
-$$
-\begin{bmatrix}
-x' \\
-y' \\
-1
-\end{bmatrix}
-=
-\begin{bmatrix}
-1 & 0 & t_x \\
-0 & 1 & t_y \\
-0 & 0 & 1
-\end{bmatrix}
-\begin{bmatrix}
-x \\
-y \\
-1
-\end{bmatrix}
-$$
+  $$
+  \begin{bmatrix}
+  $$
+
+# x' \ y' \ 1 \end{bmatrix}
+
+\begin{bmatrix} 1 & 0 & t\_x \ 0 & 1 & t\_y \ 0 & 0 & 1 \end{bmatrix} \begin{bmatrix} x \ y \ 1 \end{bmatrix} ]
 
 ### 3.2 缩放（Scaling）
 
-2×2 线性变换：
-
-$$
-\begin{bmatrix}
-s_x & 0 \\
-0 & s_y
-\end{bmatrix}
-$$
-
-也可用齐次坐标表达。
+* 2x2线性变换： $\begin{bmatrix}s_x & 0 \\ 0 & s_y\end{bmatrix}$
+* 也可齐次表达。
 
 ### 3.3 旋转（Rotation）
 
-推导过程：极坐标、三角恒等式展开
+* 推导过程：极坐标→三角恒等式展开
 
-$$
-x = x_0 \cos\theta + y_0 \sin\theta \\
-y = -x_0 \sin\theta + y_0 \cos\theta
-$$
+  $$
+  x = x_0 \cos\theta + y_0 \sin\theta \\
+  y = -x_0 \sin\theta + y_0 \cos\theta
+  $$
+* 矩阵写法：
 
-矩阵写法：
+  $$
+  \begin{bmatrix}
+  $$
 
-$$
-\begin{bmatrix}
-x \\
-y
-\end{bmatrix}
-=
-\begin{bmatrix}
-\cos\theta & \sin\theta \\
--\sin\theta & \cos\theta
-\end{bmatrix}
-\begin{bmatrix}
-x_0 \\
-y_0
-\end{bmatrix}
-$$
+# x \ y\end{bmatrix}
+
+\begin{bmatrix} \cos\theta & \sin\theta \ -\sin\theta & \cos\theta \end{bmatrix} \begin{bmatrix} x\_0 \ y\_0 \end{bmatrix} ]
 
 ### 3.4 剪切（Shear）
 
-x 方向剪切：
+* x方向剪切：
 
-$$
-\begin{bmatrix}
-x' \\
-y'
-\end{bmatrix}
-=
-\begin{bmatrix}
-1 & k \\
-0 & 1
-\end{bmatrix}
-\begin{bmatrix}
-x \\
-y
-\end{bmatrix}
-$$
+  $$
+  \begin{bmatrix}x' \\ y'\end{bmatrix} = \begin{bmatrix}1 & k \\ 0 & 1\end{bmatrix} \begin{bmatrix}x \\ y\end{bmatrix}
+  $$
+* y方向剪切：
 
-y 方向剪切：
-
-$$
-\begin{bmatrix}
-x' \\
-y'
-\end{bmatrix}
-=
-\begin{bmatrix}
-1 & 0 \\
-k & 1
-\end{bmatrix}
-\begin{bmatrix}
-x \\
-y
-\end{bmatrix}
-$$
+  $$
+  \begin{bmatrix}x' \\ y'\end{bmatrix} = \begin{bmatrix}1 & 0 \\ k & 1\end{bmatrix} \begin{bmatrix}x \\ y\end{bmatrix}
+  $$
 
 ### 3.5 综合仿射变换（Affine）
 
-齐次坐标统一表示：
+* 齐次坐标统一表示：
 
-$$
-\begin{bmatrix}
-x' \\
-y' \\
-1
-\end{bmatrix}
-=
-\begin{bmatrix}
-a_{11} & a_{12} & t_x \\
-a_{21} & a_{22} & t_y \\
-0 & 0 & 1
-\end{bmatrix}
-\begin{bmatrix}
-x \\
-y \\
-1
-\end{bmatrix}
-$$
+  $$
+  \begin{bmatrix}x' \\ y' \\ 1\end{bmatrix} = \begin{bmatrix}a_{11} & a_{12} & t_x \\ a_{21} & a_{22} & t_y \\ 0 & 0 & 1\end{bmatrix}\begin{bmatrix}x \\ y \\ 1\end{bmatrix}
+  $$
 
 ---
 
