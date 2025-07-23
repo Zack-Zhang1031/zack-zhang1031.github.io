@@ -60,31 +60,33 @@ cv2.destroyAllWindows()
 
   $$
   \begin{bmatrix}
+  x' \\
+  y' \\
+  1
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+  1 & 0 & t_x \\
+  0 & 1 & t_y \\
+  0 & 0 & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+  x \\
+  y \\
+  1
+  \end{bmatrix}
   $$
-
-x' \\
-y' \\
-1
-\end{bmatrix}
-=============
-
-\begin{bmatrix}
-1 & 0 & t\_x \\
-0 & 1 & t\_y \\
-0 & 0 & 1
-\end{bmatrix}
-\begin{bmatrix}
-x \\
-y \\
-1
-\end{bmatrix}
-]
 
 ### 3.2 缩放（Scaling）
 
 * 2x2线性变换：
-  $\begin{bmatrix}s_x & 0 \\ 0 & s_y\end{bmatrix}$
-* 也可齐次表达。
+  $$
+  \begin{bmatrix}
+  s_x & 0 \\
+  0 & s_y
+  \end{bmatrix}
+  $$
+* 也可用齐次坐标表达。
 
 ### 3.3 旋转（Rotation）
 
@@ -98,33 +100,55 @@ y \\
 
   $$
   \begin{bmatrix}
+  x \\
+  y
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+  \cos\theta & \sin\theta \\
+  -\sin\theta & \cos\theta
+  \end{bmatrix}
+  \begin{bmatrix}
+  x_0 \\
+  y_0
+  \end{bmatrix}
   $$
-
-x \\
-y\end{bmatrix}
-==============
-
-\begin{bmatrix}
-\cos\theta & \sin\theta \\
--\sin\theta & \cos\theta
-\end{bmatrix}
-\begin{bmatrix}
-x\_0 \\
-y\_0
-\end{bmatrix}
-]
 
 ### 3.4 剪切（Shear）
 
 * x方向剪切：
 
   $$
-  \begin{bmatrix}x' \\ y'\end{bmatrix} = \begin{bmatrix}1 & k \\ 0 & 1\end{bmatrix} \begin{bmatrix}x \\ y\end{bmatrix}
+  \begin{bmatrix}
+  x' \\
+  y'
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+  1 & k \\
+  0 & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+  x \\
+  y
+  \end{bmatrix}
   $$
 * y方向剪切：
 
   $$
-  \begin{bmatrix}x' \\ y'\end{bmatrix} = \begin{bmatrix}1 & 0 \\ k & 1\end{bmatrix} \begin{bmatrix}x \\ y\end{bmatrix}
+  \begin{bmatrix}
+  x' \\
+  y'
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+  1 & 0 \\
+  k & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+  x \\
+  y
+  \end{bmatrix}
   $$
 
 ### 3.5 综合仿射变换（Affine）
@@ -132,22 +156,39 @@ y\_0
 * 齐次坐标统一表示：
 
   $$
-  \begin{bmatrix}x' \\ y' \\ 1\end{bmatrix} = \begin{bmatrix}a_{11} & a_{12} & t_x \\ a_{21} & a_{22} & t_y \\ 0 & 0 & 1\end{bmatrix}\begin{bmatrix}x \\ y \\ 1\end{bmatrix}
+  \begin{bmatrix}
+  x' \\
+  y' \\
+  1
+  \end{bmatrix}
+  =
+  \begin{bmatrix}
+  a_{11} & a_{12} & t_x \\
+  a_{21} & a_{22} & t_y \\
+  0 & 0 & 1
+  \end{bmatrix}
+  \begin{bmatrix}
+  x \\
+  y \\
+  1
+  \end{bmatrix}
   $$
 
 ---
 
 ## 4. 各类变换矩阵对比速查表
 
-| 变换    | 2×2部分                                                                       | 平移         | 3×3齐次矩阵                                                                                |
-| ----- | --------------------------------------------------------------------------- | ---------- | -------------------------------------------------------------------------------------- |
-| 平移    | 单位阵                                                                         | t\_x, t\_y | $\begin{bmatrix}1&0&t_x\\0&1&t_y\\0&0&1\end{bmatrix}$                                  |
-| 缩放    | $\begin{bmatrix}s_x&0\\0&s_y\end{bmatrix}$                                  | 0          | $\begin{bmatrix}s_x&0&0\\0&s_y&0\\0&0&1\end{bmatrix}$                                  |
-| 旋转    | $\begin{bmatrix}\cos\theta&\sin\theta\\-\sin\theta&\cos\theta\end{bmatrix}$ | 0          | $\begin{bmatrix}\cos\theta&\sin\theta&0\\-\sin\theta&\cos\theta&0\\0&0&1\end{bmatrix}$ |
-| 剪切(x) | $\begin{bmatrix}1&k\\0&1\end{bmatrix}$                                      | 0          | $\begin{bmatrix}1&k&0\\0&1&0\\0&0&1\end{bmatrix}$                                      |
-| 剪切(y) | $\begin{bmatrix}1&0\\k&1\end{bmatrix}$                                      | 0          | $\begin{bmatrix}1&0&0\\k&1&0\\0&0&1\end{bmatrix}$                                      |
+| 变换    | 2×2部分                                                                         | 平移         | 3×3齐次矩阵                                                                                  |
+| ------- | ------------------------------------------------------------------------------- | ------------ | -------------------------------------------------------------------------------------------- |
+| 平移    | 单位阵                                                                           | $t_x, t_y$   | $\begin{bmatrix}1&0&t_x\\0&1&t_y\\0&0&1\end{bmatrix}$                                        |
+| 缩放    | $\begin{bmatrix}s_x&0\\0&s_y\end{bmatrix}$                                      | 0            | $\begin{bmatrix}s_x&0&0\\0&s_y&0\\0&0&1\end{bmatrix}$                                        |
+| 旋转    | $\begin{bmatrix}\cos\theta&\sin\theta\\-\sin\theta&\cos\theta\end{bmatrix}$     | 0            | $\begin{bmatrix}\cos\theta&\sin\theta&0\\-\sin\theta&\cos\theta&0\\0&0&1\end{bmatrix}$       |
+| 剪切(x) | $\begin{bmatrix}1&k\\0&1\end{bmatrix}$                                          | 0            | $\begin{bmatrix}1&k&0\\0&1&0\\0&0&1\end{bmatrix}$                                            |
+| 剪切(y) | $\begin{bmatrix}1&0\\k&1\end{bmatrix}$                                          | 0            | $\begin{bmatrix}1&0&0\\k&1&0\\0&0&1\end{bmatrix}$                                            |
 
 ---
+
+
 
 ## 5. OpenCV仿射变换实战与问题解析
 
