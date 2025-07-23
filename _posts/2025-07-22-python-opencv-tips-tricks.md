@@ -229,6 +229,133 @@ dst = cv2.warpAffine(img, M, (cols, rows))
 
 ---
 
+# 旋转与仿射变换的方阵推导过程
+
+## 一、二维旋转矩阵的方阵推导
+
+假设有平面上的点 $P_0(x_0, y_0)$，以原点 O(0, 0) 为中心，逆时针旋转 $\theta$ 角度，问新点 $P(x, y)$ 如何表示？
+
+### 1. 极坐标法
+
+* 设 $r = \sqrt{x_0^2 + y_0^2}$（点到原点距离）
+* $\alpha$：原点到点与 x 轴的夹角
+
+则：
+
+$$
+x_0 = r \cos\alpha \\
+y_0 = r \sin\alpha
+$$
+
+旋转后，新极角变为 $\alpha - \theta$：
+
+$$
+x = r \cos(\alpha - \theta) \\
+y = r \sin(\alpha - \theta)
+$$
+
+### 2. 利用三角恒等式展开
+
+$$
+\cos(A - B) = \cos A \cos B + \sin A \sin B\\
+\sin(A - B) = \sin A \cos B - \cos A \sin B
+$$
+
+代入：
+
+$$
+x = r[\cos\alpha \cos\theta + \sin\alpha \sin\theta] = x_0\cos\theta + y_0\sin\theta \\
+y = r[\sin\alpha \cos\theta - \cos\alpha \sin\theta] = y_0\cos\theta - x_0\sin\theta
+$$
+
+### 3. 矩阵表达
+
+$$
+\begin{bmatrix}
+x \\
+y
+\end{bmatrix} =
+\begin{bmatrix}
+\cos\theta & \sin\theta \\
+-\sin\theta & \cos\theta
+\end{bmatrix}
+\begin{bmatrix}
+x_0 \\
+y_0
+\end{bmatrix}
+$$
+
+---
+
+## 二、齐次坐标下的方阵推导（仿射变换）
+
+齐次坐标下，仿射变换可以用 3×3 方阵统一表达：
+
+$$
+\begin{bmatrix}
+x' \\
+y' \\
+1
+\end{bmatrix} =
+\begin{bmatrix}
+a_{11} & a_{12} & t_x \\
+a_{21} & a_{22} & t_y \\
+0 & 0 & 1
+\end{bmatrix}
+\begin{bmatrix}
+x \\
+y \\
+1
+\end{bmatrix}
+$$
+
+* 其中前2行2列是线性变换（旋转、缩放、剪切），第3列是平移，最后一行保证矩阵可乘。
+* 任意仿射变换（包括平移、旋转、缩放、剪切）都能统一写成这个形式。
+
+---
+
+## 三、常见变换矩阵示例
+
+* **旋转（绕原点逆时针 $\theta$）：**
+
+$$
+\begin{bmatrix}
+\cos\theta & \sin\theta & 0 \\
+-\sin\theta & \cos\theta & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+
+* **平移（x 方向 $t_x$，y 方向 $t_y$）：**
+
+$$
+\begin{bmatrix}
+1 & 0 & t_x \\
+0 & 1 & t_y \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+
+* **缩放（x 轴 $s_x$，y 轴 $s_y$）：**
+
+$$
+\begin{bmatrix}
+s_x & 0 & 0 \\
+0 & s_y & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+
+* **剪切（x 方向剪切系数 $k$）：**
+
+$$
+\begin{bmatrix}
+1 & k & 0 \\
+0 & 1 & 0 \\
+0 & 0 & 1
+\end{bmatrix}
+$$
+
 ## 9. 参考与进阶
 
 * [OpenCV官方文档-几何变换](https://docs.opencv.org/4.x/da/d6e/tutorial_py_geometric_transformations.html)
