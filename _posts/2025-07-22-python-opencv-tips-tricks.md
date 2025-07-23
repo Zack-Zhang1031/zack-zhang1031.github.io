@@ -180,14 +180,14 @@ $$
 ---
 
 ## 4. 各类变换矩阵对比速查表
+| 变换    | 2×2部分                                   | 平移        | 3×3齐次矩阵                                                      |
+| ------- | ----------------------------------------- | ----------- | --------------------------------------------------------------- |
+| 平移    | 单位阵                                   | $t_x, t_y$  | $\begin{bmatrix}1&0&t_x\\0&1&t_y\\0&0&1\end{bmatrix}$           |
+| 缩放    | $\begin{bmatrix}s_x&0\\0&s_y\end{bmatrix}$ | 0           | $\begin{bmatrix}s_x&0&0\\0&s_y&0\\0&0&1\end{bmatrix}$           |
+| 旋转    | $\begin{bmatrix}\cos\theta&\sin\theta\\-\sin\theta&\cos\theta\end{bmatrix}$ | 0 | $\begin{bmatrix}\cos\theta&\sin\theta&0\\-\sin\theta&\cos\theta&0\\0&0&1\end{bmatrix}$ |
+| 剪切(x) | $\begin{bmatrix}1&k\\0&1\end{bmatrix}$    | 0           | $\begin{bmatrix}1&k&0\\0&1&0\\0&0&1\end{bmatrix}$               |
+| 剪切(y) | $\begin{bmatrix}1&0\\k&1\end{bmatrix}$    | 0           | $\begin{bmatrix}1&0&0\\k&1&0\\0&0&1\end{bmatrix}$               |
 
-| 变换    | 2×2部分             | 平移           | 3×3齐次矩阵          |
-|---------|---------------------|----------------|----------------------|
-| 平移    | 单位阵              | $t_x, t_y$     | 见下                 |
-| 缩放    | $\mathrm{diag}(s_x,s_y)$ | $0$         | 见下                 |
-| 旋转    | $\begin{bmatrix}\cos\theta & \sin\theta \\ -\sin\theta & \cos\theta\end{bmatrix}$ | $0$ | 见下 |
-| 剪切(x) | $\begin{bmatrix}1 & k \\ 0 & 1\end{bmatrix}$ | $0$ | 见下 |
-| 剪切(y) | $\begin{bmatrix}1 & 0 \\ k & 1\end{bmatrix}$ | $0$ | 见下 |
 
 **平移：**
 $$
