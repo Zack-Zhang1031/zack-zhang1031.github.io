@@ -72,15 +72,14 @@ hasCJKLanguage = true
 
 # --- Giscus 评论系统 (基于 GitHub Discussions) ---
 # 配置步骤:
-#   1. 在 myblog 仓库 Settings → General → Features → 勾选 Discussions
-#   2. 安装 Giscus App: https://github.com/apps/giscus → Install → 选择 myblog 仓库
+#   1. 在仓库 Settings → General → Features → 勾选 Discussions
+#   2. 安装 Giscus App: https://github.com/apps/giscus → Install → 选择本仓库
 #   3. 访问 https://giscus.app 填写仓库名,获取 repoId 和 categoryId
-#   4. 将下方 REPLACE_ME 替换为获取到的真实 ID
 [params.giscus]
   repo         = "Zack-Zhang1031/zack-zhang1031.github.io"
-  repoId       = "R_kgDOPLZOPw"
+  repoId       = "R_kgDOPMsBYA"
   category     = "Announcements"
-  categoryId   = "DIC_kwDOPLZOP84DCs14"
+  categoryId   = "DIC_kwDOPMsBYM4DDMqM"
   mapping      = "pathname"
   strict       = "0"
   reactionsEnabled = "1"
