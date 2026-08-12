@@ -14,19 +14,22 @@
   </div>
 
   <!-- Category filter -->
-  {{ $allCats := slice }}
+  {{ .Scratch.Set "allCats" slice }}
   {{ range where site.RegularPages "Type" "posts" }}
-    {{ range .Params.categories }}
-      {{ if not (in $allCats .) }}
-        {{ $allCats = $allCats | append . }}
+    {{ with .Params.categories }}
+      {{ range . }}
+        {{ if not (in ($.Scratch.Get "allCats") .) }}
+          {{ $.Scratch.Set "allCats" (append ($.Scratch.Get "allCats") .) }}
+        {{ end }}
       {{ end }}
     {{ end }}
   {{ end }}
-  {{ if gt (len $allCats) 0 }}
+  {{ $cats := .Scratch.Get "allCats" }}
+  {{ if gt (len $cats) 0 }}
   <div class="posts-filter-bar">
     <button class="filter-chip filter-chip--active" data-cat="all">全部</button>
-    {{ range $allCats }}
-    <button class="filter-chip" data-cat="{{ . | urlize }}">{{ . }}</button>
+    {{ range $cats }}
+    <button class="filter-chip" data-cat="{{ . }}">{{ . }}</button>
     {{ end }}
   </div>
   {{ end }}
@@ -34,7 +37,7 @@
   <!-- Posts grid -->
   <div class="posts-grid">
     {{ range $paginator.Pages }}
-    <article class="post-card" data-cat="{{ delimit (.Params.categories | default slice) "," }}">
+    <article class="post-card" data-cats="{{ delimit (.Params.categories | default slice) "||" }}">
       <a href="{{ .RelPermalink }}" class="post-card-link">
         <div class="post-card-top">
           <span class="post-card-date">{{ .Date.Format "2006-01-02" }}</span>
@@ -83,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
       chips.forEach(function(c) { c.classList.remove('filter-chip--active'); });
       this.classList.add('filter-chip--active');
       cards.forEach(function(card) {
-        var cats = (card.dataset.cat || '').split(',');
+        var cats = (card.dataset.cats || '').split('||');
         if (cat === 'all' || cats.indexOf(cat) !== -1) {
           card.style.display = '';
         } else {
