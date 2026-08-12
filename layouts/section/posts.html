@@ -1,0 +1,98 @@
+{{ define "title" }}
+{{- .Title -}}
+{{ end }}
+
+{{ define "main" }}
+
+{{ $paginator := .Paginate (where site.RegularPages "Type" "posts") 12 }}
+
+<div class="posts-page mt-8 px-4">
+  <!-- Page header -->
+  <div class="posts-header">
+    <h1 class="posts-page-title">📝 {{ .Title }}</h1>
+    <p class="posts-page-count">共 {{ $paginator.TotalNumberOfEntries }} 篇日志</p>
+  </div>
+
+  <!-- Category filter -->
+  {{ $allCats := slice }}
+  {{ range where site.RegularPages "Type" "posts" }}
+    {{ range .Params.categories }}
+      {{ if not (in $allCats .) }}
+        {{ $allCats = $allCats | append . }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  {{ if gt (len $allCats) 0 }}
+  <div class="posts-filter-bar">
+    <button class="filter-chip filter-chip--active" data-cat="all">全部</button>
+    {{ range $allCats }}
+    <button class="filter-chip" data-cat="{{ . | urlize }}">{{ . }}</button>
+    {{ end }}
+  </div>
+  {{ end }}
+
+  <!-- Posts grid -->
+  <div class="posts-grid">
+    {{ range $paginator.Pages }}
+    <article class="post-card" data-cat="{{ delimit (.Params.categories | default slice) "," }}">
+      <a href="{{ .RelPermalink }}" class="post-card-link">
+        <div class="post-card-top">
+          <span class="post-card-date">{{ .Date.Format "2006-01-02" }}</span>
+          {{ with .Params.categories }}
+          {{ range first 1 . }}
+          <span class="post-card-cat">{{ . }}</span>
+          {{ end }}
+          {{ end }}
+        </div>
+        <h2 class="post-card-title">{{ .Title }}</h2>
+        <p class="post-card-summary">{{ .Description | default (.Summary | plainify | truncate 120) }}</p>
+        <div class="post-card-bottom">
+          <div class="post-card-tags">
+            {{ with .Params.tags }}
+            {{ range first 3 . }}
+            <span class="post-card-tag">#{{ . }}</span>
+            {{ end }}
+            {{ end }}
+          </div>
+          <span class="post-card-read">
+            <ion-icon name="time-outline"></ion-icon>
+            {{ .ReadingTime }} 分钟
+          </span>
+        </div>
+      </a>
+    </article>
+    {{ end }}
+  </div>
+
+  <!-- Pagination -->
+  {{ if gt $paginator.TotalPages 1 }}
+  <div class="posts-pagination">
+    {{ partial "paginator.html" (dict "paginator" $paginator) }}
+  </div>
+  {{ end }}
+</div>
+
+<script>
+// Category filter
+document.addEventListener('DOMContentLoaded', function() {
+  var chips = document.querySelectorAll('.filter-chip');
+  var cards = document.querySelectorAll('.post-card');
+  chips.forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      var cat = this.dataset.cat;
+      chips.forEach(function(c) { c.classList.remove('filter-chip--active'); });
+      this.classList.add('filter-chip--active');
+      cards.forEach(function(card) {
+        var cats = (card.dataset.cat || '').split(',');
+        if (cat === 'all' || cats.indexOf(cat) !== -1) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+});
+</script>
+
+{{ end }}

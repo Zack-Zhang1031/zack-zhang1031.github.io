@@ -21,38 +21,37 @@ description: "Zack-Zhang1031 的独立游戏与开源项目展示"
 
 <!-- ==================== 游戏一：数钱 ==================== -->
 <div class="game-showcase" id="game-shuqian">
-  <h3 class="game-title">💰 数钱</h3>
-  <p class="game-subtitle">轻松休闲的点钞小游戏，考验你的手速与眼力。在限定时间内尽可能准确地清点钞票，挑战更高分数。</p>
-  <!-- 主展示区（带右下角切换） -->
-  <div class="gs-main" data-media="shuqian">
-    <!-- 视频模式：真实视频 -->
-    <div class="gs-display gs-display--active" data-type="video">
-      <video class="gs-real-video" controls preload="metadata" poster="/images/shuqian-1.png">
-        <source src="/videos/shuqian-demo.mp4" type="video/mp4">
-        您的浏览器不支持视频播放。
-      </video>
+  <div class="gs-media-col">
+    <div class="gs-main" data-media="shuqian">
+      <div class="gs-display gs-display--active" data-type="video">
+        <video class="gs-real-video" controls preload="metadata" poster="/images/shuqian-1.png">
+          <source src="/videos/shuqian-demo.mp4" type="video/mp4">
+          您的浏览器不支持视频播放。
+        </video>
+      </div>
+      <div class="gs-display" data-type="shot">
+        <img src="/images/shuqian-1.png" alt="数钱 游戏截图" class="gs-shot-img" loading="lazy" />
+      </div>
+      <button class="gs-corner-toggle" onclick="event.stopPropagation();window.__toggleGSMode('shuqian', this)" title="切换视频/截图">
+        <span class="gct-icon">🖼️</span>
+        <span class="gct-label">截图</span>
+      </button>
     </div>
-    <!-- 截图模式：真实截图 -->
-    <div class="gs-display" data-type="shot">
-      <img src="/images/shuqian-1.png" alt="数钱 游戏截图" class="gs-shot-img" loading="lazy" />
+  </div>
+  <div class="gs-info-col">
+    <h3 class="game-title">💰 数钱</h3>
+    <p class="game-subtitle">轻松休闲的点钞小游戏，考验你的手速与眼力。在限定时间内尽可能准确地清点钞票，挑战更高分数。</p>
+    <div class="game-controls-bar">
+      <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('shuqian', this)">🔇 静音</button>
+      <span class="gs-ctrl-hint">🎬 点击视频播放 · 右下角切换截图</span>
     </div>
-    <!-- 右下角切换按钮 -->
-    <button class="gs-corner-toggle" onclick="event.stopPropagation();window.__toggleGSMode('shuqian', this)" title="切换视频/截图">
-      <span class="gct-icon">🖼️</span>
-      <span class="gct-label">截图</span>
-    </button>
-  </div>
-  <!-- 控制栏 -->
-  <div class="game-controls-bar">
-    <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('shuqian', this)">🔇 静音</button>
-    <span class="gs-ctrl-hint">🎬 点击视频播放 · 右下角切换截图</span>
-  </div>
-  <div class="game-actions">
-    <a class="play-btn play-btn--amber" href="https://www.crazygames.com/preview/d1b4d9b3-f1e7-419c-8336-c65c37fa3419?gameBuildId=10c47402-f440-40f9-a940-448fa1466cd3&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">▶ 在 CrazyGames 试玩</a>
-    <span class="game-tags">
-      <span class="game-tag">休闲</span>
-      <span class="game-tag">点击</span>
-    </span>
+    <div class="game-actions">
+      <a class="play-btn play-btn--amber" href="https://www.crazygames.com/preview/d1b4d9b3-f1e7-419c-8336-c65c37fa3419?gameBuildId=10c47402-f440-40f9-a940-448fa1466cd3&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">▶ 在 CrazyGames 试玩</a>
+      <span class="game-tags">
+        <span class="game-tag">休闲</span>
+        <span class="game-tag">点击</span>
+      </span>
+    </div>
   </div>
 </div>
 
@@ -60,35 +59,37 @@ description: "Zack-Zhang1031 的独立游戏与开源项目展示"
 
 <!-- ==================== 游戏二：捡钱 ==================== -->
 <div class="game-showcase" id="game-jianqian">
-  <h3 class="game-title">💵 捡钱</h3>
-  <p class="game-subtitle">欢乐的街机小游戏，操控角色接住天上掉落的金币与红包，躲开陷阱，比拼连击与高分。</p>
-  <div class="gs-main" data-media="jianqian">
-    <!-- 视频模式：真实视频 -->
-    <div class="gs-display gs-display--active" data-type="video">
-      <video class="gs-real-video" controls preload="metadata" poster="/images/jianqian-1.png">
-        <source src="/videos/jianqian-demo.mp4" type="video/mp4">
-        您的浏览器不支持视频播放。
-      </video>
+  <div class="gs-media-col">
+    <div class="gs-main" data-media="jianqian">
+      <div class="gs-display gs-display--active" data-type="video">
+        <video class="gs-real-video" controls preload="metadata" poster="/images/jianqian-1.png">
+          <source src="/videos/jianqian-demo.mp4" type="video/mp4">
+          您的浏览器不支持视频播放。
+        </video>
+      </div>
+      <div class="gs-display" data-type="shot">
+        <img src="/images/jianqian-1.png" alt="捡钱 游戏截图" class="gs-shot-img" loading="lazy" />
+      </div>
+      <button class="gs-corner-toggle" onclick="event.stopPropagation();window.__toggleGSMode('jianqian', this)" title="切换视频/截图">
+        <span class="gct-icon">🖼️</span>
+        <span class="gct-label">截图</span>
+      </button>
     </div>
-    <!-- 截图模式：真实截图 -->
-    <div class="gs-display" data-type="shot">
-      <img src="/images/jianqian-1.png" alt="捡钱 游戏截图" class="gs-shot-img" loading="lazy" />
+  </div>
+  <div class="gs-info-col">
+    <h3 class="game-title">💵 捡钱</h3>
+    <p class="game-subtitle">欢乐的街机小游戏，操控角色接住天上掉落的金币与红包，躲开陷阱，比拼连击与高分。</p>
+    <div class="game-controls-bar">
+      <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('jianqian', this)">🔇 静音</button>
+      <span class="gs-ctrl-hint">🎬 点击视频播放 · 右下角切换截图</span>
     </div>
-    <button class="gs-corner-toggle" onclick="event.stopPropagation();window.__toggleGSMode('jianqian', this)" title="切换视频/截图">
-      <span class="gct-icon">🖼️</span>
-      <span class="gct-label">截图</span>
-    </button>
-  </div>
-  <div class="game-controls-bar">
-    <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('jianqian', this)">🔇 静音</button>
-    <span class="gs-ctrl-hint">🎬 点击视频播放 · 右下角切换截图</span>
-  </div>
-  <div class="game-actions">
-    <a class="play-btn play-btn--green" href="https://www.crazygames.com/preview/e072a216-66f6-45da-92e1-5462cc4a1309?gameBuildId=30f942ad-72fc-4858-b812-95dfa984c8f0&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">▶ 在 CrazyGames 试玩</a>
-    <span class="game-tags">
-      <span class="game-tag">街机</span>
-      <span class="game-tag">休闲</span>
-    </span>
+    <div class="game-actions">
+      <a class="play-btn play-btn--green" href="https://www.crazygames.com/preview/e072a216-66f6-45da-92e1-5462cc4a1309?gameBuildId=30f942ad-72fc-4858-b812-95dfa984c8f0&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">▶ 在 CrazyGames 试玩</a>
+      <span class="game-tags">
+        <span class="game-tag">街机</span>
+        <span class="game-tag">休闲</span>
+      </span>
+    </div>
   </div>
 </div>
 
