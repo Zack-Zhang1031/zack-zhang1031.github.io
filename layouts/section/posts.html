@@ -4,27 +4,23 @@
 
 {{ define "main" }}
 
-{{ $paginator := .Paginate (where site.RegularPages "Type" "posts") 12 }}
+{{ $allPosts := where site.RegularPages "Type" "posts" }}
+{{ $paginator := .Paginate $allPosts 12 }}
 
 <div class="posts-page mt-8 px-4">
   <!-- Page header -->
   <div class="posts-header">
     <h1 class="posts-page-title">📝 {{ .Title }}</h1>
-    <p class="posts-page-count">共 {{ $paginator.TotalNumberOfEntries }} 篇日志</p>
+    <p class="posts-page-count">共 {{ len $allPosts }} 篇日志</p>
   </div>
 
   <!-- Category filter -->
-  {{ .Scratch.Set "allCats" slice }}
+  {{ $cats := slice }}
   {{ range where site.RegularPages "Type" "posts" }}
     {{ with .Params.categories }}
-      {{ range . }}
-        {{ if not (in ($.Scratch.Get "allCats") .) }}
-          {{ $.Scratch.Set "allCats" (append ($.Scratch.Get "allCats") .) }}
-        {{ end }}
-      {{ end }}
+      {{ $cats = union $cats . }}
     {{ end }}
   {{ end }}
-  {{ $cats := .Scratch.Get "allCats" }}
   {{ if gt (len $cats) 0 }}
   <div class="posts-filter-bar">
     <button class="filter-chip filter-chip--active" data-cat="all">全部</button>
