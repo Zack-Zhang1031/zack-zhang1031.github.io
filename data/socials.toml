@@ -1,0 +1,23 @@
+# Social links rendered in the footer (and on the About flip side).
+# `email` is handled separately by `site.Params.email` in the theme,
+# so it does not need to be repeated here.
+# `icon` is an ion-icon name (https://ionic.io/ionicons). ionicons has no
+# official Gitee/Bilibili brand icons, so we use closest-matching glyphs.
+
+[[socials]]
+  href = "https://github.com/Zack-Zhang1031"
+  title = "GitHub"
+  icon = "logo-github"
+  target = "_blank"
+
+[[socials]]
+  href = "https://gitee.com/rainyjensen"
+  title = "Gitee"
+  icon = "git-branch-outline"
+  target = "_blank"
+
+[[socials]]
+  href = "https://space.bilibili.com/31032895"
+  title = "哔哩哔哩"
+  icon = "play-circle-outline"
+  target = "_blank"

@@ -1,0 +1,7 @@
+{{ with site.Params.umami }}
+  {{ $u := . }}
+  {{ with .websiteId }}
+  {{ $src := $u.scriptSrc | default "https://cloud.umami.is/script.js" }}
+  <script async defer src="{{ $src }}" data-website-id="{{ . }}"></script>
+  {{ end }}
+{{ end }}

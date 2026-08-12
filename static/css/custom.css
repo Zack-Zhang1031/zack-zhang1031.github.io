@@ -1,0 +1,804 @@
+/* ==========================================================================
+   Zack-Zhang1031 个人主页 - 自定义样式补充
+   ========================================================================== */
+
+/* ==========================================================================
+   页内锚点导航（作品页顶部）
+   ========================================================================== */
+.page-nav {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 1.5rem;
+  padding: .5rem;
+  background: rgba(148, 163, 184, .08);
+  border-radius: 10px;
+}
+
+.page-nav a {
+  flex: 1;
+  text-align: center;
+  padding: .5rem .75rem;
+  border-radius: 8px;
+  font-size: .85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: #cbd5e1;
+  transition: background .15s, color .15s;
+}
+
+.page-nav a:hover {
+  background: rgba(245, 158, 11, .15);
+  color: #f59e0b;
+}
+
+/* ==========================================================================
+   首页区块标题
+   ========================================================================== */
+.home-section {
+  margin-bottom: 2.5rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: .5rem;
+  border-bottom: 1px solid rgba(148, 163, 184, .2);
+}
+
+.section-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.section-more {
+  font-size: .85rem;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: color .15s;
+}
+
+.section-more:hover {
+  color: #f59e0b;
+}
+
+/* ==========================================================================
+   首页作品卡片网格
+   ========================================================================== */
+.works-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.work-card {
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, .5);
+  border: 1px solid rgba(148, 163, 184, .15);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.work-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .3);
+}
+
+/* 首页作品卡片 - 媒体展示区（含右下角切换） */
+.work-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.wm-display {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.wm-display--active {
+  display: flex;
+}
+
+.wm-video-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: filter .2s;
+}
+
+.wm-video-placeholder--green {
+  background: linear-gradient(135deg, #0f172a 0%, #166534 100%);
+}
+
+.wm-video-placeholder:hover {
+  filter: brightness(1.15);
+}
+
+.wm-play {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, .15);
+  border: 2px solid rgba(245, 158, 11, .5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s, background .2s;
+}
+
+.wm-video-placeholder--green .wm-play {
+  background: rgba(34, 197, 94, .15);
+  border-color: rgba(34, 197, 94, .5);
+}
+
+.wm-play:hover {
+  transform: scale(1.1);
+}
+
+.wm-play-icon {
+  font-size: 1.5rem;
+  color: #f59e0b;
+  margin-left: 3px;
+}
+
+.wm-video-placeholder--green .wm-play-icon {
+  color: #22c55e;
+}
+
+.wm-shot {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wm-shot--amber {
+  background: linear-gradient(135deg, #1f2937 0%, #92400e 100%);
+  color: #fde68a;
+}
+
+.wm-shot--green {
+  background: linear-gradient(135deg, #1f2937 0%, #14532d 100%);
+  color: #bbf7d0;
+}
+
+.wm-shot-icon {
+  font-size: 3rem;
+}
+
+/* 右下角切换按钮（首页卡片版） */
+.wm-toggle {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .35rem .7rem;
+  background: rgba(0, 0, 0, .55);
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 999px;
+  color: #e2e8f0;
+  font-size: .72rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background .15s, transform .15s;
+  z-index: 10;
+}
+
+.wm-toggle:hover {
+  background: rgba(245, 158, 11, .85);
+  color: #111827;
+  transform: scale(1.05);
+}
+
+.wm-toggle-icon {
+  font-size: .85rem;
+}
+
+.wm-toggle:hover .wm-toggle-icon,
+.wm-toggle:hover .wm-toggle-label {
+  color: #111827;
+}
+
+.work-info {
+  padding: 1rem 1.2rem 1.2rem;
+}
+
+.work-info h3 {
+  margin: 0 0 .35rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.work-info p {
+  margin: 0 0 .75rem;
+  font-size: .85rem;
+  color: #94a3b8;
+}
+
+.work-actions-inline {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-wrap: wrap;
+}
+
+.play-btn--sm {
+  padding: .35rem .9rem;
+  font-size: .8rem;
+}
+
+/* 首页卡片小静音按钮 */
+.mute-btn-sm {
+  padding: .35rem .75rem;
+  border-radius: 8px;
+  font-size: .75rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .15);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.mute-btn-sm:hover {
+  background: rgba(255, 255, 255, .18);
+}
+
+.work-tags {
+  display: flex;
+  gap: .4rem;
+}
+
+.work-tag {
+  font-size: .7rem;
+  padding: .15rem .55rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, .15);
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   首页日志列表
+   ========================================================================== */
+.home-posts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.home-post-item {
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, .15);
+  overflow: hidden;
+  transition: transform .2s ease, border-color .2s ease;
+}
+
+.home-post-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, .4);
+}
+
+.home-post-link {
+  display: block;
+  padding: 1rem 1.2rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.home-post-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 .4rem;
+  line-height: 1.3;
+}
+
+.home-post-meta {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .75rem;
+  color: #64748b;
+  margin-bottom: .5rem;
+}
+
+.home-post-tag {
+  color: #f59e0b;
+}
+
+.home-post-summary {
+  font-size: .85rem;
+  color: #94a3b8;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.home-posts-more {
+  text-align: center;
+  margin-top: 1.25rem;
+}
+
+/* ==========================================================================
+   游戏展示组件（作品页） - 右下角切换模式
+   ========================================================================== */
+.game-showcase {
+  margin: 2.5rem 0;
+}
+
+.game-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 .35rem;
+}
+
+.game-subtitle {
+  font-size: .9rem;
+  color: #94a3b8;
+  margin: 0 0 1rem;
+}
+
+.game-divider {
+  margin: 2.5rem 0;
+  border: 0;
+  border-top: 1px solid rgba(148, 163, 184, .15);
+}
+
+/* --- 主展示区 --- */
+.gs-main {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #0f172a;
+  border: 1px solid rgba(148, 163, 184, .15);
+}
+
+.gs-display {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.gs-display--active {
+  display: flex;
+}
+
+/* --- 真实视频 --- */
+.gs-real-video,
+.wm-real-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: #000;
+}
+
+/* --- 真实截图 --- */
+.gs-shot-img,
+.wm-shot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- 无视频提示 --- */
+.gs-no-video,
+.wm-no-video {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #64748b;
+  text-align: center;
+  gap: .5rem;
+}
+
+.gs-no-video .gs-shot-icon,
+.wm-no-video .wm-shot-icon {
+  font-size: 2.5rem;
+  opacity: .6;
+}
+
+.gs-no-video p,
+.wm-no-video p {
+  margin: 0;
+  font-size: .85rem;
+}
+
+/* --- 视频占位（保留给无视频的游戏） --- */
+.gs-video-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gs-video-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: filter .2s;
+}
+
+.gs-video-placeholder:hover {
+  filter: brightness(1.15);
+}
+
+.gs-video-placeholder--green {
+  background: linear-gradient(135deg, #0f172a 0%, #166534 100%);
+}
+
+.gs-video-play {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, .15);
+  border: 2px solid rgba(245, 158, 11, .5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform .2s, background .2s;
+}
+
+.gs-video-placeholder--green .gs-video-play {
+  background: rgba(34, 197, 94, .15);
+  border-color: rgba(34, 197, 94, .5);
+}
+
+.gs-video-play:hover {
+  transform: scale(1.1);
+}
+
+.gs-video-placeholder--green .gs-video-play:hover {
+  background: rgba(34, 197, 94, .25);
+}
+
+.gs-play-icon {
+  font-size: 1.8rem;
+  color: #f59e0b;
+  margin-left: 3px;
+}
+
+.gs-video-placeholder--green .gs-play-icon {
+  color: #22c55e;
+}
+
+.gs-video-label {
+  margin-top: .75rem;
+  color: #cbd5e1;
+  font-size: .85rem;
+}
+
+.gs-video-type {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: .7rem;
+  padding: .15rem .55rem;
+  background: rgba(0, 0, 0, .4);
+  border-radius: 6px;
+  color: #94a3b8;
+}
+
+/* --- 截图占位 --- */
+.gs-shot-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.gs-shot-amber {
+  background: linear-gradient(135deg, #1f2937 0%, #92400e 100%);
+  color: #fde68a;
+}
+
+.gs-shot-green {
+  background: linear-gradient(135deg, #1f2937 0%, #14532d 100%);
+  color: #bbf7d0;
+}
+
+.gs-shot-icon {
+  font-size: 3rem;
+}
+
+.gs-shot-label {
+  margin-top: .6rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.gs-shot-hint {
+  font-size: .8rem;
+  opacity: .75;
+  margin-top: .3rem;
+}
+
+/* --- 右下角切换按钮（作品页版） --- */
+.gs-corner-toggle {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .4rem .85rem;
+  background: rgba(0, 0, 0, .55);
+  border: 1px solid rgba(255, 255, 255, .2);
+  border-radius: 999px;
+  color: #e2e8f0;
+  font-size: .78rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background .15s, transform .15s, border-color .15s;
+  z-index: 10;
+}
+
+.gs-corner-toggle:hover {
+  background: rgba(245, 158, 11, .9);
+  border-color: rgba(245, 158, 11, 1);
+  color: #111827;
+  transform: scale(1.05);
+}
+
+.gct-icon {
+  font-size: .9rem;
+}
+
+/* --- 控制栏 --- */
+.game-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: .75rem;
+  padding: .5rem .75rem;
+  background: rgba(148, 163, 184, .06);
+  border-radius: 8px;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.gs-ctrl-btn {
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .15);
+  color: #e2e8f0;
+  padding: .25rem .65rem;
+  border-radius: 6px;
+  font-size: .75rem;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.gs-ctrl-btn:hover {
+  background: rgba(255, 255, 255, .18);
+}
+
+.gs-ctrl-hint {
+  font-size: .7rem;
+  color: #94a3b8;
+}
+
+/* --- 操作栏 --- */
+.game-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.game-tags {
+  display: flex;
+  gap: .4rem;
+}
+
+.game-tag {
+  font-size: .72rem;
+  padding: .2rem .55rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, .15);
+  color: #94a3b8;
+}
+
+/* ==========================================================================
+   通用组件
+   ========================================================================== */
+.play-btn {
+  display: inline-block;
+  padding: .65rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform .15s ease, filter .15s ease;
+}
+
+.play-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.play-btn--amber {
+  background: #f59e0b;
+  color: #111827;
+}
+
+.play-btn--green {
+  background: #22c55e;
+  color: #052e16;
+}
+
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.project-card {
+  display: block;
+  padding: 1rem 1.1rem;
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .12);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, .28);
+  background: rgba(255, 255, 255, .07);
+}
+
+.project-card .pc-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .5rem;
+}
+
+.project-card .pc-desc {
+  margin: .5rem 0 0;
+  font-size: .85rem;
+  opacity: .8;
+}
+
+.lang-badge {
+  font-size: .72rem;
+  padding: .15rem .5rem;
+  border-radius: 999px;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.lang-badge--python  { background: #3572A5; }
+.lang-badge--tex     { background: #3D6117; }
+.lang-badge--jupyter { background: #DA5B0B; }
+.lang-badge--hugo    { background: #FF6719; }
+.lang-badge--gitee   { background: #C71D23; }
+
+/* 项目卡片 - 平台标识 */
+.project-card .pc-platform {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+/* 项目卡片 - 技术栈标签 */
+.project-card .pc-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-top: .6rem;
+}
+
+.project-card .pc-tech-tag {
+  font-size: .7rem;
+  padding: .12rem .45rem;
+  border-radius: 5px;
+  background: rgba(148, 163, 184, .15);
+  color: #94a3b8;
+  white-space: nowrap;
+  transition: background .15s, color .15s;
+}
+
+.project-card:hover .pc-tech-tag {
+  background: rgba(245, 158, 11, .12);
+  color: #f59e0b;
+}
+
+@media (prefers-color-scheme: dark) {
+  .project-card {
+    background: rgba(255, 255, 255, .035);
+  }
+}
+
+/* ==========================================================================
+   导航栏图标 hover tooltip
+   主题的图标链接 (搜索/GitHub/Gitee/B站) 带有 title 属性,
+   但浏览器原生 tooltip 延迟 1-2 秒。这里用 CSS 伪元素实现即时 tooltip。
+   只针对 .group class 的图标链接,不影响文字链接。
+   ========================================================================== */
+nav a.group {
+  position: relative;
+}
+
+nav a.group::after {
+  content: attr(title);
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: .3rem .7rem;
+  background: rgba(15, 23, 42, .95);
+  color: #f8fafc;
+  font-size: .72rem;
+  font-weight: 500;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease, transform .2s ease;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .3);
+  border: 1px solid rgba(148, 163, 184, .15);
+}
+
+nav a.group::before {
+  content: "";
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-bottom-color: rgba(15, 23, 42, .95);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+  z-index: 100;
+}
+
+nav a.group:hover::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+nav a.group:hover::before {
+  opacity: 1;
+}

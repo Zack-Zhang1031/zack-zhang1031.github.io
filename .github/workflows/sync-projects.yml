@@ -1,0 +1,72 @@
+name: Sync GitHub Projects
+
+on:
+  schedule:
+    # 每天 UTC 02:00 运行一次
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch GitHub repos
+        id: fetch
+        run: |
+          USER="${{ github.repository_owner }}"
+          PER_PAGE=100
+          PAGE=1
+          ALL_REPOS=""
+
+          while true; do
+            RESP=$(curl -s -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/users/${USER}/repos?per_page=${PER_PAGE}&page=${PAGE}&sort=updated")
+            if [ -z "$RESP" ] || [ "$RESP" = "[]" ]; then
+              break
+            fi
+            # Extract only the fields we need
+            BATCH=$(echo "$RESP" | jq -c '[.[] | {
+              name,
+              full_name,
+              description,
+              html_url,
+              homepage,
+              language,
+              stargazers_count,
+              forks_count,
+              updated_at,
+              topics
+            }]')
+            if [ -z "$ALL_REPOS" ]; then
+              ALL_REPOS="$BATCH"
+            else
+              ALL_REPOS=$(echo "$ALL_REPOS" "$BATCH" | jq -s 'add')
+            fi
+            PAGE=$((PAGE + 1))
+            TOTAL=$(echo "$RESP" | jq 'length')
+            if [ "$TOTAL" -lt "$PER_PAGE" ]; then
+              break
+            fi
+          done
+
+          echo "$ALL_REPOS" > data/projects.json
+          echo "Synced $(echo "$ALL_REPOS" | jq 'length') repos"
+
+      - name: Commit and push if changed
+        run: |
+          if [[ -n $(git status --porcelain data/projects.json) ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/projects.json
+            git commit -m "chore: sync GitHub projects ($(date +%Y-%m-%d))"
+            git push
+          else
+            echo "No changes to projects.json"
+          fi

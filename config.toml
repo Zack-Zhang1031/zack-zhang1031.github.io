@@ -1,0 +1,111 @@
+# Hugo site config for Zack-Zhang1031's personal homepage
+# Served at: https://zack-zhang1031.github.io/
+
+baseURL = "https://zack-zhang1031.github.io/"
+locale = "zh-cn"
+title = "Zack-Zhang1031 | 个人主页"
+theme = "hugo-theme-dream"
+
+enableRobotsTXT = true
+hasCJKLanguage = true
+
+[pagination]
+  pagerSize = 10
+
+# Allow raw HTML (<img>/<video>/<iframe>/styled containers) inside markdown,
+# so the games showcase page can embed media and styled cards.
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+
+[params]
+  description = "独立游戏开发者 / AI 与算法爱好者。在这里可以找到我发布的独立游戏、开源项目与技术随笔。"
+  author = "Zack-Zhang1031"
+  email = "zhangkun1031@hotmail.com"
+  avatar = "/images/48.png"
+  headerTitle = "Zack-Zhang1031"
+  motto = "热爱 AI、游戏与极客文化 🎮"
+
+  # SVG favicon (in /static/favicon.svg). The theme's head.html wraps this
+  # with <link rel="icon">. SVG scales crisply on retina / dark mode.
+  favicon = "/favicon.svg"
+
+  # Default social-share image for Open Graph / Twitter Cards.
+# Hugo's _internal/opengraph.html reads site.Params.images.
+  images = ["/images/og-image_1200x630.png"]
+
+  mainSections = ["posts"]
+  rss = true
+  enableToc = true
+  stickyNav = true
+  siteStartYear = 2024
+
+  # Full nav order: text links first (primary nav), then icon links (social),
+  # then search icon (utility, rightmost). Custom data comes from [params.navItems]
+  # below; items not in navItems (like "search") fall back to theme defaults.
+  reorderNavItems = ["home", "games", "posts", "about", "github", "gitee", "bilibili", "search"]
+
+  # Dream theme color schemes (light / dark)
+  lightTheme = "emerald"
+  darkTheme = "forest"
+
+  # Theme-provided extension hook (see layouts/_default/baseof.html):
+  #   {{ range site.Params.Advanced.customCSS }} ... {{ end }}
+  # We use it to load /static/css/custom.css without forking the theme.
+  [params.Advanced]
+    customCSS = ["/css/custom.css"]
+    customJS  = ["/js/game-switcher.js"]
+
+  # Custom nav items.
+  # - With `icon`: renders an icon button (ion-icon name).
+  # - Without `icon`, with `title`: renders a text link.
+  # NOTE: the theme outputs `href` as-is (no relURL).
+  [params.navItems]
+    home    = { href = "/", title = "首页", target = "_self" }
+    games   = { href = "/games/", title = "作品", target = "_self" }
+    posts   = { href = "/posts/", title = "日志", target = "_self" }
+    about   = { href = "/about/", title = "关于", target = "_self" }
+    github  = { href = "https://github.com/Zack-Zhang1031", title = "GitHub", target = "_blank", icon = "logo-github" }
+    gitee   = { href = "https://gitee.com/rainyjensen", title = "Gitee", target = "_blank", icon = "git-branch-outline" }
+    bilibili = { href = "https://space.bilibili.com/31032895", title = "哔哩哔哩", target = "_blank", icon = "play-circle-outline" }
+
+# --- Giscus 评论系统 (基于 GitHub Discussions) ---
+# 配置步骤:
+#   1. 在 myblog 仓库 Settings → General → Features → 勾选 Discussions
+#   2. 安装 Giscus App: https://github.com/apps/giscus → Install → 选择 myblog 仓库
+#   3. 访问 https://giscus.app 填写仓库名,获取 repoId 和 categoryId
+#   4. 将下方 REPLACE_ME 替换为获取到的真实 ID
+[params.giscus]
+  repo         = "Zack-Zhang1031/zack-zhang1031.github.io"
+  repoId       = "R_kgDOPLZOPw"
+  category     = "Announcements"
+  categoryId   = "DIC_kwDOPLZOP84DCs14"
+  mapping      = "pathname"
+  strict       = "0"
+  reactionsEnabled = "1"
+  emitMetadata    = "0"
+  inputPosition   = "bottom"
+  theme        = "preferred_color_scheme"
+  lang         = "zh-CN"
+  loading      = "lazy"
+
+# --- Umami 访问统计 (隐私友好,无 Cookie) ---
+# 配置步骤:
+#   方案 A (Umami Cloud - 最简单):
+#     1. 注册 https://cloud.umami.is
+#     2. Add Website → 填入网站名和域名 zack-zhang1031.github.io
+#     3. 将下方 websiteId 替换为获取到的 ID
+#   方案 B (自托管):
+#     1. Docker 部署 Umami (见 https://umami.is/docs/install)
+#     2. 修改 scriptSrc 为自托管地址,如 https://stats.yourdomain.com/script.js
+#     3. 填入 websiteId
+[params.umami]
+  websiteId  = "REPLACE_ME"
+  scriptSrc  = "https://cloud.umami.is/script.js"
+
+# Theme's search page uses compile-time inlined data (see layouts/section/search.html),
+# so an `index.json` endpoint is not needed. Keeping HTML + RSS only avoids the
+# "no layout file for json" build warning.
+[outputs]
+  home = ["HTML", "RSS"]

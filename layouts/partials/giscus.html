@@ -1,0 +1,21 @@
+{{ if site.Params.giscus }}
+{{ $g := site.Params.giscus }}
+<article>
+  <script src="https://giscus.app/client.js"
+    data-repo="{{ $g.repo }}"
+    data-repo-id="{{ $g.repoId }}"
+    data-category="{{ $g.category }}"
+    data-category-id="{{ $g.categoryId }}"
+    {{ with $g.mapping }}data-mapping="{{ . }}"{{ else }}data-mapping="pathname"{{ end }}
+    {{ with $g.strict }}data-strict="{{ . }}"{{ else }}data-strict="0"{{ end }}
+    {{ with $g.reactionsEnabled }}data-reactions-enabled="{{ . }}"{{ else }}data-reactions-enabled="1"{{ end }}
+    {{ with $g.emitMetadata }}data-emit-metadata="{{ . }}"{{ else }}data-emit-metadata="0"{{ end }}
+    {{ with $g.inputPosition }}data-input-position="{{ . }}"{{ else }}data-input-position="bottom"{{ end }}
+    {{ with $g.theme }}data-theme="{{ . }}"{{ else }}data-theme="preferred_color_scheme"{{ end }}
+    {{ with $g.lang }}data-lang="{{ . }}"{{ else }}data-lang="zh-CN"{{ end }}
+    {{ with $g.loading }}data-loading="{{ . }}"{{ else }}data-loading="lazy"{{ end }}
+    crossorigin="anonymous"
+    async>
+  </script>
+</article>
+{{ end }}
