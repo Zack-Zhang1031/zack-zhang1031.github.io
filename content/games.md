@@ -106,7 +106,7 @@ description: "Zack-Zhang1031 的独立游戏与开源项目展示"
       <strong>MindFace-Lite</strong>
       <span class="lang-badge lang-badge--python">Python</span>
     </div>
-    <p class="pc-desc">MindFace 系列的轻量级实现。</p>
+    <p class="pc-desc">轻量实时语音驱动数字人口型系统：PyTorch 训练 + ONNX 部署 + RKNN 边缘部署。</p>
   </a>
   <a class="project-card" href="https://github.com/Zack-Zhang1031/word_tool" target="_blank" rel="noopener">
     <div class="pc-head">
@@ -122,9 +122,9 @@ description: "Zack-Zhang1031 的独立游戏与开源项目展示"
     </div>
     <p class="pc-desc">危机事件社交媒体文本分类的机器学习实验与分析。</p>
   </a>
-  <a class="project-card" href="https://github.com/Zack-Zhang1031/myblog" target="_blank" rel="noopener">
+  <a class="project-card" href="https://github.com/Zack-Zhang1031/zack-zhang1031.github.io" target="_blank" rel="noopener">
     <div class="pc-head">
-      <strong>myblog</strong>
+      <strong>zack-zhang1031.github.io</strong>
       <span class="lang-badge lang-badge--hugo">Hugo</span>
     </div>
     <p class="pc-desc">本站源码：基于 Hugo + Dream 主题的个人主页 / 博客。</p>
