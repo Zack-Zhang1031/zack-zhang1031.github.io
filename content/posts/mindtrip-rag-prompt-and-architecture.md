@@ -1,4 +1,4 @@
----
+﻿---
 title: "MindTrip RAG 架构演进（四）：Prompt 工程与最终架构总结"
 date: 2025-08-20T00:00:00+08:00
 draft: false
@@ -246,4 +246,5 @@ Question → Retrieval → LLM → Answer
 > - [第一篇：数据层与实体级 Chunk 设计](/posts/mindtrip-rag-data-and-retrieval/)
 > - [第二篇：从语义检索到约束感知](/posts/mindtrip-rag-constraint-retrieval/)
 > - [第三篇：模型选型与 SSE 流式部署](/posts/mindtrip-rag-model-and-streaming/)
-> - 第四篇：Prompt 工程与最终架构总结（本文）
+> - 第四篇：Prompt 工程与最终架构总结
+> - [第五篇：评测框架与混合检索对比实验](/posts/mindtrip-rag-eval-hybrid-retrieval/)
