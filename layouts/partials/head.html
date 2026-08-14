@@ -1,5 +1,8 @@
 {{ partial "umami.html" . }}
 
+<!-- Busuanzi visit counter -->
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
 {{ with site.Params.favicon }}
   {{ if hasPrefix . "<link" }}
     {{ . | safeHTML }}

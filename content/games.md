@@ -123,12 +123,19 @@ description: "Zack-Zhang1031 的独立游戏与开源项目展示"
     </div>
     <p class="pc-desc">危机事件社交媒体文本分类的机器学习实验与分析。</p>
   </a>
-  <a class="project-card" href="https://github.com/Zack-Zhang1031/zack-zhang1031.github.io" target="_blank" rel="noopener">
+  <a class="project-card" href="https://github.com/Zack-Zhang1031/yolo11-small-object-enhancement" target="_blank" rel="noopener">
     <div class="pc-head">
-      <strong>zack-zhang1031.github.io</strong>
-      <span class="lang-badge lang-badge--hugo">Hugo</span>
+      <strong>yolo11-small-object-enhancement</strong>
+      <span class="lang-badge lang-badge--python">Python</span>
     </div>
-    <p class="pc-desc">本站源码：基于 Hugo + Dream 主题的个人主页 / 博客。</p>
+    <p class="pc-desc">YOLOv11 小目标检测增强：SAHI 切片推理 + 模型微调，提升密集小目标场景检出率。</p>
+  </a>
+  <a class="project-card" href="https://github.com/Zack-Zhang1031/yolo11-tensorrt-realtime" target="_blank" rel="noopener">
+    <div class="pc-head">
+      <strong>yolo11-tensorrt-realtime</strong>
+      <span class="lang-badge lang-badge--python">Python</span>
+    </div>
+    <p class="pc-desc">YOLOv11 + TensorRT 部署加速：FP16/INT8 量化推理，实现边缘端实时目标检测。</p>
   </a>
 </div>
 

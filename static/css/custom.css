@@ -1178,3 +1178,22 @@ nav a.group:hover::before {
   color: #94a3b8;
   line-height: 1.5;
 }
+
+/* ===== Busuanzi visit counter ===== */
+.busuanzi-counter {
+  margin-top: .35rem;
+  font-size: .8rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.busuanzi-counter > span {
+  white-space: nowrap;
+}
+
+.busuanzi-divider {
+  opacity: .5;
+}
