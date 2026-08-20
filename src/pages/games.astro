@@ -3,6 +3,97 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 const title = '🎮 作品 & 项目';
 const description = 'Zack-Zhang1031 的独立游戏与开源项目展示';
+
+const githubProjects = [
+  {
+    name: 'MindFace-Lite',
+    badge: 'AI',
+    url: 'https://github.com/Zack-Zhang1031/MindFace-Lite',
+    desc: '轻量实时语音驱动数字人口型系统，从 PyTorch 训练到 ONNX 跨平台推理，最终部署到 RKNN 边缘端。',
+    tech: ['PyTorch', 'ONNX', 'RKNN', 'Python'],
+    features: [
+      '实时语音 → 口型参数映射',
+      'ONNX 跨平台推理导出',
+      'RKNN 边缘端加速部署',
+    ],
+  },
+  {
+    name: 'word_tool',
+    badge: '⭐',
+    star: true,
+    url: 'https://github.com/Zack-Zhang1031/word_tool',
+    desc: '从 PDF / TXT / Excel 中提取英文单词，批量翻译并导出 Excel，支持 OCR 识别图片中的文字。',
+    tech: ['Python', 'OCR', 'OpenPyXL', 'Translate API'],
+    features: [
+      '多格式文件输入 (PDF/TXT/Excel)',
+      'OCR 识别图片内文字',
+      '批量翻译 → 导出 Excel',
+    ],
+  },
+  {
+    name: 'crisis-social-media-classification',
+    badge: 'ML',
+    url: 'https://github.com/Zack-Zhang1031/crisis-social-media-classification',
+    desc: '危机事件社交媒体文本分类的机器学习实验与性能分析，涵盖特征工程与多模型对比。',
+    tech: ['Python', 'Scikit-learn', 'NLP', 'TF-IDF'],
+    features: [
+      'TF-IDF + 多模型对比实验',
+      '特征工程与消融分析',
+      '分类性能可视化报告',
+    ],
+  },
+  {
+    name: 'yolo11-small-object-enhancement',
+    badge: 'CV',
+    url: 'https://github.com/Zack-Zhang1031/yolo11-small-object-enhancement',
+    desc: 'YOLOv11 小目标检测增强方案：SAHI 切片推理 + 模型微调，显著提升密集小目标场景检测率。',
+    tech: ['YOLOv11', 'SAHI', 'PyTorch', 'Python'],
+    features: [
+      'SAHI 切片推理流程',
+      '小目标数据集微调',
+      '检测率提升对比实验',
+    ],
+  },
+  {
+    name: 'yolo11-tensorrt-realtime',
+    badge: 'Deploy',
+    url: 'https://github.com/Zack-Zhang1031/yolo11-tensorrt-realtime',
+    desc: 'YOLOv11 + TensorRT 部署加速：FP16 / INT8 量化推理，实现 GPU 端实时目标检测。',
+    tech: ['YOLOv11', 'TensorRT', 'FP16', 'INT8'],
+    features: [
+      'FP16 / INT8 量化推理',
+      'TensorRT Engine 构建',
+      '实时推理性能基准测试',
+    ],
+  },
+];
+
+const giteeProjects = [
+  {
+    name: 'MindTrip',
+    badge: 'AI',
+    url: 'https://gitee.com/rainyjensen/mind-trip',
+    desc: '基于 RAG + Agent 的智能旅行规划系统，结合大语言模型与向量检索，生成个性化行程方案。',
+    tech: ['Qwen2-72B', 'Milvus', 'LangChain', 'FastAPI', 'UniApp'],
+    features: [
+      'RAG 知识库检索增强',
+      'Agent 多步行程规划',
+      'FastAPI 后端 + UniApp 前端',
+    ],
+  },
+  {
+    name: 'AtlasSplit',
+    badge: 'Agent',
+    url: 'https://gitee.com/rainyjensen/AtlasSplit',
+    desc: '表格分摊与结算智能体：自然语言指令 → 受控代码生成 → 本地安全执行 → 可审计结果。',
+    tech: ['LLM', 'Python', 'Code Gen', 'Sandbox'],
+    features: [
+      '自然语言 → 分摊规则',
+      '受控代码本地执行',
+      '全程可审计的结果输出',
+    ],
+  },
+];
 ---
 
 <BaseLayout title={title} description={description}>
@@ -101,42 +192,54 @@ const description = 'Zack-Zhang1031 的独立游戏与开源项目展示';
 
     <!-- GitHub -->
     <h2 id="github" class="section-label" style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 1rem;">🐙 GitHub</h2>
-    <div class="project-list" style="margin-bottom: 2.5rem;">
-      <a class="project-item" href="https://github.com/Zack-Zhang1031/MindFace-Lite" target="_blank" rel="noopener">
-        <div class="project-head"><strong>MindFace-Lite</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">轻量实时语音驱动数字人口型系统：PyTorch + ONNX + RKNN</p>
-      </a>
-      <a class="project-item" href="https://github.com/Zack-Zhang1031/word_tool" target="_blank" rel="noopener">
-        <div class="project-head"><strong>word_tool ⭐</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">PDF/TXT/Excel 英文单词提取 + 批量翻译，导出 Excel，支持 OCR</p>
-      </a>
-      <a class="project-item" href="https://github.com/Zack-Zhang1031/crisis-social-media-classification" target="_blank" rel="noopener">
-        <div class="project-head"><strong>crisis-social-media-classification</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">危机事件社交媒体文本分类的机器学习实验与分析</p>
-      </a>
-      <a class="project-item" href="https://github.com/Zack-Zhang1031/yolo11-small-object-enhancement" target="_blank" rel="noopener">
-        <div class="project-head"><strong>yolo11-small-object-enhancement</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">YOLOv11 小目标检测增强：SAHI 切片推理 + 模型微调</p>
-      </a>
-      <a class="project-item" href="https://github.com/Zack-Zhang1031/yolo11-tensorrt-realtime" target="_blank" rel="noopener">
-        <div class="project-head"><strong>yolo11-tensorrt-realtime</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">YOLOv11 + TensorRT 部署加速：FP16/INT8 量化推理</p>
-      </a>
+    <div class="project-grid" style="margin-bottom: 2.5rem;">
+      {githubProjects.map((p) => (
+        <a class="project-card" href={p.url} target="_blank" rel="noopener">
+          <div class="project-card-header">
+            <span class="project-card-name">{p.name}</span>
+            <span class={`project-card-badge${p.star ? ' project-card-badge--star' : ''}`}>{p.badge}</span>
+          </div>
+          <div class="project-card-body">
+            <p class="project-card-desc">{p.desc}</p>
+            <div class="project-tech">
+              {p.tech.map((t) => <span class="tag">{t}</span>)}
+            </div>
+            <ul class="project-features">
+              {p.features.map((f) => <li>{f}</li>)}
+            </ul>
+            <div class="project-card-footer">
+              <span class="project-card-arrow">view repo →</span>
+            </div>
+          </div>
+        </a>
+      ))}
     </div>
 
     <hr class="divider" />
 
     <!-- Gitee -->
     <h2 id="gitee" class="section-label" style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 1rem;">🐱 Gitee</h2>
-    <div class="project-list" style="margin-bottom: 2.5rem;">
-      <a class="project-item" href="https://gitee.com/rainyjensen/mind-trip" target="_blank" rel="noopener">
-        <div class="project-head"><strong>MindTrip</strong><span class="project-platform">🐱</span></div>
-        <p class="project-desc">基于 RAG + Agent 的智能旅行规划系统：Qwen2-72B + Milvus + LangChain + FastAPI + UniApp</p>
-      </a>
-      <a class="project-item" href="https://gitee.com/rainyjensen/AtlasSplit" target="_blank" rel="noopener">
-        <div class="project-head"><strong>AtlasSplit</strong><span class="project-platform">🐱</span></div>
-        <p class="project-desc">表格分摊与结算智能体：自然语言 → 受控代码 → 本地执行 → 可审计结果</p>
-      </a>
+    <div class="project-grid" style="margin-bottom: 2.5rem;">
+      {giteeProjects.map((p) => (
+        <a class="project-card" href={p.url} target="_blank" rel="noopener">
+          <div class="project-card-header">
+            <span class="project-card-name">{p.name}</span>
+            <span class="project-card-badge">{p.badge}</span>
+          </div>
+          <div class="project-card-body">
+            <p class="project-card-desc">{p.desc}</p>
+            <div class="project-tech">
+              {p.tech.map((t) => <span class="tag">{t}</span>)}
+            </div>
+            <ul class="project-features">
+              {p.features.map((f) => <li>{f}</li>)}
+            </ul>
+            <div class="project-card-footer">
+              <span class="project-card-arrow">view repo →</span>
+            </div>
+          </div>
+        </a>
+      ))}
     </div>
 
     <hr class="divider" />
