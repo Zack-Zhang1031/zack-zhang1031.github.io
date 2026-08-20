@@ -6,7 +6,7 @@ interface Props {
   description?: string;
 }
 
-const { title, description = 'Zack-Zhang1031 — 独立游戏开发者 / AI 与算法爱好者' } = Astro.props;
+const { title, description = '张坤 — 独立游戏开发者 / AI 与算法爱好者' } = Astro.props;
 const siteUrl = Astro.site?.href || 'https://zz1031.vercel.app';
 const canonical = new URL(Astro.url.pathname, siteUrl).href;
 
@@ -48,7 +48,7 @@ const currentPath = Astro.url.pathname;
     <div class="header-inner">
       <a href="/" class="site-logo">
         <img src="/images/48.png" alt="avatar" />
-        <span>zack-zhang1031</span>
+        <span>张坤</span>
       </a>
       <nav class="nav-links">
         {navItems.map((item) => (
@@ -67,7 +67,7 @@ const currentPath = Astro.url.pathname;
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-left">
-        <p>© 2024–2026 Zack-Zhang1031</p>
+        <p>© 2024–2026 张坤</p>
         <p>built with <a href="https://astro.build" target="_blank" rel="noopener">astro</a> · hosted on <a href="https://vercel.com" target="_blank" rel="noopener">vercel</a></p>
       </div>
       <div class="footer-right">
