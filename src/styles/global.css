@@ -33,7 +33,7 @@
   /* Typography */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Cascadia Code', 'Fira Code', Consolas, monospace;
-  --font-brush: 'Ma Shan Zheng', 'STKaiti', 'KaiTi', serif;
+  --font-brush: var(--font-sans);
 
   /* Radius */
   --r-sm: 6px;
@@ -299,7 +299,7 @@ main { position: relative; z-index: 1; }
 .hero-title {
   font-family: var(--font-brush);
   font-size: clamp(2.5rem, 8vw, 4.5rem);
-  font-weight: 400;
+  font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1.15;
   margin-bottom: 0.75rem;
