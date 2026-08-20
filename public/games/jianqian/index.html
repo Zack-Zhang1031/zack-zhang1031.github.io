@@ -19,12 +19,21 @@
   <link rel="stylesheet" type="text/css" href="style.f76d1.css">
   <script>
     // Mock CrazyGames SDK for non-CrazyGames domains
+    // data is deliberately undefined so the game falls back to localStorage
     if (!window.CrazyGames) {
       var noop = function() { return Promise.resolve(); };
-      var mockSdk = new Proxy({}, { get: function() { return noop; } });
-      window.CrazyGames = { SDK: mockSdk };
+      window.CrazyGames = {
+        SDK: {
+          init: function() { return Promise.resolve(); },
+          game: { loadingStart: noop, loadingComplete: noop, gameplayStart: noop, gameplayStop: noop },
+          banner: { requestBanner: noop },
+          ad: { requestAd: noop, happytime: noop },
+          data: undefined,
+          user: { getUser: noop },
+        }
+      };
     }
-    window.__crazyGamesDataReady = true;
+    window.__crazyGamesDataReady = false;
     window.__crazyGamesInit = Promise.resolve();
   </script>
 </head>
