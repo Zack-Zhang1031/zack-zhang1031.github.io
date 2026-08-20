@@ -17,3 +17,5 @@ Thumbs.db
 # Logs & cache
 *.log
 npm-debug.log*
+
+.vercel
