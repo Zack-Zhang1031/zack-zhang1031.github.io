@@ -7,7 +7,7 @@ interface Props {
 }
 
 const { title, description = 'Zack-Zhang1031 — 独立游戏开发者 / AI 与算法爱好者' } = Astro.props;
-const siteUrl = Astro.site?.href || 'https://zack-zhang1031.vercel.app';
+const siteUrl = Astro.site?.href || 'https://zackzhang.dev';
 const canonical = new URL(Astro.url.pathname, siteUrl).href;
 
 const navItems = [
@@ -51,7 +51,7 @@ const currentPath = Astro.url.pathname;
         {navItems.map((item) => (
           <a href={item.href} class={`nav-link${currentPath === item.href ? ' active' : ''}`}>{item.label}</a>
         ))}
-        <button id="wechat-qr-btn" class="nav-link" title="扫码关注公众号">公众号</button>
+        <button id="wechat-qr-btn" class="nav-link" data-qr-trigger title="扫码关注公众号">公众号</button>
         <button id="theme-toggle" class="theme-toggle" title="切换主题">🌙</button>
       </nav>
     </div>
@@ -105,12 +105,14 @@ const currentPath = Astro.url.pathname;
     </div>
   </div>
   <script is:inline>
-    const qrBtn = document.getElementById('wechat-qr-btn');
+    const qrBtns = document.querySelectorAll('[data-qr-trigger]');
     const qrOverlay = document.getElementById('wechat-qr-overlay');
-    qrBtn?.addEventListener('click', () => {
-      if (qrOverlay) {
-        qrOverlay.style.display = qrOverlay.style.display === 'none' ? 'flex' : 'none';
-      }
+    qrBtns.forEach(btn => {
+      btn?.addEventListener('click', () => {
+        if (qrOverlay) {
+          qrOverlay.style.display = qrOverlay.style.display === 'none' ? 'flex' : 'none';
+        }
+      });
     });
     qrOverlay?.addEventListener('click', () => { qrOverlay.style.display = 'none'; });
     document.addEventListener('keydown', (e) => {
