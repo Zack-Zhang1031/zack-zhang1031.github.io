@@ -8,7 +8,4 @@ export default defineConfig({
   output: 'static',
   adapter: vercel(),
   integrations: [tailwind(), sitemap()],
-  redirects: {
-    '/posts': '/posts/',
-  },
 });
