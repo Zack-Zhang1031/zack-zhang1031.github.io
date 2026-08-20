@@ -1,5 +1,0 @@
----
-title: "搜索"
-type: "search"
-draft: false
----

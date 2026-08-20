@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Content } from '../about.md';
+const title = '关于';
+const description = '关于 Zack-Zhang1031：独立游戏开发者 / AI 与算法爱好者。在这里了解我的方向、技能栈和联系方式。';
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="single-post px-4 max-w-3xl mx-auto mt-8">
+    <h1 class="post-title" style="margin-bottom:1em;">关于</h1>
+    <div class="prose dark:prose-invert" id="post-content">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

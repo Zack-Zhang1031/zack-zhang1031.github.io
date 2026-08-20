@@ -1,0 +1,118 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+}
+
+const { title, description = '独立游戏开发者 / AI 与算法爱好者', image = '/images/og-image_1200x630.png' } = Astro.props;
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') || 'https://zack-zhang1031.vercel.app';
+const canonical = new URL(Astro.url.pathname, siteUrl).toString();
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="canonical" href={canonical} />
+  <meta name="author" content="Zack-Zhang1031" />
+  <meta name="description" content={description} />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <meta property="og:image" content={`${siteUrl}${image}`} />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={`${siteUrl}${image}`} />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/css/custom.css" />
+
+  <!-- Giscus theme sync -->
+  <script is:inline>
+    const theme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.classList.toggle('light', theme === 'light');
+    document.documentElement.classList.toggle('dark', theme !== 'light');
+  </script>
+
+  <title>{title}</title>
+</head>
+<body>
+  <!-- Nav -->
+  <nav class="nav-bar">
+    <div class="nav-container">
+      <a href="/" class="nav-logo">
+        <img src="/images/48.png" alt="avatar" class="nav-avatar" />
+        <span>Zack-Zhang1031</span>
+      </a>
+      <div class="nav-links">
+        <a href="/" class="nav-link">首页</a>
+        <a href="/games/" class="nav-link">作品</a>
+        <a href="/posts/" class="nav-link">日志</a>
+        <a href="/about/" class="nav-link">关于</a>
+        <a href="https://github.com/Zack-Zhang1031" target="_blank" rel="noopener" class="nav-link nav-icon" title="GitHub">🐙</a>
+        <a href="https://gitee.com/rainyjensen" target="_blank" rel="noopener" class="nav-link nav-icon" title="Gitee">🐱</a>
+        <a href="https://space.bilibili.com/31032895" target="_blank" rel="noopener" class="nav-link nav-icon" title="Bilibili">📺</a>
+        <button id="theme-toggle" class="nav-link nav-icon" title="切换主题">🌙</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main>
+    <slot />
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-left">
+      <p>&copy; 2024 - 2026 Zack-Zhang1031</p>
+      <p class="footer-powered">
+        🌱 Powered by <a href="https://astro.build" target="_blank" rel="noopener">Astro</a> + <a href="https://vercel.com" target="_blank" rel="noopener">Vercel</a>
+      </p>
+    </div>
+    <div class="footer-right">
+      <span id="busuanzi_container" style="display:none">
+        <span>🔍 总访问 <span id="busuanzi_value_site_pv">-</span> 次</span>
+        <span>&nbsp;·&nbsp;</span>
+        <span>👤 访客 <span id="busuanzi_value_site_uv">-</span> 人</span>
+      </span>
+    </div>
+  </footer>
+
+  <!-- Busuanzi -->
+  <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" is:inline></script>
+
+  <!-- Theme toggle -->
+  <script is:inline>
+    const toggle = document.getElementById('theme-toggle');
+    function updateToggleIcon() {
+      const isLight = document.documentElement.classList.contains('light');
+      if (toggle) toggle.textContent = isLight ? '☀️' : '🌙';
+    }
+    updateToggleIcon();
+    toggle?.addEventListener('click', () => {
+      const isLight = document.documentElement.classList.toggle('light');
+      document.documentElement.classList.toggle('dark', !isLight);
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      updateToggleIcon();
+      // Sync Giscus
+      const giscusFrame = document.querySelector('iframe.giscus-frame');
+      if (giscusFrame) {
+        giscusFrame.contentWindow?.postMessage({
+          giscus: { setConfig: { theme: isLight ? 'light' : 'dark_dimmed' } }
+        }, 'https://giscus.app');
+      }
+    });
+  </script>
+</body>
+</html>

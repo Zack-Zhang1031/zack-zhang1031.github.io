@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+
+const allPosts = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const currentIndex = allPosts.findIndex((p) => p.slug === post.slug);
+const prevPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+const nextPost = currentIndex < allPosts.length - 1 ? allPosts[currentIndex + 1] : null;
+
+const dateStr = post.data.date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+const wordCount = post.body.split(/\s+/).filter(Boolean).length;
+const readingTime = Math.max(1, Math.ceil(wordCount / 300));
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article class="single-post px-4 max-w-3xl mx-auto mt-8">
+    <header class="post-header">
+      <h1 class="post-title" itemprop="headline">{post.data.title}</h1>
+      <div class="post-meta">
+        <time>{dateStr}</time>
+        <span> | 📖 {readingTime} 分钟阅读</span>
+        {post.data.tags.length > 0 && (
+          <span> | 
+            {post.data.tags.map((tag) => (
+              <span class="post-tag-inline">#{tag}</span>
+            ))}
+          </span>
+        )}
+      </div>
+    </header>
+
+    <div class="prose dark:prose-invert" id="post-content" itemprop="articleBody">
+      <Content />
+    </div>
+
+    {(prevPost || nextPost) && (
+      <nav class="post-nav">
+        {prevPost && (
+          <a href={`/posts/${prevPost.slug}/`} class="post-nav-link post-nav-prev">
+            <span class="post-nav-label">← 上一篇</span>
+            <span class="post-nav-title">{prevPost.data.title}</span>
+          </a>
+        )}
+        {nextPost && (
+          <a href={`/posts/${nextPost.slug}/`} class="post-nav-link post-nav-next">
+            <span class="post-nav-label">下一篇 →</span>
+            <span class="post-nav-title">{nextPost.data.title}</span>
+          </a>
+        )}
+      </nav>
+    )}
+
+    <!-- Giscus Comments -->
+    <section class="giscus-container mt-8">
+      <script src="https://giscus.app/client.js"
+        data-repo="Zack-Zhang1031/zack-zhang1031.github.io"
+        data-repo-id="R_kgDOPMsBYA"
+        data-category="Announcements"
+        data-category-id="DIC_kwDOPMsBYM4DDMqM"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="bottom"
+        data-theme="dark_dimmed"
+        data-lang="zh-CN"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async
+        is:inline>
+      </script>
+    </section>
+  </article>
+</BaseLayout>

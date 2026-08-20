@@ -1,35 +1,71 @@
 # Zack-Zhang1031 个人主页
 
-基于 [Hugo](https://gohugo.io/) + [hugo-theme-dream](https://github.com/g1eny0ung/hugo-theme-dream) 的个人主页 / 博客,通过 GitHub Actions 自动部署到 GitHub Pages。
+基于 [Astro](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/) 构建的个人主页 / 博客，托管于 [Vercel](https://vercel.com/)。
 
-🔗 线上地址:<https://zack-zhang1031.github.io/>
+线上地址：<https://zack-zhang1031.vercel.app/>
 
 ## 站点结构
 
-- **首页**:博客文章列表(`content/posts/`)
-- **作品**(`content/games.md`,`/games/`):独立游戏展示(CrazyGames)+ GitHub / Gitee 开源项目卡片
-- **关于我**(`content/about/`,点头像翻面):个人简介、技能栈、联系方式、社交链接
+- **首页**：游戏展示卡片 + 最新博客 + GitHub/Gitee 项目
+- **作品**（`/games/`）：独立游戏在线试玩（Cocos Web Mobile 内嵌）+ 视频演示
+- **日志**（`/posts/`）：技术博客（Astro Content Collections，35 篇）
+- **关于**（`/about/`）：个人简介、技能栈、联系方式
 
-## 关键配置
+## 技术栈
 
-- 站点配置:[`config.toml`](config.toml)
-  - 个人信息、社交链接、导航栏自定义项(`[params.navItems]`)
-  - 已开启 `markup.goldmark.renderer.unsafe = true`,以支持文章中嵌入 `<img>` / `<video>` / `<iframe>` 等原始 HTML
-- 社交链接(footer / 关于页):[`data/socials.toml`](data/socials.toml)
+- **框架**：Astro 5（静态输出）
+- **样式**：Tailwind CSS + 自定义 CSS 变量主题
+- **内容**：Astro Content Collections（类型安全的 Markdown 博客）
+- **评论**：Giscus（GitHub Discussions）
+- **统计**：不蒜子
+- **部署**：Vercel（自动构建）
+- **游戏**：Cocos Creator Web Mobile 构建内嵌
 
 ## 本地预览
 
 ```bash
-hugo server -D
-# 打开 http://localhost:1313/
+npm install
+npm run dev
+# 打开 http://localhost:4321/
+```
+
+## 构建
+
+```bash
+npm run build
+# 输出到 dist/
+```
+
+## 目录结构
+
+```
+src/
+├── layouts/
+│   └── BaseLayout.astro      # 全局布局（导航 + 页脚 + 主题切换）
+├── pages/
+│   ├── index.astro            # 首页
+│   ├── games.astro            # 作品展示页
+│   ├── about.astro            # 关于页
+│   └── posts/
+│       ├── index.astro        # 博客列表（分类筛选）
+│       └── [...slug].astro    # 博客详情（Giscus 评论）
+├── content/
+│   ├── config.ts              # Content Collections 配置
+│   └── posts/                 # 博客 Markdown 文件（35 篇）
+├── about.md                   # 关于页 Markdown 内容
+└── styles/
+    └── global.css             # 全局样式 + Tailwind 指令
+
+public/
+├── games/                     # Cocos Web Mobile 游戏构建
+│   ├── shuqian/
+│   └── jianqian/
+├── images/                    # 图片资源
+├── videos/                     # 视频资源
+├── css/                        # 自定义 CSS
+└── js/                         # 游戏切换等 JS 脚本
 ```
 
 ## 部署
 
-推送到 `main` 分支后,`.github/workflows/hugo.yaml` 会自动构建并部署到 GitHub Pages。
-
-## 如何更新内容
-
-- **新增博客文章**:在 `content/posts/` 下新建 `.md`
-- **更新游戏截图 / 视频**:编辑 `content/games.md`,把 `<div class="media-slot">...</div>` 替换为 `<img>` 或 B 站 `<iframe>`
-- **更新个人信息 / 联系方式**:编辑 `content/about/` 下的 `me.md` / `skills.md` / `contact.md`
+推送到 `main` 分支后，Vercel 自动构建并部署。
