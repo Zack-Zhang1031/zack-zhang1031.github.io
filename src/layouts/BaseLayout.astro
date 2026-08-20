@@ -51,6 +51,7 @@ const currentPath = Astro.url.pathname;
         {navItems.map((item) => (
           <a href={item.href} class={`nav-link${currentPath === item.href ? ' active' : ''}`}>{item.label}</a>
         ))}
+        <button id="wechat-qr-btn" class="nav-link" title="扫码关注公众号">公众号</button>
         <button id="theme-toggle" class="theme-toggle" title="切换主题">🌙</button>
       </nav>
     </div>
@@ -93,6 +94,28 @@ const currentPath = Astro.url.pathname;
       entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
     }, { threshold: 0.08 });
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  </script>
+
+  <!-- WeChat QR Code Popover -->
+  <div id="wechat-qr-overlay" class="qr-overlay" style="display:none;">
+    <div class="qr-card" onclick="event.stopPropagation()">
+      <button class="qr-close" onclick="document.getElementById('wechat-qr-overlay').style.display='none'" title="关闭">✕</button>
+      <img src="/images/wechat-qr.jpg" alt="公众号二维码" class="qr-image" />
+      <p class="qr-text">扫码关注公众号</p>
+    </div>
+  </div>
+  <script is:inline>
+    const qrBtn = document.getElementById('wechat-qr-btn');
+    const qrOverlay = document.getElementById('wechat-qr-overlay');
+    qrBtn?.addEventListener('click', () => {
+      if (qrOverlay) {
+        qrOverlay.style.display = qrOverlay.style.display === 'none' ? 'flex' : 'none';
+      }
+    });
+    qrOverlay?.addEventListener('click', () => { qrOverlay.style.display = 'none'; });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && qrOverlay) qrOverlay.style.display = 'none';
+    });
   </script>
 </body>
 </html>

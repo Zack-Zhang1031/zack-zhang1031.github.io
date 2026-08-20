@@ -1,170 +1,25 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getCollection } from 'astro:content';
-
-const posts = (await getCollection('posts', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
-  .slice(0, 4);
 
 const title = 'Zack-Zhang1031 | 个人主页';
 const description = '独立游戏开发者 / AI 与算法爱好者。在这里可以找到我发布的独立游戏、开源项目与技术随笔。';
 ---
 
 <BaseLayout title={title} description={description}>
-  <!-- Hero -->
-  <section class="hero">
-    <p class="hero-tag">indie game dev · ai · geek</p>
-    <h1 class="hero-title">Zack-Zhang1031</h1>
-    <p class="hero-desc">热爱 AI、游戏与极客文化。把想法做成能玩、能用的东西。</p>
-    <div class="hero-links">
-      <a href="https://github.com/Zack-Zhang1031" target="_blank" rel="noopener" class="hero-link">GitHub ↗</a>
-      <a href="https://gitee.com/rainyjensen" target="_blank" rel="noopener" class="hero-link">Gitee ↗</a>
-      <a href="https://space.bilibili.com/31032895" target="_blank" rel="noopener" class="hero-link">Bilibili ↗</a>
-      <a href="mailto:zhangkun1031@hotmail.com" class="hero-link">Email ↗</a>
+  <section class="hero" style="min-height: 75vh; display: flex; align-items: center; justify-content: center;">
+    <div style="text-align: center;">
+      <p class="hero-tag">indie game dev · ai · geek</p>
+      <h1 class="hero-title">Zack-Zhang1031</h1>
+      <p class="hero-desc">热爱 AI、游戏与极客文化。把想法做成能玩、能用的东西。</p>
+      <div class="hero-links">
+        <a href="/games/" class="hero-link" style="border-color: var(--accent); color: var(--accent);">view works →</a>
+        <a href="/posts/" class="hero-link">read blog →</a>
+        <a href="/about/" class="hero-link">about me →</a>
+      </div>
+      <div class="hero-links" style="margin-top: 1rem;">
+        <a href="https://github.com/Zack-Zhang1031" target="_blank" rel="noopener" class="hero-link">GitHub ↗</a>
+        <a href="https://gitee.com/rainyjensen" target="_blank" rel="noopener" class="hero-link">Gitee ↗</a>
+      </div>
     </div>
   </section>
-
-  <div class="container">
-    <!-- Works -->
-    <section class="section reveal">
-      <div class="section-head">
-        <div class="section-head-left">
-          <span class="section-label">// works</span>
-          <h2>我的作品</h2>
-        </div>
-        <a href="/games/" class="section-link">all →</a>
-      </div>
-      <div class="game-grid">
-        <!-- 数钱 -->
-        <div class="game-card game-card--amber">
-          <div class="work-media" data-media="shuqian">
-            <div class="wm-display wm-display--active" data-type="video">
-              <video controls preload="metadata" poster="/images/shuqian-1.png">
-                <source src="/videos/shuqian-demo.mp4" type="video/mp4" />
-              </video>
-            </div>
-            <div class="wm-display" data-type="shot">
-              <img src="/images/shuqian-1.png" alt="数钱 游戏截图" loading="lazy" />
-            </div>
-            <button class="wm-toggle" onclick="event.stopPropagation();window.__toggleHCMode('shuqian', this)" title="切换视频/截图">
-              <span class="wm-toggle-icon">🖼️</span>
-              <span class="wm-toggle-label">shot</span>
-            </button>
-          </div>
-          <div class="card-body">
-            <h3>💰 数钱</h3>
-            <p>休闲点钞小游戏 · 考验手速与眼力</p>
-            <div class="card-actions">
-              <a class="btn-play btn-play--amber btn-play--sm" href="/games/shuqian/" target="_blank" rel="noopener">▶ play</a>
-              <button class="btn-mute" onclick="window.__toggleVideoMute('shuqian', this)">🔇 mute</button>
-              <div class="card-tags"><span class="tag">休闲</span></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 捡钱 -->
-        <div class="game-card game-card--green">
-          <div class="work-media" data-media="jianqian">
-            <div class="wm-display wm-display--active" data-type="video">
-              <video controls preload="metadata" poster="/images/jianqian-1.png">
-                <source src="/videos/jianqian-demo.mp4" type="video/mp4" />
-              </video>
-            </div>
-            <div class="wm-display" data-type="shot">
-              <img src="/images/jianqian-1.png" alt="捡钱 游戏截图" loading="lazy" />
-            </div>
-            <button class="wm-toggle" onclick="event.stopPropagation();window.__toggleHCMode('jianqian', this)" title="切换视频/截图">
-              <span class="wm-toggle-icon">🖼️</span>
-              <span class="wm-toggle-label">shot</span>
-            </button>
-          </div>
-          <div class="card-body">
-            <h3>💵 捡钱</h3>
-            <p>欢乐街机小游戏 · 接金币躲陷阱</p>
-            <div class="card-actions">
-              <a class="btn-play btn-play--green btn-play--sm" href="/games/jianqian/" target="_blank" rel="noopener">▶ play</a>
-              <button class="btn-mute" onclick="window.__toggleVideoMute('jianqian', this)">🔇 mute</button>
-              <div class="card-tags"><span class="tag">街机</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Projects -->
-    <section class="section reveal">
-      <div class="section-head">
-        <div class="section-head-left">
-          <span class="section-label">// projects</span>
-          <h2>开源项目</h2>
-        </div>
-        <a href="/games/#github" class="section-link">all →</a>
-      </div>
-      <div class="project-list">
-        <a class="project-item" href="https://github.com/Zack-Zhang1031/MindFace-Lite" target="_blank" rel="noopener">
-          <div class="project-head"><strong>MindFace-Lite</strong><span class="project-platform">🐙</span></div>
-          <p class="project-desc">轻量实时语音驱动数字人口型系统：PyTorch + ONNX + RKNN</p>
-          <div class="project-tags"><span class="tag">Python</span><span class="tag">PyTorch</span><span class="tag">ONNX</span></div>
-        </a>
-        <a class="project-item" href="https://github.com/Zack-Zhang1031/word_tool" target="_blank" rel="noopener">
-          <div class="project-head"><strong>word_tool</strong><span class="project-platform">🐙</span></div>
-          <p class="project-desc">PDF/TXT/Excel 英文单词提取 + 批量翻译工具</p>
-          <div class="project-tags"><span class="tag">Python</span><span class="tag">OCR</span></div>
-        </a>
-        <a class="project-item" href="https://gitee.com/rainyjensen/mind-trip" target="_blank" rel="noopener">
-          <div class="project-head"><strong>MindTrip</strong><span class="project-platform">🐱</span></div>
-          <p class="project-desc">RAG + Agent 智能旅行规划：Qwen2-72B + Milvus + LangChain</p>
-          <div class="project-tags"><span class="tag">Python</span><span class="tag">RAG</span></div>
-        </a>
-        <a class="project-item" href="https://github.com/Zack-Zhang1031/yolo11-small-object-enhancement" target="_blank" rel="noopener">
-          <div class="project-head"><strong>yolo11-sahi</strong><span class="project-platform">🐙</span></div>
-          <p class="project-desc">YOLOv11 小目标检测增强：SAHI 切片推理</p>
-          <div class="project-tags"><span class="tag">Python</span><span class="tag">YOLO</span></div>
-        </a>
-        <a class="project-item" href="https://gitee.com/rainyjensen/AtlasSplit" target="_blank" rel="noopener">
-          <div class="project-head"><strong>AtlasSplit</strong><span class="project-platform">🐱</span></div>
-          <p class="project-desc">自然语言 → 受控代码 → 表格分摊结算</p>
-          <div class="project-tags"><span class="tag">Python</span><span class="tag">pandas</span></div>
-        </a>
-        <a class="project-item" href="https://github.com/Zack-Zhang1031/yolo11-tensorrt-realtime" target="_blank" rel="noopener">
-          <div class="project-head"><strong>yolo11-tensorrt</strong><span class="project-platform">🐙</span></div>
-          <p class="project-desc">YOLOv11 + TensorRT 部署加速：FP16/INT8 量化</p>
-          <div class="project-tags"><span class="tag">Python</span><span class="tag">TensorRT</span></div>
-        </a>
-      </div>
-    </section>
-
-    <!-- Blog -->
-    <section class="section reveal">
-      <div class="section-head">
-        <div class="section-head-left">
-          <span class="section-label">// blog</span>
-          <h2>最新日志</h2>
-        </div>
-        <a href="/posts/" class="section-link">all →</a>
-      </div>
-      <div class="post-list">
-        {posts.map((post) => (
-          <article class="post-card">
-            <a href={`/posts/${post.slug}/`} class="post-card-link">
-              <div class="post-card-top">
-                <span class="post-card-date">{post.data.date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}</span>
-                {post.data.categories.length > 0 && <span class="post-card-cat">{post.data.categories[0]}</span>}
-              </div>
-              <h3 class="post-card-title">{post.data.title}</h3>
-              <p class="post-card-summary">{post.data.description || ''}</p>
-              <div class="post-card-bottom">
-                <div class="post-card-tags">
-                  {post.data.tags.slice(0, 3).map((tag) => <span class="post-card-tag">#{tag}</span>)}
-                </div>
-                <span class="post-card-read">{Math.ceil(post.body.split('').length / 500)}min</span>
-              </div>
-            </a>
-          </article>
-        ))}
-      </div>
-    </section>
-  </div>
-
-  <script src="/js/game-switcher.js" is:inline></script>
 </BaseLayout>

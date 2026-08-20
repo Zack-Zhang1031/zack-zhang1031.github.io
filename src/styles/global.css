@@ -703,6 +703,68 @@ main { position: relative; z-index: 1; }
 .game-tags { display: flex; gap: 0.25rem; margin-left: auto; }
 
 /* ==========================================================================
+   WeChat QR Code Popover
+   ========================================================================== */
+button.nav-link {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.qr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: qrFadeIn 0.2s ease;
+}
+@keyframes qrFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.qr-card {
+  position: relative;
+  padding: 1.8rem 1.8rem 1.5rem;
+  border-radius: var(--r-xl);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-hover);
+  box-shadow: var(--shadow-hover);
+  text-align: center;
+  animation: qrSlideUp 0.25s ease;
+}
+@keyframes qrSlideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+.qr-close {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.8rem;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color var(--t);
+}
+.qr-close:hover { color: var(--text-primary); }
+
+.qr-image {
+  width: 240px;
+  height: 240px;
+  border-radius: var(--r-md);
+  object-fit: cover;
+  margin-bottom: 0.8rem;
+}
+
+.qr-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
    Footer
    ========================================================================== */
 .site-footer {
