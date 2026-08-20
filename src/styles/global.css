@@ -299,6 +299,24 @@ main { position: relative; z-index: 1; }
   color: var(--accent);
   background: var(--accent-dim);
 }
+.hero-link-primary {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.65rem 1.6rem;
+  border: none;
+  border-radius: var(--r-sm);
+  color: #0a0a0a;
+  background: var(--accent);
+  box-shadow: 0 0 20px var(--accent-glow);
+  transition: all var(--t);
+  cursor: pointer;
+}
+.hero-link-primary:hover {
+  background: var(--accent-green);
+  box-shadow: 0 0 32px var(--accent-glow);
+  transform: translateY(-1px);
+}
 
 /* ==========================================================================
    Section
