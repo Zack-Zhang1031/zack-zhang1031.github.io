@@ -6,17 +6,22 @@ const description = 'Zack-Zhang1031 的独立游戏与开源项目展示';
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="page-container">
-    <nav class="page-nav">
+  <div class="container" style="padding-top: 2.5rem;">
+    <div class="page-header">
+      <h1 class="page-title">作品 & 项目</h1>
+      <p class="page-subtitle">// games · projects</p>
+    </div>
+
+    <nav class="anchor-nav">
       <a href="#games">🕹️ 独立游戏</a>
       <a href="#github">🐙 GitHub</a>
       <a href="#gitee">🐱 Gitee</a>
     </nav>
 
-    <hr class="game-divider" />
+    <hr class="divider" />
 
-    <h2 id="games" class="section-title">🕹️ 独立游戏</h2>
-    <p style="color: var(--text-secondary); margin: -0.5em 0 1.5em;">我把做出来的休闲小游戏<strong>直接托管在本站</strong>，点击即可游玩，无需跳转！每个游戏还配有<strong>视频演示</strong>和<strong>截图</strong>，点击右下角按钮切换查看。</p>
+    <h2 id="games" class="section-label" style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">🕹️ 独立游戏</h2>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem;">休闲小游戏<strong>直接托管在本站</strong>，点击即可游玩，无需跳转。</p>
 
     <!-- 数钱 -->
     <div class="game-showcase" id="game-shuqian">
@@ -33,26 +38,26 @@ const description = 'Zack-Zhang1031 的独立游戏与开源项目展示';
           </div>
           <button class="gs-corner-toggle" onclick="event.stopPropagation();window.__toggleGSMode('shuqian', this)" title="切换视频/截图">
             <span class="gct-icon">🖼️</span>
-            <span class="gct-label">截图</span>
+            <span class="gct-label">shot</span>
           </button>
         </div>
       </div>
       <div class="gs-info-col">
-        <h3 class="game-title">💰 数钱</h3>
+        <h3>💰 数钱</h3>
         <p class="game-subtitle">轻松休闲的点钞小游戏，考验你的手速与眼力。在限定时间内尽可能准确地清点钞票，挑战更高分数。</p>
         <div class="game-controls-bar">
-          <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('shuqian', this)">🔇 静音</button>
-          <span class="gs-ctrl-hint">🎬 点击视频播放 · 右下角切换截图</span>
+          <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('shuqian', this)">🔇 mute</button>
+          <span class="gs-ctrl-hint">▶ click video to play</span>
         </div>
         <div class="game-actions">
-          <a class="play-btn play-btn--amber" href="/games/shuqian/" target="_blank" rel="noopener">▶ 在线试玩</a>
-          <a class="play-btn play-btn--ghost" href="https://www.crazygames.com/preview/d1b4d9b3-f1e7-419c-8336-c65c37fa3419?gameBuildId=10c47402-f440-40f9-a940-448fa1466cd3&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">外部试玩</a>
-          <span class="game-tags"><span class="game-tag">休闲</span><span class="game-tag">点击</span></span>
+          <a class="btn-play btn-play--amber" href="/games/shuqian/" target="_blank" rel="noopener">▶ 在线试玩</a>
+          <a class="btn-play btn-play--ghost" href="https://www.crazygames.com/preview/d1b4d9b3-f1e7-419c-8336-c65c37fa3419?gameBuildId=10c47402-f440-40f9-a940-448fa1466cd3&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">外部试玩</a>
+          <span class="game-tags"><span class="tag">休闲</span><span class="tag">点击</span></span>
         </div>
       </div>
     </div>
 
-    <hr class="game-divider" />
+    <hr class="divider" />
 
     <!-- 捡钱 -->
     <div class="game-showcase" id="game-jianqian">
@@ -69,73 +74,75 @@ const description = 'Zack-Zhang1031 的独立游戏与开源项目展示';
           </div>
           <button class="gs-corner-toggle" onclick="event.stopPropagation();window.__toggleGSMode('jianqian', this)" title="切换视频/截图">
             <span class="gct-icon">🖼️</span>
-            <span class="gct-label">截图</span>
+            <span class="gct-label">shot</span>
           </button>
         </div>
       </div>
       <div class="gs-info-col">
-        <h3 class="game-title">💵 捡钱</h3>
+        <h3>💵 捡钱</h3>
         <p class="game-subtitle">欢乐的街机小游戏，操控角色接住天上掉落的金币与红包，躲开陷阱，比拼连击与高分。</p>
         <div class="game-controls-bar">
-          <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('jianqian', this)">🔇 静音</button>
-          <span class="gs-ctrl-hint">🎬 点击视频播放 · 右下角切换截图</span>
+          <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('jianqian', this)">🔇 mute</button>
+          <span class="gs-ctrl-hint">▶ click video to play</span>
         </div>
         <div class="game-actions">
-          <a class="play-btn play-btn--green" href="/games/jianqian/" target="_blank" rel="noopener">▶ 在线试玩</a>
-          <a class="play-btn play-btn--ghost" href="https://www.crazygames.com/preview/e072a216-66f6-45da-92e1-5462cc4a1309?gameBuildId=30f942ad-72fc-4858-b812-95dfa984c8f0&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">外部试玩</a>
-          <span class="game-tags"><span class="game-tag">街机</span><span class="game-tag">休闲</span></span>
+          <a class="btn-play btn-play--green" href="/games/jianqian/" target="_blank" rel="noopener">▶ 在线试玩</a>
+          <a class="btn-play btn-play--ghost" href="https://www.crazygames.com/preview/e072a216-66f6-45da-92e1-5462cc4a1309?gameBuildId=30f942ad-72fc-4858-b812-95dfa984c8f0&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">外部试玩</a>
+          <span class="game-tags"><span class="tag">街机</span><span class="tag">休闲</span></span>
         </div>
       </div>
     </div>
 
-    <hr class="game-divider" />
+    <hr class="divider" />
 
-    <p style="text-align:center;margin:1.5em 0;">📺 更多游戏实况与开发日志：欢迎关注我的 <a href="https://space.bilibili.com/31032895" target="_blank" rel="noopener">哔哩哔哩主页</a></p>
+    <p style="text-align:center; color:var(--text-muted); font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 2.5rem;">📺 more on <a href="https://space.bilibili.com/31032895" target="_blank" rel="noopener">bilibili</a></p>
 
-    <hr class="game-divider" />
+    <hr class="divider" />
 
-    <!-- GitHub Projects -->
-    <h2 id="github" class="section-title">🐙 GitHub 开源项目</h2>
-    <div class="projects-grid" style="margin-top:1em;">
-      <a class="project-card" href="https://github.com/Zack-Zhang1031/MindFace-Lite" target="_blank" rel="noopener">
+    <!-- GitHub -->
+    <h2 id="github" class="section-label" style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 1rem;">🐙 GitHub</h2>
+    <div class="project-list" style="margin-bottom: 2.5rem;">
+      <a class="project-item" href="https://github.com/Zack-Zhang1031/MindFace-Lite" target="_blank" rel="noopener">
         <div class="project-head"><strong>MindFace-Lite</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">轻量实时语音驱动数字人口型系统：PyTorch 训练 + ONNX 部署 + RKNN 边缘部署。</p>
+        <p class="project-desc">轻量实时语音驱动数字人口型系统：PyTorch + ONNX + RKNN</p>
       </a>
-      <a class="project-card" href="https://github.com/Zack-Zhang1031/word_tool" target="_blank" rel="noopener">
+      <a class="project-item" href="https://github.com/Zack-Zhang1031/word_tool" target="_blank" rel="noopener">
         <div class="project-head"><strong>word_tool ⭐</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">PDF/TXT/Excel 英文单词提取工具：过滤已学单词 + 批量翻译为中文，导出 Excel，支持 OCR。</p>
+        <p class="project-desc">PDF/TXT/Excel 英文单词提取 + 批量翻译，导出 Excel，支持 OCR</p>
       </a>
-      <a class="project-card" href="https://github.com/Zack-Zhang1031/crisis-social-media-classification" target="_blank" rel="noopener">
+      <a class="project-item" href="https://github.com/Zack-Zhang1031/crisis-social-media-classification" target="_blank" rel="noopener">
         <div class="project-head"><strong>crisis-social-media-classification</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">危机事件社交媒体文本分类的机器学习实验与分析。</p>
+        <p class="project-desc">危机事件社交媒体文本分类的机器学习实验与分析</p>
       </a>
-      <a class="project-card" href="https://github.com/Zack-Zhang1031/yolo11-small-object-enhancement" target="_blank" rel="noopener">
+      <a class="project-item" href="https://github.com/Zack-Zhang1031/yolo11-small-object-enhancement" target="_blank" rel="noopener">
         <div class="project-head"><strong>yolo11-small-object-enhancement</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">YOLOv11 小目标检测增强：SAHI 切片推理 + 模型微调，提升密集小目标场景检出率。</p>
+        <p class="project-desc">YOLOv11 小目标检测增强：SAHI 切片推理 + 模型微调</p>
       </a>
-      <a class="project-card" href="https://github.com/Zack-Zhang1031/yolo11-tensorrt-realtime" target="_blank" rel="noopener">
+      <a class="project-item" href="https://github.com/Zack-Zhang1031/yolo11-tensorrt-realtime" target="_blank" rel="noopener">
         <div class="project-head"><strong>yolo11-tensorrt-realtime</strong><span class="project-platform">🐙</span></div>
-        <p class="project-desc">YOLOv11 + TensorRT 部署加速：FP16/INT8 量化推理，实现边缘端实时目标检测。</p>
+        <p class="project-desc">YOLOv11 + TensorRT 部署加速：FP16/INT8 量化推理</p>
       </a>
     </div>
 
-    <hr class="game-divider" />
+    <hr class="divider" />
 
-    <!-- Gitee Projects -->
-    <h2 id="gitee" class="section-title">🐱 Gitee 项目</h2>
-    <div class="projects-grid" style="margin-top:1em;">
-      <a class="project-card" href="https://gitee.com/rainyjensen/mind-trip" target="_blank" rel="noopener">
+    <!-- Gitee -->
+    <h2 id="gitee" class="section-label" style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 1rem;">🐱 Gitee</h2>
+    <div class="project-list" style="margin-bottom: 2.5rem;">
+      <a class="project-item" href="https://gitee.com/rainyjensen/mind-trip" target="_blank" rel="noopener">
         <div class="project-head"><strong>MindTrip</strong><span class="project-platform">🐱</span></div>
-        <p class="project-desc">基于 RAG + Agent 的智能旅行规划系统：Qwen2-72B + Milvus + LangChain + FastAPI + UniApp。</p>
+        <p class="project-desc">基于 RAG + Agent 的智能旅行规划系统：Qwen2-72B + Milvus + LangChain + FastAPI + UniApp</p>
       </a>
-      <a class="project-card" href="https://gitee.com/rainyjensen/AtlasSplit" target="_blank" rel="noopener">
+      <a class="project-item" href="https://gitee.com/rainyjensen/AtlasSplit" target="_blank" rel="noopener">
         <div class="project-head"><strong>AtlasSplit</strong><span class="project-platform">🐱</span></div>
-        <p class="project-desc">表格分摊与结算智能体：自然语言 → 受控代码 → 本地执行 → 可审计结果。</p>
+        <p class="project-desc">表格分摊与结算智能体：自然语言 → 受控代码 → 本地执行 → 可审计结果</p>
       </a>
     </div>
 
-    <hr class="game-divider" />
-    <p style="text-align:center;margin:1.5em 0 3em;color:var(--text-secondary);">想了解更多或合作？欢迎回到 <a href="/">首页</a> 点头像查看「关于我」，或直接发邮件给我 ✉️</p>
+    <hr class="divider" />
+    <p style="text-align:center; color:var(--text-secondary); font-size: 0.82rem; margin-bottom: 2.5rem;">
+      想了解更多或合作？<a href="/">← 返回首页</a> 查看联系方式
+    </p>
   </div>
 
   <script src="/js/game-switcher.js" is:inline></script>

@@ -11,40 +11,34 @@ const description = 'Zack-Zhang1031 的技术随笔与开发日志';
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="posts-page mt-8 px-4">
-    <div class="posts-header">
-      <h1 class="posts-page-title">📝 {title}</h1>
-      <p class="posts-page-count">共 {posts.length} 篇日志</p>
+  <div class="container" style="padding-top: 2.5rem;">
+    <div class="page-header">
+      <h1 class="page-title">日志</h1>
+      <p class="page-subtitle">// {posts.length} posts</p>
     </div>
 
     {allCats.length > 0 && (
-      <div class="posts-filter-bar">
-        <button class="filter-chip filter-chip--active" data-cat="all">全部</button>
-        {allCats.map((cat) => (
-          <button class="filter-chip" data-cat={cat}>{cat}</button>
-        ))}
+      <div class="filter-bar">
+        <button class="filter-chip filter-chip--active" data-cat="all">all</button>
+        {allCats.map((cat) => <button class="filter-chip" data-cat={cat}>{cat}</button>)}
       </div>
     )}
 
-    <div class="posts-grid">
+    <div class="post-list">
       {posts.map((post) => (
         <article class="post-card" data-cats={post.data.categories.join('||')}>
           <a href={`/posts/${post.slug}/`} class="post-card-link">
             <div class="post-card-top">
               <span class="post-card-date">{post.data.date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}</span>
-              {post.data.categories.length > 0 && (
-                <span class="post-card-cat">{post.data.categories[0]}</span>
-              )}
+              {post.data.categories.length > 0 && <span class="post-card-cat">{post.data.categories[0]}</span>}
             </div>
-            <h2 class="post-card-title">{post.data.title}</h2>
+            <h3 class="post-card-title">{post.data.title}</h3>
             <p class="post-card-summary">{post.data.description || ''}</p>
             <div class="post-card-bottom">
               <div class="post-card-tags">
-                {post.data.tags.slice(0, 3).map((tag) => (
-                  <span class="post-card-tag">#{tag}</span>
-                ))}
+                {post.data.tags.slice(0, 3).map((tag) => <span class="post-card-tag">#{tag}</span>)}
               </div>
-              <span class="post-card-read">📖 约 {Math.ceil(post.body.split('\n').join('').length / 500)} 分钟</span>
+              <span class="post-card-read">{Math.ceil(post.body.split('').length / 500)}min</span>
             </div>
           </a>
         </article>
@@ -63,11 +57,7 @@ const description = 'Zack-Zhang1031 的技术随笔与开发日志';
           this.classList.add('filter-chip--active');
           cards.forEach(function(card) {
             var cats = (card.dataset.cats || '').split('||');
-            if (cat === 'all' || cats.indexOf(cat) !== -1) {
-              card.style.display = '';
-            } else {
-              card.style.display = 'none';
-            }
+            card.style.display = (cat === 'all' || cats.indexOf(cat) !== -1) ? '' : 'none';
           });
         });
       });
