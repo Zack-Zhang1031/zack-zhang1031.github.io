@@ -17,7 +17,7 @@ description: "Zack-Zhang1031 的独立游戏与开源项目展示"
 
 ## 🕹️ 独立游戏 {#games}
 
-我把做出来的休闲小游戏发布在 **CrazyGames**，欢迎试玩！每个游戏都配有**视频演示**和**截图**，点击右下角按钮切换查看。
+我把做出来的休闲小游戏**直接托管在本站**，点击即可游玩，无需跳转！每个游戏还配有**视频演示**和**截图**，点击右下角按钮切换查看。
 
 <!-- ==================== 游戏一：数钱 ==================== -->
 <div class="game-showcase" id="game-shuqian">
@@ -46,7 +46,8 @@ description: "Zack-Zhang1031 的独立游戏与开源项目展示"
       <span class="gs-ctrl-hint">🎬 点击视频播放 · 右下角切换截图</span>
     </div>
     <div class="game-actions">
-      <a class="play-btn play-btn--amber" href="https://www.crazygames.com/preview/d1b4d9b3-f1e7-419c-8336-c65c37fa3419?gameBuildId=10c47402-f440-40f9-a940-448fa1466cd3&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">▶ 在 CrazyGames 试玩</a>
+      <a class="play-btn play-btn--amber" href="/games/shuqian/" target="_blank" rel="noopener">▶ 在线试玩</a>
+      <a class="play-btn play-btn--ghost" href="https://www.crazygames.com/preview/d1b4d9b3-f1e7-419c-8336-c65c37fa3419?gameBuildId=10c47402-f440-40f9-a940-448fa1466cd3&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">外部试玩</a>
       <span class="game-tags">
         <span class="game-tag">休闲</span>
         <span class="game-tag">点击</span>
@@ -84,7 +85,8 @@ description: "Zack-Zhang1031 的独立游戏与开源项目展示"
       <span class="gs-ctrl-hint">🎬 点击视频播放 · 右下角切换截图</span>
     </div>
     <div class="game-actions">
-      <a class="play-btn play-btn--green" href="https://www.crazygames.com/preview/e072a216-66f6-45da-92e1-5462cc4a1309?gameBuildId=30f942ad-72fc-4858-b812-95dfa984c8f0&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">▶ 在 CrazyGames 试玩</a>
+      <a class="play-btn play-btn--green" href="/games/jianqian/" target="_blank" rel="noopener">▶ 在线试玩</a>
+      <a class="play-btn play-btn--ghost" href="https://www.crazygames.com/preview/e072a216-66f6-45da-92e1-5462cc4a1309?gameBuildId=30f942ad-72fc-4858-b812-95dfa984c8f0&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">外部试玩</a>
       <span class="game-tags">
         <span class="game-tag">街机</span>
         <span class="game-tag">休闲</span>

@@ -1,7 +1,7 @@
 # Hugo site config for Zack-Zhang1031's personal homepage
-# Served at: https://zack-zhang1031.github.io/
+# Served at: https://zack-zhang1031.vercel.app/
 
-baseURL = "https://zack-zhang1031.github.io/"
+baseURL = "https://zack-zhang1031.vercel.app/"
 locale = "zh-cn"
 title = "Zack-Zhang1031 | 个人主页"
 theme = "hugo-theme-dream"

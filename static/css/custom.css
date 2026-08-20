@@ -657,6 +657,17 @@
   color: #111827;
 }
 
+.play-btn--ghost {
+  background: transparent !important;
+  border: 1px solid rgba(148,163,184,.35) !important;
+  color: rgba(203,213,225,.85) !important;
+  font-size: .8rem !important;
+  padding: .45rem 1rem !important;
+}
+.play-btn--ghost:hover {
+  border-color: rgba(148,163,184,.6) !important;
+  background: rgba(148,163,184,.08) !important;
+}
 .play-btn--green {
   background: #22c55e;
   color: #052e16;
