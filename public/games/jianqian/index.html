@@ -17,15 +17,15 @@
   <meta name="360-fullscreen" content="true">
   <meta name="x5-page-mode" content="app">
   <link rel="stylesheet" type="text/css" href="style.f76d1.css">
-  <script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
   <script>
-    window.__crazyGamesDataReady = false;
-    window.__crazyGamesInit = window.CrazyGames && window.CrazyGames.SDK
-      ? window.CrazyGames.SDK.init().then(function () {
-          window.__crazyGamesDataReady = true;
-          return window.CrazyGames.SDK.game.loadingStart();
-        }).catch(function () { return undefined; })
-      : Promise.resolve();
+    // Mock CrazyGames SDK for non-CrazyGames domains
+    if (!window.CrazyGames) {
+      var noop = function() { return Promise.resolve(); };
+      var mockSdk = new Proxy({}, { get: function() { return noop; } });
+      window.CrazyGames = { SDK: mockSdk };
+    }
+    window.__crazyGamesDataReady = true;
+    window.__crazyGamesInit = Promise.resolve();
   </script>
 </head>
 <body>
