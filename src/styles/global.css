@@ -127,7 +127,6 @@ h1, h2, h3, h4 { font-weight: 800; line-height: 1.25; letter-spacing: -0.02em; }
   font-family: var(--font-mono);
   font-size: 0.8rem;
   color: var(--text-muted);
-  text-transform: lowercase;
   letter-spacing: 0.05em;
 }
 
@@ -210,11 +209,13 @@ html.light .site-header { background: rgba(247, 247, 245, 0.8); }
 }
 .site-logo img { width: 24px; height: 24px; border-radius: 50%; }
 
-.nav-links { display: flex; align-items: center; gap: 0.15rem; }
+.nav-links { display: flex; align-items: center; gap: 0.2rem; }
 .nav-link {
-  font-family: var(--font-mono);
-  padding: 0.35rem 0.65rem;
-  font-size: 0.8rem;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.92rem;
+  letter-spacing: 0.01em;
   color: var(--text-secondary);
   border-radius: var(--r-sm);
   transition: all var(--t);

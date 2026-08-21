@@ -11,10 +11,10 @@ const siteUrl = Astro.site?.href || 'https://zz1031.vercel.app';
 const canonical = new URL(Astro.url.pathname, siteUrl).href;
 
 const navItems = [
-  { href: '/', label: 'home' },
-  { href: '/games/', label: 'works' },
-  { href: '/posts/', label: 'blog' },
-  { href: '/about/', label: 'about' },
+  { href: '/', label: 'Home' },
+  { href: '/games/', label: 'Works' },
+  { href: '/posts/', label: 'Blog' },
+  { href: '/about/', label: 'About' },
 ];
 const currentPath = Astro.url.pathname;
 ---
@@ -65,7 +65,7 @@ const currentPath = Astro.url.pathname;
     <div class="footer-inner">
       <div class="footer-left">
         <p>© 2024–2026 张坤</p>
-        <p>built with <a href="https://astro.build" target="_blank" rel="noopener">astro</a> · hosted on <a href="https://vercel.com" target="_blank" rel="noopener">vercel</a></p>
+        <p>Built with <a href="https://astro.build" target="_blank" rel="noopener">astro</a> · Hosted on <a href="https://vercel.com" target="_blank" rel="noopener">vercel</a></p>
       </div>
       <div class="footer-right">
         <span>pv <span id="busuanzi_value_site_pv">—</span> · uv <span id="busuanzi_value_site_uv">—</span></span>

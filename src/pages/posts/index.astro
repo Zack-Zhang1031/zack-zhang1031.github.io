@@ -14,12 +14,12 @@ const description = 'Zack-Zhang1031 的技术随笔与开发日志';
   <div class="container" style="padding-top: 2.5rem;">
     <div class="page-header">
       <h1 class="page-title">日志</h1>
-      <p class="page-subtitle">// {posts.length} posts</p>
+      <p class="page-subtitle">// {posts.length} Posts</p>
     </div>
 
     {allCats.length > 0 && (
       <div class="filter-bar">
-        <button class="filter-chip filter-chip--active" data-cat="all">all</button>
+        <button class="filter-chip filter-chip--active" data-cat="all">All</button>
         {allCats.map((cat) => <button class="filter-chip" data-cat={cat}>{cat}</button>)}
       </div>
     )}
