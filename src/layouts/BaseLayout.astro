@@ -57,6 +57,8 @@ const currentPath = Astro.url.pathname;
     </div>
   </header>
 
+  <canvas id="ink-canvas" class="ink-canvas" aria-hidden="true"></canvas>
+
   <main>
     <slot />
   </main>
@@ -169,6 +171,107 @@ const currentPath = Astro.url.pathname;
         document.body.classList.add('page-exit');
         setTimeout(function () { location.href = url.href; }, 170);
       });
+    })();
+  </script>
+
+  <script is:inline>
+    // Ambient ink wash — 常驻水墨晕染，极淡，轻微跟随鼠标
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var canvas = document.getElementById('ink-canvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      var W = 0, H = 0;
+
+      function resize() {
+        var DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = Math.round(W * DPR);
+        canvas.height = Math.round(H * DPR);
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      var mouse = { x: -9999, y: -9999 };
+      document.addEventListener('mousemove', function (e) {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+      }, { passive: true });
+      document.addEventListener('mouseleave', function () { mouse.x = -9999; mouse.y = -9999; });
+
+      // ink tones: mostly grey-blue/paper, one vermilion, one bronze gold
+      var palette = [
+        { r: 158, g: 168, b: 178 },
+        { r: 214, g: 210, b: 198 },
+        { r: 200, g: 64,  b: 59  },
+        { r: 158, g: 168, b: 178 },
+        { r: 201, g: 169, b: 110 },
+        { r: 224, g: 220, b: 208 },
+        { r: 140, g: 150, b: 162 }
+      ];
+
+      var blobs = palette.map(function (c, i) {
+        return {
+          c: c,
+          sx: 0.000028 + Math.random() * 0.000030,  // rad/ms — very slow drift
+          sy: 0.000024 + Math.random() * 0.000026,
+          phase: Math.random() * Math.PI * 2 + i,
+          rr: 0.30 + Math.random() * 0.28,          // radius relative to viewport min
+          ox: 0, oy: 0, vx: 0, vy: 0
+        };
+      });
+
+      var running = true;
+      document.addEventListener('visibilitychange', function () {
+        var was = running;
+        running = !document.hidden;
+        if (running && !was) requestAnimationFrame(frame);
+      });
+
+      function frame(t) {
+        if (!running) return;
+        requestAnimationFrame(frame);
+        var light = document.documentElement.classList.contains('light');
+        var baseR = Math.min(W, H);
+        ctx.clearRect(0, 0, W, H);
+
+        for (var i = 0; i < blobs.length; i++) {
+          var b = blobs[i];
+          var x = (0.5 + 0.38 * Math.sin(t * b.sx + b.phase)) * W;
+          var y = (0.5 + 0.36 * Math.cos(t * b.sy + b.phase * 1.7)) * H;
+
+          // gentle mouse repulsion, decays back home
+          var dx = x - mouse.x, dy = y - mouse.y;
+          var dist = Math.sqrt(dx * dx + dy * dy);
+          var radius = baseR * b.rr;
+          if (dist < radius * 1.5 && dist > 0.001) {
+            var force = (1 - dist / (radius * 1.5)) * 0.28;
+            b.vx += (dx / dist) * force;
+            b.vy += (dy / dist) * force;
+          }
+          b.vx *= 0.90; b.vy *= 0.90;
+          b.ox = (b.ox + b.vx) * 0.994;
+          b.oy = (b.oy + b.vy) * 0.994;
+
+          var cx = x + b.ox, cy = y + b.oy;
+          var rr = radius * (0.86 + 0.14 * Math.sin(t * 0.00025 + b.phase));
+
+          var alpha = light ? 0.055 : 0.065;
+          var cr = b.c.r, cg = b.c.g, cb = b.c.b;
+          if (light) { cr = Math.round(cr * 0.45); cg = Math.round(cg * 0.45); cb = Math.round(cb * 0.45); }
+          var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
+          g.addColorStop(0, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + alpha + ')');
+          g.addColorStop(0.55, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (alpha * 0.38) + ')');
+          g.addColorStop(1, 'rgba(' + cr + ',' + cg + ',' + cb + ',0)');
+          ctx.fillStyle = g;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      requestAnimationFrame(frame);
     })();
   </script>
 

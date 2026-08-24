@@ -871,6 +871,18 @@ button.nav-link {
 }
 
 /* ==========================================================================
+   Ambient Ink Wash — 常驻水墨晕染背景
+   ========================================================================== */
+.ink-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ==========================================================================
    Micro-interactions — entrance / ripple / spotlight / progress
    ========================================================================== */
 .site-header { animation: headerEnter 0.5s ease both; }
