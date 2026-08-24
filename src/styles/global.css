@@ -869,3 +869,82 @@ button.nav-link {
   .footer-right { text-align: center; }
   .game-showcase { padding: 1rem; }
 }
+
+/* ==========================================================================
+   Micro-interactions — entrance / ripple / spotlight / progress
+   ========================================================================== */
+.site-header { animation: headerEnter 0.5s ease both; }
+@keyframes headerEnter {
+  from { opacity: 0; transform: translateY(-14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+body { transition: opacity 0.18s ease; }
+body.page-exit { opacity: 0; }
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0;
+  z-index: 300;
+  background: linear-gradient(90deg, var(--accent), var(--accent-gold));
+  box-shadow: 0 0 8px var(--accent-glow);
+  pointer-events: none;
+}
+
+/* Staggered entrance (JS adds .stagger-in, then .play) */
+.stagger-in {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.stagger-in.play { opacity: 1; transform: translateY(0); }
+
+/* Press feedback */
+.nav-link:active, .hero-link:active, .hero-link-primary:active,
+.btn-play:active, .filter-chip:active, .gs-ctrl-btn:active,
+.anchor-nav a:active, .post-nav-link:active {
+  transform: scale(0.93);
+}
+.theme-toggle:active { transform: scale(0.9) rotate(25deg); }
+
+/* Ripple */
+.nav-link, .theme-toggle, .hero-link, .hero-link-primary, .btn-play,
+.filter-chip, .gs-ctrl-btn, .anchor-nav a, .post-nav-link {
+  position: relative;
+  overflow: hidden;
+}
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.18;
+  transform: scale(0);
+  animation: rippleAnim 0.6s ease-out forwards;
+  pointer-events: none;
+  z-index: 1;
+}
+@keyframes rippleAnim {
+  to { transform: scale(2.4); opacity: 0; }
+}
+
+/* Spotlight border — glow follows cursor */
+.project-card, .post-card, .game-showcase { position: relative; }
+.project-card::after, .post-card::after, .game-showcase::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: radial-gradient(280px circle at var(--mx, 50%) var(--my, 50%), var(--accent), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+.project-card:hover::after, .post-card:hover::after, .game-showcase:hover::after { opacity: 0.9; }

@@ -96,6 +96,82 @@ const currentPath = Astro.url.pathname;
     document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
   </script>
 
+  <script is:inline>
+    // Micro-interactions: progress bar / ripple / spotlight / stagger / page fade
+    (function () {
+      // 1. Scroll progress bar
+      var bar = document.createElement('div');
+      bar.className = 'scroll-progress';
+      document.body.appendChild(bar);
+      var ticking = false;
+      window.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          var h = document.documentElement;
+          var max = h.scrollHeight - h.clientHeight;
+          bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+          ticking = false;
+        });
+      }, { passive: true });
+
+      // 2. Ripple on button click
+      var RIPPLE_SEL = '.nav-link, .theme-toggle, .hero-link, .hero-link-primary, .btn-play, .filter-chip, .gs-ctrl-btn, .anchor-nav a, .post-nav-link';
+      document.addEventListener('click', function (e) {
+        var btn = e.target.closest(RIPPLE_SEL);
+        if (!btn) return;
+        var rect = btn.getBoundingClientRect();
+        var size = Math.max(rect.width, rect.height) * 1.2;
+        var r = document.createElement('span');
+        r.className = 'ripple';
+        r.style.width = r.style.height = size + 'px';
+        r.style.left = (e.clientX - rect.left - size / 2) + 'px';
+        r.style.top = (e.clientY - rect.top - size / 2) + 'px';
+        btn.appendChild(r);
+        setTimeout(function () { r.remove(); }, 650);
+      });
+
+      // 3. Card spotlight — border glow follows cursor
+      document.addEventListener('mousemove', function (e) {
+        var card = e.target.closest('.project-card, .post-card, .game-showcase');
+        if (!card) return;
+        var rect = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+        card.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+      }, { passive: true });
+
+      // 4. Staggered entrance for page content
+      var els = document.querySelectorAll(
+        'main .page-header, main .anchor-nav, main .filter-bar, main .game-showcase, ' +
+        'main .project-grid > .project-card, main .post-list > .post-card, ' +
+        'main .post-detail-header, main .prose, main .post-nav, main .giscus-container'
+      );
+      els.forEach(function (el, i) {
+        var delay = 100 + Math.min(i, 10) * 70;
+        el.classList.add('stagger-in');
+        setTimeout(function () { el.classList.add('play'); }, delay);
+        setTimeout(function () { el.classList.remove('stagger-in', 'play'); }, delay + 650);
+      });
+
+      // 5. Fade out before internal navigation
+      document.addEventListener('click', function (e) {
+        if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        var a = e.target.closest('a');
+        if (!a || a.target || a.download) return;
+        var href = a.getAttribute('href') || '';
+        if (!href || href.charAt(0) === '#' || href.indexOf('mailto:') === 0) return;
+        var url;
+        try { url = new URL(a.href, location.href); } catch (err) { return; }
+        if (url.origin !== location.origin) return;
+        if (url.pathname === location.pathname && url.search === location.search && url.hash) return;
+        e.preventDefault();
+        if (url.href === location.href) return;
+        document.body.classList.add('page-exit');
+        setTimeout(function () { location.href = url.href; }, 170);
+      });
+    })();
+  </script>
+
   <!-- WeChat QR Code Popover -->
   <div id="wechat-qr-overlay" class="qr-overlay" style="display:none;">
     <div class="qr-card" onclick="event.stopPropagation()">
