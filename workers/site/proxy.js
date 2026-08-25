@@ -1,8 +1,15 @@
 const UPSTREAM = 'zz1031-zack-zhangs-projects.vercel.app';
+const CANONICAL_HOST = 'z.zz1031.workers.dev';
+const LEGACY_HOST = 'zz1031.zz1031.workers.dev';
 
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+    if (url.hostname === LEGACY_HOST) {
+      url.hostname = CANONICAL_HOST;
+      return Response.redirect(url.toString(), 308);
+    }
+
     url.hostname = UPSTREAM;
     url.protocol = 'https:';
     url.port = '';
