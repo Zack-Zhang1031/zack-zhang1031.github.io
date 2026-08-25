@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import Comments from '../components/Comments.astro';
+import { games } from '../data/games';
 
 const title = '🕹️ 独立游戏';
 const description = '张坤开发的独立小游戏，全部可直接在线游玩';
@@ -13,83 +13,55 @@ const description = '张坤开发的独立小游戏，全部可直接在线游�
       <p class="page-subtitle">// Games</p>
     </div>
 
-    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem;">休闲小游戏<strong>直接托管在本站</strong>，点击即可游玩，无需跳转。开源项目请移步 <a href="/projects/">Projects</a>。</p>
+    <p class="games-intro">休闲小游戏<strong>直接托管在本站</strong>，点击即可游玩，无需跳转。视频默认只加载海报，点击播放后才下载。开源项目请移步 <a href="/projects/">Projects</a>。</p>
 
-    <!-- 数钱 -->
-    <div class="game-showcase" id="game-shuqian">
-      <div class="gs-media-col">
-        <div class="gs-main" data-media="shuqian">
-          <div class="gs-display gs-display--active" data-type="video">
-            <video controls preload="metadata" poster="/images/shuqian-1.png">
-              <source src="/videos/shuqian-demo.mp4" type="video/mp4" />
-              您的浏览器不支持视频播放。
-            </video>
+    {games.map((game) => (
+      <div class="game-showcase" id={`game-${game.id}`}>
+        <div class="gs-media-col">
+          <div class="gs-main" data-media={game.id}>
+            <div class="gs-display gs-display--active" data-type="video">
+              <button
+                class="gs-video-loader"
+                type="button"
+                data-video={game.video}
+                data-poster={game.poster}
+                aria-label={`播放《${game.name}》演示视频`}
+                onclick={`window.__loadGSVideo('${game.id}', this)`}
+              >
+                <img src={game.poster} alt={`${game.name} 游戏海报`} loading="lazy" />
+                <span class="gs-play-icon" aria-hidden="true">▶</span>
+                <span class="gs-play-label">播放演示</span>
+              </button>
+            </div>
+            <div class="gs-display" data-type="shot">
+              <img src={game.poster} alt={`${game.name} 游戏截图`} loading="lazy" />
+            </div>
+            <button class="gs-corner-toggle" onclick={`event.stopPropagation();window.__toggleGSMode('${game.id}', this)`} title="切换视频/截图">
+              <span class="gct-icon">🖼️</span>
+              <span class="gct-label">截图</span>
+            </button>
           </div>
-          <div class="gs-display" data-type="shot">
-            <img src="/images/shuqian-1.png" alt="数钱 游戏截图" loading="lazy" />
+        </div>
+        <div class="gs-info-col">
+          <h2>{game.icon} {game.name}</h2>
+          <p class="game-subtitle">{game.description}</p>
+          <dl class="game-meta">
+            <div><dt>平台</dt><dd>{game.platform}</dd></div>
+            <div><dt>状态</dt><dd>{game.status}</dd></div>
+            <div><dt>操作</dt><dd>{game.controls}</dd></div>
+            <div><dt>更新</dt><dd><time datetime={game.updatedAt}>{game.updatedAt}</time></dd></div>
+            <div><dt>版本</dt><dd>{game.version}</dd></div>
+          </dl>
+          <div class="game-actions">
+            <a class={`btn-play btn-play--${game.accent}`} href={game.playUrl} target="_blank" rel="noopener">▶ 在线试玩</a>
+            <a class="btn-play btn-play--ghost" href={`/games/details/${game.id}/`}>详情与评论</a>
+            <span class="game-tags">{game.tags.map((tag) => <span class="tag">{tag}</span>)}</span>
           </div>
-          <button class="gs-corner-toggle" onclick="event.stopPropagation();window.__toggleGSMode('shuqian', this)" title="切换视频/截图">
-            <span class="gct-icon">🖼️</span>
-            <span class="gct-label">Shot</span>
-          </button>
         </div>
       </div>
-      <div class="gs-info-col">
-        <h3>💰 数钱</h3>
-        <p class="game-subtitle">轻松休闲的点钞小游戏，考验你的手速与眼力。在限定时间内尽可能准确地清点钞票，挑战更高分数。</p>
-        <div class="game-controls-bar">
-          <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('shuqian', this)">🔇 Mute</button>
-          <span class="gs-ctrl-hint">▶ Click video to play</span>
-        </div>
-        <div class="game-actions">
-          <a class="btn-play btn-play--amber" href="/games/shuqian/" target="_blank" rel="noopener">▶ 在线试玩</a>
-          <a class="btn-play btn-play--ghost" href="https://www.crazygames.com/preview/d1b4d9b3-f1e7-419c-8336-c65c37fa3419?gameBuildId=10c47402-f440-40f9-a940-448fa1466cd3&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">外部试玩</a>
-          <span class="game-tags"><span class="tag">休闲</span><span class="tag">点击</span></span>
-        </div>
-      </div>
-    </div>
+    ))}
 
-    <hr class="divider" />
-
-    <!-- 捡钱 -->
-    <div class="game-showcase" id="game-jianqian">
-      <div class="gs-media-col">
-        <div class="gs-main" data-media="jianqian">
-          <div class="gs-display gs-display--active" data-type="video">
-            <video controls preload="metadata" poster="/images/jianqian-1.png">
-              <source src="/videos/jianqian-demo.mp4" type="video/mp4" />
-              您的浏览器不支持视频播放。
-            </video>
-          </div>
-          <div class="gs-display" data-type="shot">
-            <img src="/images/jianqian-1.png" alt="捡钱 游戏截图" loading="lazy" />
-          </div>
-          <button class="gs-corner-toggle" onclick="event.stopPropagation();window.__toggleGSMode('jianqian', this)" title="切换视频/截图">
-            <span class="gct-icon">🖼️</span>
-            <span class="gct-label">Shot</span>
-          </button>
-        </div>
-      </div>
-      <div class="gs-info-col">
-        <h3>💵 捡钱</h3>
-        <p class="game-subtitle">欢乐的街机小游戏，操控角色接住天上掉落的金币与红包，躲开陷阱，比拼连击与高分。</p>
-        <div class="game-controls-bar">
-          <button class="gs-ctrl-btn" onclick="window.__toggleVideoMute('jianqian', this)">🔇 Mute</button>
-          <span class="gs-ctrl-hint">▶ Click video to play</span>
-        </div>
-        <div class="game-actions">
-          <a class="btn-play btn-play--gold" href="/games/jianqian/" target="_blank" rel="noopener">▶ 在线试玩</a>
-          <a class="btn-play btn-play--ghost" href="https://www.crazygames.com/preview/e072a216-66f6-45da-92e1-5462cc4a1309?gameBuildId=30f942ad-72fc-4858-b812-95dfa984c8f0&qaTool=true&disableSubmitQA=true&role=developer" target="_blank" rel="noopener">外部试玩</a>
-          <span class="game-tags"><span class="tag">街机</span><span class="tag">休闲</span></span>
-        </div>
-      </div>
-    </div>
-
-    <hr class="divider" />
-
-    <p style="text-align:center; color:var(--text-muted); font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 2.5rem;">📺 More on <a href="https://space.bilibili.com/31032895" target="_blank" rel="noopener">bilibili</a></p>
-
-    <Comments />
+    <p class="games-more">📺 More on <a href="https://space.bilibili.com/31032895" target="_blank" rel="noopener">bilibili</a></p>
   </div>
 
   <script src="/js/game-switcher.js" is:inline></script>

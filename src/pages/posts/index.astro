@@ -5,34 +5,61 @@ import { getCollection } from 'astro:content';
 const posts = (await getCollection('posts', ({ data }) => !data.draft))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 
-const allCats = [...new Set(posts.flatMap(p => p.data.categories))].sort();
+const categoryCounts = new Map<string, number>();
+posts.forEach((post) => post.data.categories.forEach((category) => {
+  categoryCounts.set(category, (categoryCounts.get(category) || 0) + 1);
+}));
+const allCats = [...categoryCounts].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'zh-CN'));
+const commonCats = allCats.slice(0, 7);
+const otherCats = allCats.slice(7);
 const title = '日志';
 const description = 'Zack-Zhang1031 的技术随笔与开发日志';
 ---
 
 <BaseLayout title={title} description={description}>
-  <div class="container" style="padding-top: 2.5rem;">
+  <div class="container posts-page" style="padding-top: 2.5rem;">
     <div class="page-header">
       <h1 class="page-title">日志</h1>
       <p class="page-subtitle">// {posts.length} Posts</p>
     </div>
 
+    <div class="post-search-wrap">
+      <label for="post-search">搜索文章</label>
+      <input id="post-search" class="post-search" type="search" placeholder="搜索标题、摘要或标签…" autocomplete="off" />
+    </div>
+
     {allCats.length > 0 && (
-      <div class="filter-bar">
-        <button class="filter-chip filter-chip--active" data-cat="all">All</button>
-        {allCats.map((cat) => <button class="filter-chip" data-cat={cat}>{cat}</button>)}
+      <div class="post-filters" aria-label="按系列筛选">
+        <p class="post-filter-label">精选系列</p>
+        <div class="filter-bar">
+          <button class="filter-chip filter-chip--active" type="button" data-cat="all">全部</button>
+          {commonCats.map(([cat, count]) => <button class="filter-chip" type="button" data-cat={cat}>{cat} <span>{count}</span></button>)}
+        </div>
+        {otherCats.length > 0 && (
+          <details class="post-more-tags">
+            <summary>更多标签（{otherCats.length}）</summary>
+            <div class="filter-bar">
+              {otherCats.map(([cat, count]) => <button class="filter-chip" type="button" data-cat={cat}>{cat} <span>{count}</span></button>)}
+            </div>
+          </details>
+        )}
       </div>
     )}
 
+    <p class="post-results" role="status" aria-live="polite">显示前 12 篇，共 {posts.length} 篇</p>
     <div class="post-list">
-      {posts.map((post) => (
-        <article class="post-card" data-cats={post.data.categories.join('||')}>
+      {posts.map((post, index) => (
+        <article
+          class:list={['post-card', { 'post-card--deferred': index >= 12 }]}
+          data-cats={post.data.categories.join('||')}
+          data-search={`${post.data.title} ${post.data.description || ''} ${post.data.tags.join(' ')}`.toLocaleLowerCase('zh-CN')}
+        >
           <a href={`/posts/${post.slug}/`} class="post-card-link">
             <div class="post-card-top">
               <span class="post-card-date">{post.data.date.toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '-')}</span>
               {post.data.categories.length > 0 && <span class="post-card-cat">{post.data.categories[0]}</span>}
             </div>
-            <h3 class="post-card-title">{post.data.title}</h3>
+            <h2 class="post-card-title">{post.data.title}</h2>
             <p class="post-card-summary">{post.data.description || ''}</p>
             <div class="post-card-bottom">
               <div class="post-card-tags">
@@ -44,23 +71,58 @@ const description = 'Zack-Zhang1031 的技术随笔与开发日志';
         </article>
       ))}
     </div>
+    <p class="post-empty" hidden>没有找到匹配的文章，试试更短的关键词。</p>
+    <button class="post-load-more" type="button">加载更多</button>
   </div>
 
   <script is:inline>
-    document.addEventListener('DOMContentLoaded', function() {
-      var chips = document.querySelectorAll('.filter-chip');
-      var cards = document.querySelectorAll('.post-card');
-      chips.forEach(function(chip) {
-        chip.addEventListener('click', function() {
-          var cat = this.dataset.cat;
-          chips.forEach(function(c) { c.classList.remove('filter-chip--active'); });
+    document.addEventListener('DOMContentLoaded', function () {
+      var page = document.querySelector('.posts-page');
+      if (!page) return;
+
+      var chips = Array.from(page.querySelectorAll('.filter-chip'));
+      var cards = Array.from(page.querySelectorAll('.post-card'));
+      var search = page.querySelector('#post-search');
+      var loadMore = page.querySelector('.post-load-more');
+      var results = page.querySelector('.post-results');
+      var empty = page.querySelector('.post-empty');
+      var pageSize = window.matchMedia('(max-width: 640px)').matches ? 8 : 12;
+      var visibleLimit = pageSize;
+      var activeCat = 'all';
+
+      function applyFilters(reset) {
+        if (reset) visibleLimit = pageSize;
+        var query = (search.value || '').trim().toLocaleLowerCase('zh-CN');
+        var matched = cards.filter(function (card) {
+          var cats = (card.dataset.cats || '').split('||');
+          var matchesCat = activeCat === 'all' || cats.indexOf(activeCat) !== -1;
+          var matchesSearch = !query || (card.dataset.search || '').indexOf(query) !== -1;
+          return matchesCat && matchesSearch;
+        });
+
+        cards.forEach(function (card) { card.hidden = true; card.classList.remove('post-card--deferred'); });
+        matched.slice(0, visibleLimit).forEach(function (card) { card.hidden = false; });
+        empty.hidden = matched.length !== 0;
+        loadMore.hidden = matched.length <= visibleLimit;
+        results.textContent = matched.length
+          ? '显示 ' + Math.min(visibleLimit, matched.length) + ' 篇，共 ' + matched.length + ' 篇'
+          : '没有匹配结果';
+      }
+
+      chips.forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          activeCat = this.dataset.cat || 'all';
+          chips.forEach(function (item) { item.classList.remove('filter-chip--active'); });
           this.classList.add('filter-chip--active');
-          cards.forEach(function(card) {
-            var cats = (card.dataset.cats || '').split('||');
-            card.style.display = (cat === 'all' || cats.indexOf(cat) !== -1) ? '' : 'none';
-          });
+          applyFilters(true);
         });
       });
+      search.addEventListener('input', function () { applyFilters(true); });
+      loadMore.addEventListener('click', function () {
+        visibleLimit += pageSize;
+        applyFilters(false);
+      });
+      applyFilters(true);
     });
   </script>
 </BaseLayout>

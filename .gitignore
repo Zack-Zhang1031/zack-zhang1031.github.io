@@ -17,6 +17,7 @@ Thumbs.db
 # Logs & cache
 *.log
 npm-debug.log*
+.playwright-cli/
 
 .vercel
 

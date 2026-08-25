@@ -653,6 +653,45 @@ main { position: relative; z-index: 1; }
 }
 .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
 .filter-chip--active { background: var(--accent); color: #000; border-color: var(--accent); }
+.filter-chip span { opacity: 0.7; }
+
+.post-search-wrap { margin-bottom: 1rem; }
+.post-search-wrap label, .post-filter-label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.post-search {
+  width: min(100%, 34rem);
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font: inherit;
+}
+.post-search:focus { outline: 2px solid var(--accent-dim); border-color: var(--accent); }
+.post-filters { margin-bottom: 1rem; }
+.post-filters .filter-bar { margin-bottom: 0; }
+.post-more-tags { margin-top: 0.6rem; color: var(--text-secondary); font-size: 0.78rem; }
+.post-more-tags summary { cursor: pointer; font-family: var(--font-mono); }
+.post-more-tags .filter-bar { margin-top: 0.6rem; }
+.post-results { margin: 1rem 0; font: 0.72rem var(--font-mono); color: var(--text-muted); }
+.post-card--deferred { display: none; }
+.post-empty { padding: 2rem; text-align: center; color: var(--text-secondary); }
+.post-load-more {
+  display: block;
+  margin: 1.5rem auto 0;
+  padding: 0.55rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.post-load-more:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ==========================================================================
    Post Detail
@@ -685,6 +724,24 @@ main { position: relative; z-index: 1; }
   color: var(--text-primary);
   margin-bottom: 1.2rem;
 }
+.comments-prompt { margin: -0.7rem 0 1rem; color: var(--text-secondary); font-size: 0.85rem; }
+.comments-status {
+  padding: 1rem;
+  border: 1px solid var(--accent-amber);
+  border-radius: var(--r-md);
+  background: var(--accent-amber-dim);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+}
+.comments-retry {
+  margin-top: 0.7rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+}
 .waline-wrap { position: relative; z-index: 1; }
 
 /* ==========================================================================
@@ -707,6 +764,7 @@ main { position: relative; z-index: 1; }
 .anchor-nav a:hover { color: var(--accent); background: var(--accent-dim); }
 
 .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+.games-intro { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem; }
 
 .game-showcase {
   display: grid;
@@ -725,6 +783,31 @@ main { position: relative; z-index: 1; }
 .gs-display { position: absolute; inset: 0; display: none; }
 .gs-display--active { display: block; }
 .gs-display video, .gs-display img { width: 100%; height: 100%; object-fit: cover; }
+.gs-video-loader {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+}
+.gs-video-loader::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 45%, rgba(0,0,0,.55)); }
+.gs-play-icon {
+  position: absolute;
+  top: 50%; left: 50%;
+  z-index: 1;
+  display: grid;
+  width: 3.2rem; height: 3.2rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(0,0,0,.72);
+  transform: translate(-50%, -50%);
+  transition: transform var(--t), background var(--t);
+}
+.gs-video-loader:hover .gs-play-icon { background: var(--accent); color: #000; transform: translate(-50%, -50%) scale(1.08); }
+.gs-play-label { position: absolute; z-index: 1; bottom: 0.8rem; left: 0.8rem; font: 0.72rem var(--font-mono); }
 
 .gs-corner-toggle {
   position: absolute;
@@ -747,8 +830,13 @@ main { position: relative; z-index: 1; }
 .gs-corner-toggle:hover { background: rgba(0, 0, 0, 0.85); }
 
 .gs-info-col { display: flex; flex-direction: column; justify-content: center; }
-.gs-info-col h3 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.4rem; }
+.gs-info-col h2 { font-size: 1.25rem; font-weight: 800; margin-bottom: 0.4rem; }
 .gs-info-col .game-subtitle { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1rem; }
+
+.game-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.45rem 0.8rem; margin: 0 0 1rem; }
+.game-meta div { display: flex; gap: 0.45rem; min-width: 0; font: 0.72rem var(--font-mono); }
+.game-meta dt { flex: 0 0 auto; color: var(--text-muted); }
+.game-meta dd { margin: 0; color: var(--text-primary); overflow-wrap: anywhere; }
 
 .game-controls-bar { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.8rem; }
 .gs-ctrl-btn {
@@ -767,6 +855,14 @@ main { position: relative; z-index: 1; }
 
 .game-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
 .game-tags { display: flex; gap: 0.25rem; margin-left: auto; }
+.games-more { margin: 2.5rem 0; text-align: center; color: var(--text-muted); font: 0.8rem var(--font-mono); }
+
+.game-detail { padding: 2.5rem 0; }
+.game-detail-back { display: inline-block; margin-bottom: 1.5rem; font: 0.78rem var(--font-mono); }
+.game-detail-header h1 { margin: 0.25rem 0 0.6rem; font-size: clamp(1.7rem, 5vw, 2.4rem); }
+.game-detail-header > p:last-child { color: var(--text-secondary); line-height: 1.7; }
+.game-detail-poster { width: 100%; margin: 1.5rem 0; border: 1px solid var(--border); border-radius: var(--r-lg); }
+.game-meta--detail { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); padding: 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--r-md); }
 
 /* ==========================================================================
    WeChat QR Code Popover
@@ -875,6 +971,8 @@ button.nav-link {
   .footer-inner { flex-direction: column; gap: 0.4rem; text-align: center; }
   .footer-right { text-align: center; }
   .game-showcase { padding: 1rem; }
+  .game-meta { grid-template-columns: 1fr; }
+  .post-list { grid-template-columns: 1fr; }
 }
 
 /* ==========================================================================

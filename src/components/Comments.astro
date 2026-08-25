@@ -1,30 +1,88 @@
 ---
 import '@waline/client/waline.css';
+
+interface Props {
+  prompt: string;
+}
+
+const { prompt } = Astro.props;
 ---
 
-<section class="comments-section">
+<section class="comments-section" data-comments data-prompt={prompt}>
   <h2 class="comments-title">💬 评论</h2>
-  <div id="waline" class="waline-wrap"></div>
+  <p class="comments-prompt">{prompt}</p>
+  <div class="comments-status" role="status" aria-live="polite">正在检查评论服务…</div>
+  <button class="comments-retry" type="button" hidden>重新检查</button>
+  <div class="waline-wrap" hidden></div>
 </section>
 
 <script>
   import { init } from '@waline/client';
 
-  const serverURL = location.hostname.endsWith('.workers.dev')
-    ? 'https://w.zz1031.workers.dev'
-    : 'https://zz1031-waline.vercel.app';
+  const serverURL = 'https://zz1031-waline.vercel.app';
 
-  const waline = init({
-    el: '#waline',
-    serverURL,
-    lang: 'zh-CN',
-    dark: 'html.dark',
-    pageview: true,
-  });
+  document.querySelectorAll<HTMLElement>('[data-comments]').forEach((section) => {
+    const status = section.querySelector<HTMLElement>('.comments-status');
+    const retry = section.querySelector<HTMLButtonElement>('.comments-retry');
+    const container = section.querySelector<HTMLElement>('.waline-wrap');
+    const prompt = section.dataset.prompt || '欢迎留下你的问题或建议。';
+    let waline: ReturnType<typeof init> | undefined;
 
-  window.addEventListener('themechange', () => {
-    waline.update({
-      dark: document.documentElement.classList.contains('dark') ? 'html.dark' : '',
+    const showUnavailable = (message: string) => {
+      if (status) status.textContent = message;
+      if (retry) retry.hidden = false;
+      if (container) container.hidden = true;
+    };
+
+    const checkAndInit = async () => {
+      if (retry) retry.hidden = true;
+      if (status) status.textContent = '正在检查评论服务…';
+
+      const controller = new AbortController();
+      const timer = window.setTimeout(() => controller.abort(), 5000);
+      try {
+        const url = new URL('/api/comment', serverURL);
+        url.searchParams.set('path', location.pathname);
+        url.searchParams.set('pageSize', '1');
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        if (status) status.hidden = true;
+        if (container) container.hidden = false;
+        if (!waline && container) {
+          waline = init({
+            el: container,
+            serverURL,
+            path: location.pathname,
+            lang: 'zh-CN',
+            dark: 'html.dark',
+            login: 'disable',
+            meta: ['nick', 'mail'],
+            requiredMeta: [],
+            wordLimit: [2, 1000],
+            pageSize: 10,
+            imageUploader: false,
+            locale: {
+              placeholder: `${prompt}\n评论将先进入审核，请勿发布广告或敏感信息。`,
+            },
+          });
+        }
+      } catch (error) {
+        const detail = error instanceof DOMException && error.name === 'AbortError'
+          ? '连接超时'
+          : '后端暂不可用';
+        showUnavailable(`评论维护中（${detail}），目前无法提交。你可以稍后重试。`);
+      } finally {
+        window.clearTimeout(timer);
+      }
+    };
+
+    retry?.addEventListener('click', checkAndInit);
+    window.addEventListener('themechange', () => {
+      waline?.update({
+        dark: document.documentElement.classList.contains('dark') ? 'html.dark' : '',
+      });
     });
+    void checkAndInit();
   });
 </script>

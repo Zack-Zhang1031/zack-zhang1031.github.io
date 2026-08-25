@@ -97,6 +97,36 @@
   // ============ 作品页切换 ============
 
   /**
+   * 作品页：用户明确点击后才创建 video/source，避免首屏下载视频。
+   */
+  window.__loadGSVideo = function (gameId, btn) {
+    if (!btn || btn.dataset.loaded === 'true') return;
+
+    var videoSrc = btn.getAttribute('data-video');
+    var posterSrc = btn.getAttribute('data-poster');
+    if (!videoSrc) return;
+
+    var video = document.createElement('video');
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'metadata';
+    if (posterSrc) video.poster = posterSrc;
+
+    var source = document.createElement('source');
+    source.src = videoSrc;
+    source.type = 'video/mp4';
+    video.appendChild(source);
+    video.appendChild(document.createTextNode('您的浏览器不支持视频播放。'));
+
+    btn.dataset.loaded = 'true';
+    btn.replaceWith(video);
+    video.play().catch(function () {
+      // 某些浏览器仍要求用户再次点击系统播放控件。
+    });
+  };
+
+  /**
    * 作品页：切换右下角按钮模式
    */
   window.__toggleGSMode = function (gameId, btn) {

@@ -1,0 +1,34 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import Comments from '../../../components/Comments.astro';
+import { games, type GameInfo } from '../../../data/games';
+
+export function getStaticPaths() {
+  return games.map((game) => ({ params: { slug: game.id }, props: { game } }));
+}
+
+const { game } = Astro.props as { game: GameInfo };
+---
+
+<BaseLayout title={`${game.icon} ${game.name}`} description={game.description}>
+  <main class="container-narrow game-detail">
+    <a class="game-detail-back" href="/games/">← 返回 Games</a>
+    <header class="game-detail-header">
+      <p class="page-subtitle">// Game detail</p>
+      <h1>{game.icon} {game.name}</h1>
+      <p>{game.description}</p>
+    </header>
+
+    <img class="game-detail-poster" src={game.poster} alt={`${game.name} 游戏画面`} />
+    <dl class="game-meta game-meta--detail">
+      <div><dt>平台</dt><dd>{game.platform}</dd></div>
+      <div><dt>状态</dt><dd>{game.status}</dd></div>
+      <div><dt>操作</dt><dd>{game.controls}</dd></div>
+      <div><dt>更新时间</dt><dd><time datetime={game.updatedAt}>{game.updatedAt}</time></dd></div>
+      <div><dt>版本号</dt><dd>{game.version}</dd></div>
+    </dl>
+    <a class={`btn-play btn-play--${game.accent}`} href={game.playUrl} target="_blank" rel="noopener">▶ 开始游戏</a>
+
+    <Comments prompt="你玩到第几关？哪里不好理解？" />
+  </main>
+</BaseLayout>
