@@ -11,7 +11,7 @@ const { prompt } = Astro.props;
 <section id="comments" class="comments-section" data-comments data-prompt={prompt}>
   <h2 class="comments-title">💬 评论</h2>
   <p class="comments-prompt">{prompt}</p>
-  <div class="comments-status" role="status" aria-live="polite">正在检查评论服务…</div>
+  <div class="comments-status" role="status" aria-live="polite">正在连接评论服务，首次访问可能需要几秒…</div>
   <button class="comments-retry" type="button" hidden>重新检查</button>
   <div class="waline-wrap" hidden></div>
 </section>
@@ -36,10 +36,10 @@ const { prompt } = Astro.props;
 
     const checkAndInit = async () => {
       if (retry) retry.hidden = true;
-      if (status) status.textContent = '正在检查评论服务…';
+      if (status) status.textContent = '正在连接评论服务，首次访问可能需要几秒…';
 
       const controller = new AbortController();
-      const timer = window.setTimeout(() => controller.abort(), 5000);
+      const timer = window.setTimeout(() => controller.abort(), 12000);
       try {
         const url = new URL('/api/comment', serverURL);
         url.searchParams.set('path', location.pathname);
