@@ -44,16 +44,16 @@ Game metadata is defined once in `src/data/games.ts` and consumed by the Games i
 ## API
 
 - Waline health is checked with `GET /api/comment?path=<pathname>&pageSize=1`.
-- Production Waline requires a durable database connection before comments can be enabled.
+- Production Waline uses a Vercel-connected Neon PostgreSQL database.
 
 ## Testing
 
 - Run `npm run build`.
 - Confirm Games HTML contains no video source URL outside the poster button data attribute.
 - Confirm only article and game detail routes render the comments component.
-- Test backend failure, retry, anonymous submission, moderation, and rate limiting after storage is connected.
+- Test backend failure, retry, anonymous submission, moderation, and rate limiting.
+- Verify anonymous submissions receive `waiting` status and are hidden until approved.
 
 ## Open Questions
 
-- Choose and provision durable Waline storage. Neon PostgreSQL through Vercel is the recommended default; a private GitHub data repository is the lightweight alternative.
 - Turnstile can be added after Cloudflare site and secret keys are created.
