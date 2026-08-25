@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <title>Catch Money</title>
+  <link rel="icon" href="/favicon.svg">
   <meta name="viewport" content="width=device-width,user-scalable=no,initial-scale=1,minimum-scale=1,maximum-scale=1,minimal-ui=true,viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -17,25 +18,6 @@
   <meta name="360-fullscreen" content="true">
   <meta name="x5-page-mode" content="app">
   <link rel="stylesheet" type="text/css" href="style.f76d1.css">
-  <script>
-    // Mock CrazyGames SDK for non-CrazyGames domains
-    // data is deliberately undefined so the game falls back to localStorage
-    if (!window.CrazyGames) {
-      var noop = function() { return Promise.resolve(); };
-      window.CrazyGames = {
-        SDK: {
-          init: function() { return Promise.resolve(); },
-          game: { loadingStart: noop, loadingComplete: noop, gameplayStart: noop, gameplayStop: noop },
-          banner: { requestBanner: noop },
-          ad: { requestAd: noop, happytime: noop },
-          data: undefined,
-          user: { getUser: noop },
-        }
-      };
-    }
-    window.__crazyGamesDataReady = false;
-    window.__crazyGamesInit = Promise.resolve();
-  </script>
 </head>
 <body>
   <div id="GameDiv" cc_exact_fit_screen="true">
@@ -43,12 +25,52 @@
       <canvas id="GameCanvas" oncontextmenu="event.preventDefault()" tabindex="99"></canvas>
     </div>
   </div>
+  <script>
+    (function () {
+      var noop = function () { return Promise.resolve(); };
+      var installLocalSdk = function () {
+        window.CrazyGames = {
+          SDK: {
+            init: noop,
+            game: { loadingStart: noop, loadingComplete: noop, gameplayStart: noop, gameplayStop: noop },
+            banner: { requestBanner: noop },
+            ad: { requestAd: noop, happytime: noop },
+            data: undefined,
+            user: { getUser: noop },
+          }
+        };
+      };
+
+      window.__crazyGamesDataReady = false;
+      if (!/(^|\.)crazygames\.com$/i.test(location.hostname)) {
+        installLocalSdk();
+        window.__crazyGamesInit = Promise.resolve();
+        return;
+      }
+
+      window.__crazyGamesInit = new Promise(function (resolve) {
+        var sdk = document.createElement('script');
+        sdk.src = 'https://sdk.crazygames.com/crazygames-sdk-v3.js';
+        sdk.onload = function () {
+          Promise.resolve(window.CrazyGames.SDK.init())
+            .then(function () {
+              window.__crazyGamesDataReady = true;
+              return window.CrazyGames.SDK.game.loadingStart();
+            })
+            .then(resolve)
+            .catch(function () { installLocalSdk(); resolve(); });
+        };
+        sdk.onerror = function () { installLocalSdk(); resolve(); };
+        document.body.appendChild(sdk);
+      });
+    })();
+  </script>
   <script src="src/polyfills.bundle.5adbf.js" charset="utf-8"></script>
   <script src="src/system.bundle.543e6.js" charset="utf-8"></script>
-  <script src="src/import-map.c686d.json" type="systemjs-importmap" charset="utf-8"></script>
+  <script src="src/import-map.c4487.json" type="systemjs-importmap" charset="utf-8"></script>
   <script>
     Promise.resolve(window.__crazyGamesInit)
-      .then(function () { return System.import('./index.1a1fb.js'); })
+      .then(function () { return System.import('./index.bce1b.js'); })
       .catch(function (err) { console.error(err); });
   </script>
 </body>
