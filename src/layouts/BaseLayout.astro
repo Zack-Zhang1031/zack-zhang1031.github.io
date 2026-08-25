@@ -57,7 +57,7 @@ const currentPath = Astro.url.pathname;
     </div>
   </header>
 
-  <canvas id="ink-canvas" class="ink-canvas" aria-hidden="true"></canvas>
+  <canvas id="bg-canvas" class="bg-canvas" aria-hidden="true"></canvas>
 
   <main>
     <slot />
@@ -88,6 +88,7 @@ const currentPath = Astro.url.pathname;
       document.documentElement.classList.toggle('dark', !light);
       localStorage.setItem('theme', light ? 'light' : 'dark');
       syncIcon();
+      window.dispatchEvent(new CustomEvent('themechange'));
     });
   </script>
   <script is:inline>
@@ -146,7 +147,7 @@ const currentPath = Astro.url.pathname;
       var els = document.querySelectorAll(
         'main .page-header, main .anchor-nav, main .filter-bar, main .game-showcase, ' +
         'main .project-grid > .project-card, main .post-list > .post-card, ' +
-        'main .post-detail-header, main .prose, main .post-nav, main .giscus-container'
+        'main .post-detail-header, main .prose, main .post-nav, main .comments-section'
       );
       els.forEach(function (el, i) {
         var delay = 100 + Math.min(i, 10) * 70;
@@ -175,13 +176,28 @@ const currentPath = Astro.url.pathname;
   </script>
 
   <script is:inline>
-    // Ambient ink wash — 常驻水墨晕染，极淡，轻微跟随鼠标
+    // Particle constellation — 常驻粒子星网，缓慢漂浮 + 近距连线 + 鼠标吸附
     (function () {
       if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      var canvas = document.getElementById('ink-canvas');
+      var canvas = document.getElementById('bg-canvas');
       if (!canvas) return;
       var ctx = canvas.getContext('2d');
       var W = 0, H = 0;
+      var particles = [];
+      var LINK_DIST = 135;
+      var MOUSE_DIST = 190;
+
+      function spawn() {
+        return {
+          x: Math.random() * W,
+          y: Math.random() * H,
+          vx: (Math.random() - 0.5) * 0.32,
+          vy: (Math.random() - 0.5) * 0.32,
+          r: 0.8 + Math.random() * 1.3,
+          tw: Math.random() * Math.PI * 2,
+          ts: 0.4 + Math.random() * 1.1
+        };
+      }
 
       function resize() {
         var DPR = Math.min(window.devicePixelRatio || 1, 1.5);
@@ -190,9 +206,11 @@ const currentPath = Astro.url.pathname;
         canvas.width = Math.round(W * DPR);
         canvas.height = Math.round(H * DPR);
         ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+        var target = Math.round(Math.min(95, Math.max(30, (W * H) / 20000)));
+        while (particles.length < target) particles.push(spawn());
+        particles.length = target;
       }
       window.addEventListener('resize', resize);
-      resize();
 
       var mouse = { x: -9999, y: -9999 };
       document.addEventListener('mousemove', function (e) {
@@ -201,32 +219,6 @@ const currentPath = Astro.url.pathname;
       }, { passive: true });
       document.addEventListener('mouseleave', function () { mouse.x = -9999; mouse.y = -9999; });
 
-      // ink tones — 淡墨/宣纸/朱砂/青铜/黛蓝/青瓷/藤紫/胭脂/月白/雾蓝
-      var palette = [
-        { r: 158, g: 168, b: 178 },
-        { r: 214, g: 210, b: 198 },
-        { r: 200, g: 64,  b: 59  },
-        { r: 201, g: 169, b: 110 },
-        { r: 96,  g: 130, b: 155 },
-        { r: 140, g: 175, b: 158 },
-        { r: 166, g: 138, b: 175 },
-        { r: 191, g: 105, b: 105 },
-        { r: 224, g: 220, b: 208 },
-        { r: 118, g: 145, b: 172 }
-      ];
-
-      var blobs = palette.map(function (c, i) {
-        return {
-          c: c,
-          sx: 0.000028 + Math.random() * 0.000030,  // rad/ms — very slow drift
-          sy: 0.000024 + Math.random() * 0.000026,
-          phase: Math.random() * Math.PI * 2 + i,
-          rr: 0.30 + Math.random() * 0.28,          // radius relative to viewport min
-          am: 0.8 + Math.random() * 0.5,            // per-blob alpha variance
-          ox: 0, oy: 0, vx: 0, vy: 0
-        };
-      });
-
       var running = true;
       document.addEventListener('visibilitychange', function () {
         var was = running;
@@ -234,47 +226,81 @@ const currentPath = Astro.url.pathname;
         if (running && !was) requestAnimationFrame(frame);
       });
 
+      var last = 0;
       function frame(t) {
         if (!running) return;
         requestAnimationFrame(frame);
+        var dt = Math.min(50, t - last); last = t;
+        var k = dt / 16.7;
         var light = document.documentElement.classList.contains('light');
-        var baseR = Math.min(W, H);
+        var dotColor = light ? '60,66,84' : '185,196,220';
+        var lineColor = light ? '70,82,110' : '140,158,200';
+        var mouseColor = light ? '200,64,60' : '232,93,78';
         ctx.clearRect(0, 0, W, H);
+        ctx.lineWidth = 1;
 
-        for (var i = 0; i < blobs.length; i++) {
-          var b = blobs[i];
-          var x = (0.5 + 0.38 * Math.sin(t * b.sx + b.phase)) * W;
-          var y = (0.5 + 0.36 * Math.cos(t * b.sy + b.phase * 1.7)) * H;
+        var i, j, p;
+        for (i = 0; i < particles.length; i++) {
+          p = particles[i];
 
-          // gentle mouse repulsion, decays back home
-          var dx = x - mouse.x, dy = y - mouse.y;
-          var dist = Math.sqrt(dx * dx + dy * dy);
-          var radius = baseR * b.rr;
-          if (dist < radius * 1.5 && dist > 0.001) {
-            var force = (1 - dist / (radius * 1.5)) * 0.28;
-            b.vx += (dx / dist) * force;
-            b.vy += (dy / dist) * force;
+          var dx = mouse.x - p.x, dy = mouse.y - p.y;
+          var d2 = dx * dx + dy * dy;
+          if (d2 < MOUSE_DIST * MOUSE_DIST && d2 > 1) {
+            var d = Math.sqrt(d2);
+            var f = (1 - d / MOUSE_DIST) * 0.010;
+            p.vx += (dx / d) * f * k;
+            p.vy += (dy / d) * f * k;
           }
-          b.vx *= 0.90; b.vy *= 0.90;
-          b.ox = (b.ox + b.vx) * 0.994;
-          b.oy = (b.oy + b.vy) * 0.994;
+          p.vx *= 0.996; p.vy *= 0.996;
+          var sp = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+          if (sp > 0.85) { p.vx = p.vx / sp * 0.85; p.vy = p.vy / sp * 0.85; }
+          p.x += p.vx * k;
+          p.y += p.vy * k;
+          if (p.x < -15) p.x = W + 15; else if (p.x > W + 15) p.x = -15;
+          if (p.y < -15) p.y = H + 15; else if (p.y > H + 15) p.y = -15;
 
-          var cx = x + b.ox, cy = y + b.oy;
-          var rr = radius * (0.86 + 0.14 * Math.sin(t * 0.00025 + b.phase));
-
-          var alpha = (light ? 0.055 : 0.065) * b.am;
-          var cr = b.c.r, cg = b.c.g, cb = b.c.b;
-          if (light) { cr = Math.round(cr * 0.45); cg = Math.round(cg * 0.45); cb = Math.round(cb * 0.45); }
-          var g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rr);
-          g.addColorStop(0, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + alpha + ')');
-          g.addColorStop(0.55, 'rgba(' + cr + ',' + cg + ',' + cb + ',' + (alpha * 0.38) + ')');
-          g.addColorStop(1, 'rgba(' + cr + ',' + cg + ',' + cb + ',0)');
-          ctx.fillStyle = g;
+          p.tw += 0.018 * p.ts * k;
+          var a = 0.32 + 0.28 * Math.sin(p.tw);
           ctx.beginPath();
-          ctx.arc(cx, cy, rr, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(' + dotColor + ',' + a + ')';
           ctx.fill();
         }
+
+        for (i = 0; i < particles.length; i++) {
+          for (j = i + 1; j < particles.length; j++) {
+            var a1 = particles[i], b1 = particles[j];
+            var lx = a1.x - b1.x, ly = a1.y - b1.y;
+            var ld2 = lx * lx + ly * ly;
+            if (ld2 < LINK_DIST * LINK_DIST) {
+              var ld = Math.sqrt(ld2);
+              var la = (1 - ld / LINK_DIST) * (light ? 0.09 : 0.12);
+              ctx.strokeStyle = 'rgba(' + lineColor + ',' + la + ')';
+              ctx.beginPath();
+              ctx.moveTo(a1.x, a1.y);
+              ctx.lineTo(b1.x, b1.y);
+              ctx.stroke();
+            }
+          }
+        }
+
+        // mouse links — accent-colored, stronger
+        for (i = 0; i < particles.length; i++) {
+          p = particles[i];
+          var mx = p.x - mouse.x, my = p.y - mouse.y;
+          var md2 = mx * mx + my * my;
+          if (md2 < MOUSE_DIST * MOUSE_DIST) {
+            var md = Math.sqrt(md2);
+            var ma = (1 - md / MOUSE_DIST) * (light ? 0.30 : 0.35);
+            ctx.strokeStyle = 'rgba(' + mouseColor + ',' + ma + ')';
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.stroke();
+          }
+        }
       }
+      resize();
       requestAnimationFrame(frame);
     })();
   </script>

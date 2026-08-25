@@ -1,118 +1,19 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Comments from '../components/Comments.astro';
 
-const title = '🎮 作品 & 项目';
-const description = '张坤的独立游戏与开源项目展示';
-
-const githubProjects = [
-  {
-    name: 'MindFace-Lite',
-    badge: 'AI',
-    url: 'https://github.com/Zack-Zhang1031/MindFace-Lite',
-    desc: '轻量实时语音驱动数字人口型系统，从 PyTorch 训练到 ONNX 跨平台推理，最终部署到 RKNN 边缘端。',
-    tech: ['PyTorch', 'ONNX', 'RKNN', 'Python'],
-    features: [
-      '实时语音 → 口型参数映射',
-      'ONNX 跨平台推理导出',
-      'RKNN 边缘端加速部署',
-    ],
-  },
-  {
-    name: 'word_tool',
-    badge: '⭐',
-    star: true,
-    url: 'https://github.com/Zack-Zhang1031/word_tool',
-    desc: '从 PDF / TXT / Excel 中提取英文单词，批量翻译并导出 Excel，支持 OCR 识别图片中的文字。',
-    tech: ['Python', 'OCR', 'OpenPyXL', 'Translate API'],
-    features: [
-      '多格式文件输入 (PDF/TXT/Excel)',
-      'OCR 识别图片内文字',
-      '批量翻译 → 导出 Excel',
-    ],
-  },
-  {
-    name: 'crisis-social-media-classification',
-    badge: 'ML',
-    url: 'https://github.com/Zack-Zhang1031/crisis-social-media-classification',
-    desc: '危机事件社交媒体文本分类的机器学习实验与性能分析，涵盖特征工程与多模型对比。',
-    tech: ['Python', 'Scikit-learn', 'NLP', 'TF-IDF'],
-    features: [
-      'TF-IDF + 多模型对比实验',
-      '特征工程与消融分析',
-      '分类性能可视化报告',
-    ],
-  },
-  {
-    name: 'yolo11-small-object-enhancement',
-    badge: 'CV',
-    url: 'https://github.com/Zack-Zhang1031/yolo11-small-object-enhancement',
-    desc: 'YOLOv11 小目标检测增强方案：SAHI 切片推理 + 模型微调，显著提升密集小目标场景检测率。VisDrone 数据集上 SAHI+微调使小目标 mAP@50-95 从 0.099 提升至 0.203（翻倍），整体 mAP 从 0.190 提升至 0.297（+56%）；SAHI 使 mAP@0.5 提升 12.7pp，小目标 AP 提升 +24.3%。',
-    tech: ['YOLOv11', 'SAHI', 'PyTorch', 'Python'],
-    features: [
-      'SAHI 切片推理流程（小目标 mAP 翻倍：0.099→0.203）',
-      '小目标数据集微调（整体 mAP +56%：0.190→0.297）',
-      '检测率提升对比实验（mAP@0.5 +12.7pp，小目标 AP +24.3%）',
-    ],
-  },
-  {
-    name: 'yolo11-tensorrt-realtime',
-    badge: 'Deploy',
-    url: 'https://github.com/Zack-Zhang1031/yolo11-tensorrt-realtime',
-    desc: 'YOLOv11 + TensorRT 部署加速：FP16 / INT8 量化推理，实现 GPU 端实时目标检测。',
-    tech: ['YOLOv11', 'TensorRT', 'FP16', 'INT8'],
-    features: [
-      'FP16 / INT8 量化推理',
-      'TensorRT Engine 构建',
-      '实时推理性能基准测试',
-    ],
-  },
-];
-
-const giteeProjects = [
-  {
-    name: 'MindTrip',
-    badge: 'AI',
-    url: 'https://gitee.com/rainyjensen/mind-trip',
-    desc: '可验证的结构化旅行规划 Agent：LangGraph 编排「检索—规划—验证」三阶段，独立 LlamaIndex RAG 服务提供带来源引用的证据，确定性校验器检查时间、交通与预算。',
-    tech: ['LangGraph', 'FastAPI', 'LlamaIndex', 'BGE-M3', 'Pydantic', 'UniApp'],
-    features: [
-      '检索—规划—验证三阶段工作流',
-      '行程证据可追踪（source_id 引用校验）',
-      '67 项 pytest 回归 + Gitee Go CI',
-    ],
-  },
-  {
-    name: 'AtlasSplit 天衡',
-    badge: 'Agent',
-    url: 'https://gitee.com/rainyjensen/AtlasSplit',
-    desc: '可审计表格分摊 Agent：自然语言 → Pydantic 结构化计划 → 人工预览审批 → 无模型凭据的确定性执行 → 哈希与审批日志审计，面向财务与业务分摊场景。',
-    tech: ['LangChain', 'Pydantic', 'pandas', 'Python', 'CLI'],
-    features: [
-      '计划与执行分离（LLM 不直接生成业务代码）',
-      'SHA-256 哈希校验防计划漂移',
-      '40 项 pytest 回归 + Gitee Go CI',
-    ],
-  },
-];
+const title = '🕹️ 独立游戏';
+const description = '张坤开发的独立小游戏，全部可直接在线游玩';
 ---
 
 <BaseLayout title={title} description={description}>
   <div class="container" style="padding-top: 2.5rem;">
     <div class="page-header">
-      <h1 class="page-title">作品 & 项目</h1>
-      <p class="page-subtitle">// Games · projects</p>
+      <h1 class="page-title">独立游戏</h1>
+      <p class="page-subtitle">// Games</p>
     </div>
 
-    <nav class="anchor-nav">
-      <a href="#games">🕹️ 独立游戏</a>
-      <a href="#github">🐙 GitHub</a>
-      <a href="#gitee">🐱 Gitee</a>
-    </nav>
-
-    <hr class="divider" />
-
-    <h2 id="games" class="section-label" style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 0.5rem;">🕹️ 独立游戏</h2>
-    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem;">休闲小游戏<strong>直接托管在本站</strong>，点击即可游玩，无需跳转。</p>
+    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 2rem;">休闲小游戏<strong>直接托管在本站</strong>，点击即可游玩，无需跳转。开源项目请移步 <a href="/projects/">Projects</a>。</p>
 
     <!-- 数钱 -->
     <div class="game-showcase" id="game-shuqian">
@@ -188,64 +89,7 @@ const giteeProjects = [
 
     <p style="text-align:center; color:var(--text-muted); font-family: var(--font-mono); font-size: 0.8rem; margin-bottom: 2.5rem;">📺 More on <a href="https://space.bilibili.com/31032895" target="_blank" rel="noopener">bilibili</a></p>
 
-    <hr class="divider" />
-
-    <!-- GitHub -->
-    <h2 id="github" class="section-label" style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 1rem;">🐙 GitHub</h2>
-    <div class="project-grid" style="margin-bottom: 2.5rem;">
-      {githubProjects.map((p) => (
-        <a class="project-card" href={p.url} target="_blank" rel="noopener">
-          <div class="project-card-header">
-            <span class="project-card-name">{p.name}</span>
-            <span class={`project-card-badge${p.star ? ' project-card-badge--star' : ''}`}>{p.badge}</span>
-          </div>
-          <div class="project-card-body">
-            <p class="project-card-desc">{p.desc}</p>
-            <div class="project-tech">
-              {p.tech.map((t) => <span class="tag">{t}</span>)}
-            </div>
-            <ul class="project-features">
-              {p.features.map((f) => <li>{f}</li>)}
-            </ul>
-            <div class="project-card-footer">
-              <span class="project-card-arrow">View repo →</span>
-            </div>
-          </div>
-        </a>
-      ))}
-    </div>
-
-    <hr class="divider" />
-
-    <!-- Gitee -->
-    <h2 id="gitee" class="section-label" style="font-size: 1.3rem; color: var(--text-primary); margin-bottom: 1rem;">🐱 Gitee</h2>
-    <div class="project-grid" style="margin-bottom: 2.5rem;">
-      {giteeProjects.map((p) => (
-        <a class="project-card" href={p.url} target="_blank" rel="noopener">
-          <div class="project-card-header">
-            <span class="project-card-name">{p.name}</span>
-            <span class="project-card-badge">{p.badge}</span>
-          </div>
-          <div class="project-card-body">
-            <p class="project-card-desc">{p.desc}</p>
-            <div class="project-tech">
-              {p.tech.map((t) => <span class="tag">{t}</span>)}
-            </div>
-            <ul class="project-features">
-              {p.features.map((f) => <li>{f}</li>)}
-            </ul>
-            <div class="project-card-footer">
-              <span class="project-card-arrow">View repo →</span>
-            </div>
-          </div>
-        </a>
-      ))}
-    </div>
-
-    <hr class="divider" />
-    <p style="text-align:center; color:var(--text-secondary); font-size: 0.82rem; margin-bottom: 2.5rem;">
-      想了解更多或合作？<a href="/">← 返回首页</a> 查看联系方式
-    </p>
+    <Comments />
   </div>
 
   <script src="/js/game-switcher.js" is:inline></script>

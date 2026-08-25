@@ -678,7 +678,14 @@ main { position: relative; z-index: 1; }
 .post-nav-label { display: block; font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.15rem; }
 .post-nav-title { display: block; font-size: 0.82rem; font-weight: 600; }
 
-.giscus-container { margin-top: 2.5rem; }
+.comments-section { margin-top: 3rem; }
+.comments-title {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin-bottom: 1.2rem;
+}
+.waline-wrap { position: relative; z-index: 1; }
 
 /* ==========================================================================
    Games Page
@@ -871,9 +878,9 @@ button.nav-link {
 }
 
 /* ==========================================================================
-   Ambient Ink Wash — 常驻水墨晕染背景
+   Particle Constellation — 常驻粒子星网背景
    ========================================================================== */
-.ink-canvas {
+.bg-canvas {
   position: fixed;
   inset: 0;
   width: 100%;

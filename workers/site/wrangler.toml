@@ -1,0 +1,3 @@
+name = "z"
+main = "proxy.js"
+compatibility_date = "2026-08-20"

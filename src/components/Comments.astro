@@ -1,0 +1,30 @@
+---
+import '@waline/client/waline.css';
+---
+
+<section class="comments-section">
+  <h2 class="comments-title">💬 评论</h2>
+  <div id="waline" class="waline-wrap"></div>
+</section>
+
+<script>
+  import { init } from '@waline/client';
+
+  const serverURL = location.hostname.endsWith('.workers.dev')
+    ? 'https://w.zz1031.workers.dev'
+    : 'https://zz1031-waline.vercel.app';
+
+  const waline = init({
+    el: '#waline',
+    serverURL,
+    lang: 'zh-CN',
+    dark: 'html.dark',
+    pageview: true,
+  });
+
+  window.addEventListener('themechange', () => {
+    waline.update({
+      dark: document.documentElement.classList.contains('dark') ? 'html.dark' : '',
+    });
+  });
+</script>
