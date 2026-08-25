@@ -946,7 +946,46 @@ button.nav-link {
 }
 .footer-left p { margin-bottom: 0.15rem; }
 .footer-left a { color: var(--accent); }
+.comment-account { margin-top: 0.55rem; }
+.comment-account span { color: var(--text-muted); }
 .footer-right { text-align: right; }
+
+.back-to-top {
+  position: fixed;
+  right: max(1rem, calc((100vw - 1180px) / 2));
+  bottom: 1.25rem;
+  z-index: 220;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 1px solid var(--border-hover);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+  color: var(--accent);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22), 0 0 16px var(--accent-glow);
+  font: 700 1.2rem/1 var(--font-mono);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(0.65rem);
+  transition: opacity var(--t), transform var(--t), border-color var(--t), background var(--t);
+  backdrop-filter: blur(10px);
+}
+.back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.back-to-top:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+.back-to-top:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
 
 /* ==========================================================================
    Animations
@@ -970,6 +1009,8 @@ button.nav-link {
   .container, .container-narrow { padding: 0 1rem; }
   .footer-inner { flex-direction: column; gap: 0.4rem; text-align: center; }
   .footer-right { text-align: center; }
+  .comment-account span { display: block; margin-top: 0.15rem; }
+  .back-to-top { right: 0.75rem; bottom: 0.75rem; }
   .game-showcase { padding: 1rem; }
   .game-meta { grid-template-columns: 1fr; }
   .post-list { grid-template-columns: 1fr; }

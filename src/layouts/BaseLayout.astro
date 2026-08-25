@@ -69,12 +69,17 @@ const currentPath = Astro.url.pathname;
       <div class="footer-left">
         <p>© 2024–2026 张坤</p>
         <p>Built with <a href="https://astro.build" target="_blank" rel="noopener">astro</a> · Hosted on <a href="https://vercel.com" target="_blank" rel="noopener">vercel</a></p>
+        <p class="comment-account">💬 评论账号：<a href="https://zz1031-waline.vercel.app/ui/login">登录</a> · <a href="https://zz1031-waline.vercel.app/ui/register">注册</a><span>（可选，仍可匿名评论）</span></p>
       </div>
       <div class="footer-right">
         <span>pv <span id="busuanzi_value_site_pv">—</span> · uv <span id="busuanzi_value_site_uv">—</span></span>
       </div>
     </div>
   </footer>
+
+  <button id="back-to-top" class="back-to-top" type="button" aria-label="返回网页顶端" title="返回顶部">
+    <span aria-hidden="true">↑</span>
+  </button>
 
   <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" is:inline></script>
   <script is:inline>
@@ -108,16 +113,25 @@ const currentPath = Astro.url.pathname;
       bar.className = 'scroll-progress';
       document.body.appendChild(bar);
       var ticking = false;
+      var backToTop = document.getElementById('back-to-top');
+      function updateScrollUi() {
+        var h = document.documentElement;
+        var max = h.scrollHeight - h.clientHeight;
+        bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+        backToTop?.classList.toggle('is-visible', h.scrollTop > 480);
+      }
       window.addEventListener('scroll', function () {
         if (ticking) return;
         ticking = true;
         requestAnimationFrame(function () {
-          var h = document.documentElement;
-          var max = h.scrollHeight - h.clientHeight;
-          bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+          updateScrollUi();
           ticking = false;
         });
       }, { passive: true });
+      backToTop?.addEventListener('click', function () {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      updateScrollUi();
 
       // 2. Ripple on button click
       var RIPPLE_SEL = '.nav-link, .theme-toggle, .hero-link, .hero-link-primary, .btn-play, .filter-chip, .gs-ctrl-btn, .anchor-nav a, .post-nav-link';

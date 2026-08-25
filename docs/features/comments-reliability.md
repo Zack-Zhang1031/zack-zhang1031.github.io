@@ -11,7 +11,8 @@ Waline is loaded only after a successful API health check. Unavailable service i
 - Disable image uploads and constrain comment length to reduce abuse surface.
 - Use Neon PostgreSQL as durable storage and keep database credentials in Vercel Sensitive variables.
 - Keep anonymous comments in `waiting` status until an administrator approves them.
+- Expose low-emphasis login and registration links in the global footer without presenting comments as a full site membership system.
 
 ## Implementation notes
 
-The client config uses `login: 'enable'` so visitors can remain anonymous while administrators can sign in, optional metadata, and a two-to-one-thousand character limit. Each detail-page comment section exposes the `#comments` anchor for direct links. The server sets `COMMENT_AUDIT=true`, `IPQPS=60`, and `SECURE_DOMAINS`. Waline's default Akismet integration remains enabled. The first site administrator registers through the Waline management UI and reviews queued comments there.
+The client config uses `login: 'enable'` so visitors can remain anonymous while administrators can sign in, optional metadata, and a two-to-one-thousand character limit. Each detail-page comment section exposes the `#comments` anchor for direct links. The global layout provides comment-account links in the footer and an accessible scroll-to-top control on long pages. The server sets `COMMENT_AUDIT=true`, `IPQPS=60`, and `SECURE_DOMAINS`. Waline's default Akismet integration remains enabled. The first site administrator registers through the Waline management UI and reviews queued comments there.
