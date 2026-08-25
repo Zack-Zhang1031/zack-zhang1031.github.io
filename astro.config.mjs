@@ -4,7 +4,7 @@ import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://zz1031.vercel.app',
+  site: 'https://zz1031.zz1031.workers.dev',
   output: 'static',
   adapter: vercel(),
   integrations: [tailwind(), sitemap()],

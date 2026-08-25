@@ -2,7 +2,7 @@
 
 基于 [Astro](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/) 构建的个人主页 / 博客，托管于 [Vercel](https://vercel.com/)。
 
-线上地址：<https://zz1031.vercel.app/>
+线上地址：<https://zz1031.zz1031.workers.dev/>
 
 ## 站点结构
 
