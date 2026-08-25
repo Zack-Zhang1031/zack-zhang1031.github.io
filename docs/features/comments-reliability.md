@@ -14,4 +14,4 @@ Waline is loaded only after a successful API health check. Unavailable service i
 
 ## Implementation notes
 
-The client config uses `login: 'disable'`, optional metadata, and a two-to-one-thousand character limit. The server sets `COMMENT_AUDIT=true`, `IPQPS=60`, and `SECURE_DOMAINS`. Waline's default Akismet integration remains enabled. The first site administrator registers through the Waline management UI and reviews queued comments there.
+The client config uses `login: 'enable'` so visitors can remain anonymous while administrators can sign in, optional metadata, and a two-to-one-thousand character limit. Each detail-page comment section exposes the `#comments` anchor for direct links. The server sets `COMMENT_AUDIT=true`, `IPQPS=60`, and `SECURE_DOMAINS`. Waline's default Akismet integration remains enabled. The first site administrator registers through the Waline management UI and reviews queued comments there.

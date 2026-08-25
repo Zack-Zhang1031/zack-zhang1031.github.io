@@ -7,7 +7,7 @@
 ## 站点结构
 
 - **首页**：游戏展示卡片 + 最新博客 + GitHub/Gitee 项目
-- **作品**（`/games/`）：独立游戏在线试玩（Cocos Web Mobile 内嵌）+ 视频演示
+- **作品**（`/games/`）：独立游戏在线游玩（Cocos Web Mobile 内嵌）+ 视频演示
 - **日志**（`/posts/`）：技术博客（Astro Content Collections，35 篇）
 - **关于**（`/about/`）：个人简介、技能栈、联系方式
 

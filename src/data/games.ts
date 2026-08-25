@@ -25,7 +25,7 @@ export const games: GameInfo[] = [
     video: '/videos/shuqian-demo.mp4',
     playUrl: '/games/shuqian/',
     platform: 'Web / HTML5',
-    status: '可在线试玩',
+    status: '可在线游玩',
     controls: '鼠标 / 触控',
     updatedAt: '2026-08-20',
     version: '2026.08.20',

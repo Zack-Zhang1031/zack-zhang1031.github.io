@@ -8,7 +8,7 @@ interface Props {
 const { prompt } = Astro.props;
 ---
 
-<section class="comments-section" data-comments data-prompt={prompt}>
+<section id="comments" class="comments-section" data-comments data-prompt={prompt}>
   <h2 class="comments-title">💬 评论</h2>
   <p class="comments-prompt">{prompt}</p>
   <div class="comments-status" role="status" aria-live="polite">正在检查评论服务…</div>
@@ -56,7 +56,7 @@ const { prompt } = Astro.props;
             path: location.pathname,
             lang: 'zh-CN',
             dark: 'html.dark',
-            login: 'disable',
+            login: 'enable',
             meta: ['nick', 'mail'],
             requiredMeta: [],
             wordLimit: [2, 1000],
