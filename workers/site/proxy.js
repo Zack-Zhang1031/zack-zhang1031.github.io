@@ -1,4 +1,4 @@
-const UPSTREAM = 'zz1031.vercel.app';
+const UPSTREAM = 'zz1031-zack-zhangs-projects.vercel.app';
 
 export default {
   async fetch(request) {
