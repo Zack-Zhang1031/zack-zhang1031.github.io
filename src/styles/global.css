@@ -250,22 +250,6 @@ main { position: relative; z-index: 1; }
   overflow: hidden;
 }
 
-/* Ink mountain silhouette — 水墨远山 */
-.hero::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 120px;
-  background:
-    radial-gradient(ellipse 200px 60px at 15% 100%, var(--border-hover), transparent 70%),
-    radial-gradient(ellipse 300px 50px at 50% 100%, var(--border), transparent 70%),
-    radial-gradient(ellipse 250px 70px at 85% 100%, var(--border-hover), transparent 70%);
-  pointer-events: none;
-  opacity: 0.5;
-}
-
 /* Seal stamp — 印章 */
 .seal {
   display: inline-flex;
