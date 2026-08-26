@@ -1,4 +1,4 @@
-const UPSTREAM = 'zz1031-zack-zhangs-projects.vercel.app';
+const UPSTREAM = 'zz1031.vercel.app';
 const CANONICAL_HOST = 'z.zz1031.workers.dev';
 const LEGACY_HOST = 'zz1031.zz1031.workers.dev';
 
