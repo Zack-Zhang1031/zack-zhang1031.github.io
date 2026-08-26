@@ -46,7 +46,7 @@ export const games: GameInfo[] = [
     updatedAt: '2026-08-25',
     version: '2026.08.25',
     tags: ['街机', '休闲'],
-    accent: 'gold',
+    accent: 'amber',
   },
   {
     id: 'rengpingzi',
