@@ -227,7 +227,7 @@ These contracts are canonical. UI code consumes them and must not create paralle
 
 ## Task 1: Establish isolated execution and source-freeze gates
 
-**Files:** Create `src/data/jing/source-ledger.ts`, `src/data/jing/source-ledger.test.ts`; inspect the exact footer hunks in `BaseLayout.astro` and `global.css`.
+**Files:** Modify `package.json`, `package-lock.json`; create `src/data/jing/source-ledger.ts`, `src/data/jing/source-ledger.test.ts`; inspect the exact footer hunks in `BaseLayout.astro` and `global.css`.
 
 **Why:** Cultural content and algorithms cannot ship without traceable editions, licensing, and fixtures; the dirty public-site worktree must remain intact.
 
@@ -237,15 +237,15 @@ These contracts are canonical. UI code consumes them and must not create paralle
 
 **Verification:** `npm run test -- src/data/jing/source-ledger.test.ts`; expected first RED is missing required records, final GREEN is six figures, six audio files, three lot editions, calendar reference, I Ching reference, and three Qimen fixture sources with non-empty URL, title, license/status, retrieval date, version/checksum, and local target.
 
-- [ ] Write `source-ledger.test.ts` asserting the exact required IDs and blocking status unless each record is `verified` with attribution and checksum.
-- [ ] Run the focused test and record the missing-record RED output.
+- [ ] Install the five pinned packages from Tech Stack and add `test: vitest run`, `check: astro check`, and `test:e2e: playwright test` scripts.
+- [ ] Write `source-ledger.test.ts`, run it, and record the missing-record RED output; assert exact required IDs and blocking status unless each record is verified with attribution and checksum.
 - [ ] Create the typed ledger; record Wikisource's Qing Guan Di edition, the Guanyin and Lu Zu primary scans selected after rights verification, six image records, six audio records, and rule/fixture references. Mark a record `verification-blocked` instead of inventing metadata.
 - [ ] Run the focused test; proceed beyond the affected content task only when all of its records are GREEN.
 - [ ] Commit only ledger/tests with `[jing] test: freeze cultural source ledger`.
 
 ## Task 2: Add the test harness and hidden shell
 
-**Files:** Modify `package.json`, `package-lock.json`, `astro.config.mjs`, `BaseLayout.astro`, `global.css`; create `playwright.config.ts`, `JingLayout.astro`, `jing.css`, `HallIntro.astro`, and `src/pages/jing/index.astro`.
+**Files:** Modify `astro.config.mjs`, `BaseLayout.astro`, `global.css`; create `playwright.config.ts`, `JingLayout.astro`, `jing.css`, `HallIntro.astro`, and `src/pages/jing/index.astro`.
 
 **Why:** Every later room needs the same privacy metadata, theme, navigation, mobile, and verification shell.
 
@@ -255,8 +255,8 @@ These contracts are canonical. UI code consumes them and must not create paralle
 
 **Verification:** `npm run check && npm run build && npx playwright test tests/e2e/jingxin.spec.ts`; assert footer seal exists, `/jing/` has `robots=noindex,nofollow`, no public nav is rendered there, theme persists, return-home works, and built sitemap has no URL whose pathname starts `/jing/`.
 
-- [ ] Add the package scripts/dependencies and Playwright test that fails because `/jing/` and the seal do not exist.
-- [ ] Run `npm install --save-exact lunar-typescript@1.8.6 && npm install -D --save-exact vitest@4.1.11 @playwright/test@1.62.1 @astrojs/check@0.9.10 typescript@6.0.3 && npx playwright install chromium`, then run the focused E2E test and capture RED.
+- [ ] Add the Playwright configuration and test that fails because `/jing/` and the seal do not exist.
+- [ ] Run the focused E2E test with the Task 1 toolchain and capture RED.
 - [ ] Implement the independent layout, hall, intro acknowledgement, footer seal, scoped style, and `sitemap({ filter: page => !new URL(page).pathname.startsWith('/jing/') })`.
 - [ ] Run `npm run check`, `npm run build`, and the focused Playwright test; inspect `dist/sitemap-*.xml` with `rg -n "/jing/" dist/sitemap-*.xml` and expect no matches.
 - [ ] Commit `[jing] add: hidden hall shell` after reviewing the footer diff against the dirty-main version.
