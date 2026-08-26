@@ -1,6 +1,8 @@
-# Zack-Zhang1031 个人主页
+# Leon Zhang — Personal Website
 
-基于 [Astro](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/) 构建的个人主页 / 博客，托管于 [Vercel](https://vercel.com/)。
+> AI Engineer · Agent / RAG · Model Fine-tuning · Deployment · Indie Game Developer
+
+这是 **Leon Zhang** 的个人主页与技术博客，基于 [Astro](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/) 构建，并通过 [Vercel](https://vercel.com/) 部署。
 
 线上地址：<https://z.zz1031.workers.dev/>
 
@@ -9,7 +11,7 @@
 - **首页**：游戏展示卡片 + 最新博客 + GitHub/Gitee 项目
 - **作品**（`/games/`）：独立游戏在线游玩（Cocos Web Mobile 内嵌）+ 视频演示
 - **日志**（`/posts/`）：技术博客（Astro Content Collections，35 篇）
-- **关于**（`/about/`）：个人简介、技能栈、联系方式
+- **关于**（`/about/`）：Leon Zhang 的个人简介、技能栈、项目经历与联系方式
 
 ## 技术栈
 
@@ -69,3 +71,7 @@ public/
 ## 部署
 
 推送到 `main` 分支后，Vercel 自动构建并部署。
+
+---
+
+**Leon Zhang** · AI Engineer & Builder
