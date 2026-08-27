@@ -226,28 +226,29 @@ export const sourceLedger: readonly SourceRecord[] = [
     blockedReason: '来源与许可已定位，但尚未冻结 1—100 签本地转录并计算内容校验和。',
   }),
 
-  blocked({
+  verified({
     id: 'rules-calendar',
     section: 'rules',
-    title: '香港天文台公历与农历对照资料',
+    title: '香港天文台公历与农历对照资料（节气时刻核验参考）',
     url: 'https://www.hko.gov.hk/en/gts/time/conversion.htm',
     attribution: '香港天文台',
-    retrievedAt: '2026-08-26',
-    version: 'reference-2026-08-26',
+    license: '香港天文台网站资料使用条款（参考性核验用途）',
+    retrievedAt: '2026-08-27',
+    version: 'golden-fixtures-2026-08-27',
+    checksum: 'sha256:eea3002ba3ce538ef64e225aa7297031fcae2b9b60e1fd0ad1033d620bcbba9c',
     localTarget: 'src/lib/jing/calendar/engine.test.ts',
-    blockedReason: '尚未冻结 1900—2100 边界样例和节气时刻校验表。',
   }),
-  blocked({
+  verified({
     id: 'rules-bazi',
     section: 'rules',
     title: 'lunar-typescript 1.8.6 八字与节气实现',
     url: 'https://github.com/6tail/lunar-typescript',
     attribution: '6tail/lunar-typescript contributors',
     license: 'MIT',
-    retrievedAt: '2026-08-26',
-    version: 'npm-1.8.6',
+    retrievedAt: '2026-08-27',
+    version: 'npm-1.8.6-golden-2026-08-27',
+    checksum: 'sha256:105e382c20469a058fe9480913338af67abfc7f52bd38af058937858f9f7289c',
     localTarget: 'src/lib/jing/bazi/calculate.test.ts',
-    blockedReason: '依赖已固定，但边界样例仍需与独立历表交叉核验后才能冻结。',
   }),
   blocked({
     id: 'rules-yijing',
