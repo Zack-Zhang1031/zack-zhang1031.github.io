@@ -1,4 +1,4 @@
-const UPSTREAM = 'zz1031-waline.vercel.app';
+const UPSTREAM = 'lz1031-waline.vercel.app';
 
 export default {
   async fetch(request) {

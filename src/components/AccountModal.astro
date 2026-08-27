@@ -1,0 +1,137 @@
+<div id="account-overlay" class="account-overlay" hidden>
+  <section
+    class="account-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="account-modal-title"
+  >
+    <header class="account-modal-header">
+      <a class="account-modal-brand" href="/" aria-label="返回张坤个人网站首页">
+        <img src="/images/48.png" alt="" />
+        <span>
+          <strong id="account-modal-title">评论账号</strong>
+          <small>WALINE ACCOUNT</small>
+        </span>
+      </a>
+      <div class="account-modal-actions">
+        <a
+          class="account-external-link"
+          data-account-external
+          href="https://lz1031-waline.vercel.app/ui/login"
+          target="_blank"
+          rel="noopener noreferrer"
+        >在新窗口打开 ↗</a>
+        <button class="account-close" type="button" data-account-close aria-label="关闭账号窗口">✕</button>
+      </div>
+    </header>
+
+    <div class="account-modal-tabs" role="tablist" aria-label="账号操作">
+      <button type="button" role="tab" data-account-tab="login" aria-selected="true">登录</button>
+      <button type="button" role="tab" data-account-tab="register" aria-selected="false">注册</button>
+    </div>
+
+    <div class="account-modal-body">
+      <aside class="account-modal-intro" aria-hidden="true">
+        <p class="account-kicker">// COMMUNITY ID</p>
+        <h2>登录后，留下你的游戏记录。</h2>
+        <p>用于评论、回复通知和个人资料管理。匿名评论仍然开放，不注册也能参与讨论。</p>
+        <ul>
+          <li><span>01</span> 同一个账号管理所有评论</li>
+          <li><span>02</span> 支持邮箱与第三方账号登录</li>
+          <li><span>03</span> 账号数据由 Waline 独立保存</li>
+        </ul>
+      </aside>
+
+      <div class="account-frame-shell" data-account-frame-shell>
+        <div class="account-frame-loading" role="status">正在连接账号服务…</div>
+        <iframe
+          class="account-frame"
+          data-account-frame
+          title="Waline 评论账号登录"
+          src="about:blank"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="clipboard-write"
+        ></iframe>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const accountOverlay = document.querySelector<HTMLElement>('#account-overlay');
+  const accountFrame = accountOverlay?.querySelector<HTMLIFrameElement>('[data-account-frame]');
+  const accountFrameShell = accountOverlay?.querySelector<HTMLElement>('[data-account-frame-shell]');
+  const accountExternal = accountOverlay?.querySelector<HTMLAnchorElement>('[data-account-external]');
+  const accountClose = accountOverlay?.querySelector<HTMLButtonElement>('[data-account-close]');
+  const accountTabs = accountOverlay?.querySelectorAll<HTMLButtonElement>('[data-account-tab]') || [];
+  const accountRoutes = {
+    login: 'https://lz1031-waline.vercel.app/ui/login',
+    register: 'https://lz1031-waline.vercel.app/ui/register',
+  } as const;
+  type AccountMode = keyof typeof accountRoutes;
+  let accountReturnFocus: HTMLElement | null = null;
+  let accountMode: AccountMode = 'login';
+  let accountCloseTimer: number | undefined;
+
+  const setAccountMode = (mode: AccountMode) => {
+    accountMode = mode;
+    const url = accountRoutes[mode];
+    accountTabs.forEach((tab) => {
+      const active = tab.dataset.accountTab === mode;
+      tab.setAttribute('aria-selected', String(active));
+      tab.classList.toggle('is-active', active);
+    });
+    if (accountExternal) accountExternal.href = url;
+    if (accountFrame) {
+      accountFrame.title = mode === 'login' ? 'Waline 评论账号登录' : 'Waline 评论账号注册';
+      if (accountFrame.dataset.accountMode !== mode) {
+        accountFrame.dataset.accountMode = mode;
+        accountFrameShell?.classList.remove('is-ready');
+        accountFrame.src = url;
+      }
+    }
+  };
+
+  const openAccount = (mode: AccountMode, trigger?: HTMLElement) => {
+    if (!accountOverlay) return;
+    if (accountCloseTimer) window.clearTimeout(accountCloseTimer);
+    accountReturnFocus = trigger || (document.activeElement instanceof HTMLElement ? document.activeElement : null);
+    setAccountMode(mode);
+    accountOverlay.hidden = false;
+    document.body.classList.add('account-modal-open');
+    window.requestAnimationFrame(() => accountOverlay.classList.add('is-open'));
+    accountClose?.focus();
+  };
+
+  const closeAccount = () => {
+    if (!accountOverlay || accountOverlay.hidden) return;
+    accountOverlay.classList.remove('is-open');
+    document.body.classList.remove('account-modal-open');
+    accountCloseTimer = window.setTimeout(() => {
+      accountOverlay.hidden = true;
+      accountCloseTimer = undefined;
+    }, 180);
+    accountReturnFocus?.focus();
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-account-open]').forEach((trigger) => {
+    trigger.addEventListener('click', (event) => {
+      event.preventDefault();
+      const mode = trigger.dataset.accountOpen === 'register' ? 'register' : 'login';
+      openAccount(mode, trigger);
+    });
+  });
+  accountTabs.forEach((tab) => {
+    tab.addEventListener('click', () => setAccountMode(tab.dataset.accountTab as AccountMode));
+  });
+  accountFrame?.addEventListener('load', () => {
+    if (accountFrame.src !== 'about:blank') accountFrameShell?.classList.add('is-ready');
+  });
+  accountClose?.addEventListener('click', closeAccount);
+  accountOverlay?.addEventListener('click', (event) => {
+    if (event.target === accountOverlay) closeAccount();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && accountOverlay && !accountOverlay.hidden) closeAccount();
+  });
+</script>

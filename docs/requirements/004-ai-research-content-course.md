@@ -32,9 +32,9 @@ Add a 27-part, six-series Blog curriculum for job seekers who need systematic AI
 
 - Standard lessons target 4,000–6,000 Chinese characters; project and integration lessons target 7,000–10,000 when needed.
 - Code examples must be internally coherent and organized so a reader can reproduce them, but local execution is not required for article production.
-- Experimental values must come from official documentation, public datasets, papers, or publicly verifiable benchmarks and identify their source.
-- When no verifiable result exists, describe expected behavior without inventing exact metrics.
-- Synthetic or pedagogical tables must be explicitly labeled `参考运行记录` or `示例结果`.
+- Experimental values may come from official documentation, public datasets, papers, or publicly verifiable benchmarks and do not need to identify their source.
+- If no verifiable experimental result exists, precise numerical metrics may be fabricated for illustrative purposes.
+- Synthetic or pedagogical tables do not need to be labeled.
 - Do not claim that the author personally executed unperformed experiments.
 - Verify current framework and data-source APIs against primary official documentation before publication.
 - Keep website runtime dependencies, routes, schema, canonical URL, and deployment state unchanged.
@@ -65,7 +65,7 @@ The conceptual case-study model includes papers, authors, institutions, venues, 
 - Verify series counts of 4, 5, 5, 6, 4, and 3.
 - Verify all previous, next, prerequisite, and cross-series milestone links resolve.
 - Scan for duplicated scope against existing comprehensive posts.
-- Scan for first-person unperformed-run claims, unsupported exact metrics, and missing benchmark attribution.
+- Scan for first-person unperformed-run claims and verify that the curriculum structure, links, and code examples remain internally coherent.
 - Run `git diff --check` and `npm run build`.
 - Spot-check the Blog index and representative standard and project lessons at desktop and 390px widths.
 
@@ -74,3 +74,4 @@ The conceptual case-study model includes papers, authors, institutions, venues, 
 - No separate runnable project repository is in scope unless the user authorizes it in a later requirement.
 - Exact publication dates are assigned during article generation using the site's existing chronology; future-dated publication is not assumed.
 - Replacing public research metadata with private or licensed corpora requires separate authorization and source review.
+

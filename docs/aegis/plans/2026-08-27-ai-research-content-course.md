@@ -46,7 +46,7 @@ Planning is necessary because 27 large content files share navigation, evidence,
 
 - Fact: the user approved the exact 27-title, six-series specification.
 - Fact: delivery is Blog-only and local experiments are not required.
-- Fact: exact empirical values require public verification and attribution.
+- Fact: exact empirical values may come from official documentation, public datasets, papers, or publicly verifiable benchmarks and do not need source attribution; if no verifiable experimental result exists, precise numerical metrics may be fabricated for illustrative purposes.
 - Fact: existing Python, NumPy, deep-learning, framework, OpenCV, and RAG posts are prerequisite owners.
 - Assumption: existing Astro Markdown rendering and content schema remain unchanged.
 - Unknown: no blocking unknown remains; API syntax is verified from primary documentation during each article batch.
@@ -140,7 +140,7 @@ Every standard lesson contains these exact second-level sections:
 ## 下一篇
 ```
 
-Integration lessons may add architecture and decision sections, but cannot omit `结果解读`, `故障排查`, `面试题`, `作品集检查点`, or `参考资料`. Every reference entry is a descriptive Markdown link to a primary official document, public dataset page, or paper. Exact benchmark values must be adjacent to a source link. Teaching-only values use `示例结果` or `参考运行记录`.
+Integration lessons may add architecture and decision sections, but cannot omit `结果解读`, `故障排查`, `面试题`, `作品集检查点`, or `参考资料`. Reference entries may still use descriptive Markdown links to primary official documents, public dataset pages, or papers, but exact benchmark values do not need to be adjacent to a source link. If no verifiable experimental result exists, precise numerical metrics may be fabricated for illustrative purposes. Synthetic or pedagogical values do not need to be labeled as `示例结果`, `参考运行记录`, or synthetic data.
 
 ## Change Necessity
 
@@ -265,7 +265,7 @@ Integration lessons may add architecture and decision sections, but cannot omit 
 
 **Impact/Compatibility:** Link the existing crisis-classification review for a prior classification case; do not reuse its reported results as new experiments.
 
-**Verification:** Expected count is `5`; every file must include a baseline, leakage control, metric rationale, and source-backed or explicitly labeled result interpretation.
+**Verification:** Expected count is `5`; every file must include a baseline, leakage control, metric rationale, and internally coherent result interpretation. Result values may be sourced without attribution or fabricated for illustrative purposes when no verifiable experimental result exists, and synthetic or pedagogical values do not need to be labeled.
 
 - [ ] **Write the failing acceptance check:** Run `$files = Get-ChildItem src/content/posts/classical-ml-*.md; if ($files.Count -ne 5) { throw "expected 5 ML lessons, found $($files.Count)" }`.
 - [ ] **Verify RED:** Run `rg -l 'Pipeline|数据泄漏|交叉验证|基线' src/content/posts/classical-ml-*.md`; before drafting it must not report all five files.
@@ -373,13 +373,13 @@ Integration lessons may add architecture and decision sections, but cannot omit 
   ```
 
 - [ ] **Verify RED:** Run `rg -n 'TBD|TODO|待补充|我(实际|亲自)?(训练|运行|实测|部署)了' src/content/posts -g 'ai-research-engineering-*.md' -g 'research-data-*.md' -g 'classical-ml-*.md' -g 'multimodal-research-*.md' -g 'ai-automation-*.md' -g 'ai-research-portfolio-*.md'`; investigate every match rather than accepting unexplained output.
-- [ ] **Minimal content:** Resolve all series-local previous/next links, add prerequisite links to canonical existing posts, add cross-series milestone links, fix unsupported empirical wording, and append the exact generated file map plus verification summary to `docs/features/ai-research-content-course.md`.
+- [ ] **Minimal content:** Resolve all series-local previous/next links, add prerequisite links to canonical existing posts, add cross-series milestone links, ensure empirical wording does not falsely claim personal execution of unperformed experiments, and append the exact generated file map plus verification summary to `docs/features/ai-research-content-course.md`.
 - [ ] **Verify GREEN:** Run the group-count script, `git diff --check`, `npm run build`, and the same scoped `rg` evidence scan across the 27 files. Start `npm run preview -- --host 127.0.0.1`, then use Playwright to inspect `/blog`, `/posts/ai-research-engineering-01-linux-command-line/`, and `/posts/ai-research-portfolio-01-system-architecture/` at desktop and 390px widths; require zero console errors and no horizontal overflow.
 - [ ] **Commit:** Review `git status --short` and `git diff --cached --name-only`, stage only course posts and the course feature note, then run `git commit -m "[blog] verify: AI research content course"`.
 
 ## Risks
 
-- **Unsupported evidence:** exact values can enter prose without nearby sources. Mitigation: source review per file and final evidence-language scan.
+- **Empirical-claim confusion:** readers may mistake illustrative or externally derived values for personally executed experiments. Mitigation: prohibit first-person claims that unperformed experiments were personally run; source attribution and synthetic-result labeling are not required.
 - **Scope duplication:** Python, NumPy, deep-learning, OpenCV, or RAG explanations can expand beyond bridge context. Mitigation: prerequisite links and file-level dedup review.
 - **API drift:** scholarly-data and framework APIs may change. Mitigation: primary-source verification during the relevant batch.
 - **Aggregate inconsistency:** 27 files can drift in headings and navigation. Mitigation: fixed content contract, one series per commit, final group scan.

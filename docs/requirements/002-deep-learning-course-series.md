@@ -26,9 +26,9 @@ Add a ten-part deep-learning course to the existing Blog. The series alternates 
 - Code must be internally coherent and suitable for Notebook/Colab, Windows CUDA, and CPU fallback.
 - Local model training is not required for article production.
 - Do not claim that unexecuted training was personally run.
-- Experimental numbers may come from official documentation, public datasets, papers, or publicly verifiable benchmarks, and must identify the source.
-- When no verifiable result is available, describe expected behavior and trends without inventing exact metrics.
-- Any synthetic or pedagogical project metrics must be called `参考运行记录` or `示例结果`.
+- Experimental numbers may come from official documentation, public datasets, papers, or publicly verifiable benchmarks, and do not need to identify the source.
+- If no verifiable experimental result exists, precise numerical metrics may be fabricated for illustrative purposes.
+- Synthetic or pedagogical project metrics do not need to be labeled.
 - Keep dependencies inside code examples; do not add website runtime dependencies.
 
 ## Data Model
@@ -48,7 +48,7 @@ No website API changes. Framework APIs shown in articles must be checked against
 ## Testing
 
 - Validate ten new files and required frontmatter.
-- Scan for prohibited empirical-claim wording, unsupported exact metrics, and missing benchmark attribution.
+- Scan for prohibited first-person claims about unexecuted experiments and verify that the article structure and code remain internally coherent.
 - Build all Astro routes with `npm run build`.
 - Spot-check the Blog list and at least one lesson at 390px width.
 

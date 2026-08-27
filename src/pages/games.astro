@@ -15,8 +15,10 @@ const description = '张坤开发的独立小游戏，全部可直接在线游�
 
     <p class="games-intro">休闲小游戏<strong>直接托管在本站</strong>，点击即可游玩，无需跳转。视频默认只加载海报，点击播放后才下载。开源项目请移步 <a href="/projects/">Projects</a>。</p>
 
-    {games.map((game) => (
+    <div class="game-archive" aria-label="游戏档案">
+    {games.map((game, index) => (
       <div class="game-showcase" id={`game-${game.id}`}>
+        <p class="game-archive-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</p>
         <div class="gs-media-col">
           <div class="gs-main" data-media={game.id}>
             <div class="gs-display gs-display--active" data-type="video">
@@ -43,7 +45,8 @@ const description = '张坤开发的独立小游戏，全部可直接在线游�
           </div>
         </div>
         <div class="gs-info-col">
-          <h2>{game.icon} {game.name}</h2>
+          <p class="game-record-label">GAME RECORD / {game.updatedAt.slice(0, 4)}</p>
+          <h2><span aria-hidden="true">{game.icon}</span> {game.name}</h2>
           <p class="game-subtitle">{game.description}</p>
           <dl class="game-meta">
             <div><dt>平台</dt><dd>{game.platform}</dd></div>
@@ -60,6 +63,7 @@ const description = '张坤开发的独立小游戏，全部可直接在线游�
         </div>
       </div>
     ))}
+    </div>
 
     <p class="games-more">📺 More on <a href="https://space.bilibili.com/31032895" target="_blank" rel="noopener">bilibili</a></p>
   </div>

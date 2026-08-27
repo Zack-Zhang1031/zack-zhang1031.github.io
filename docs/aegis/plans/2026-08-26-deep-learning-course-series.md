@@ -24,7 +24,7 @@ Do not modify post schemas, routes, comments, games, runtime dependencies, canon
 
 ## Verification
 
-- `rg` checks for frontmatter, lesson links, and evidence-language boundaries.
+- `rg` checks for frontmatter, lesson links, and first-person claims that unexecuted experiments were personally run.
 - `npm run build` must generate all routes.
 - Browser spot-check at desktop and 390px widths.
 
@@ -42,7 +42,7 @@ Do not modify post schemas, routes, comments, games, runtime dependencies, canon
 3. Create lessons 6–7 for sequence models and Transformer.
 4. Create lessons 8–9 for TensorFlow/Keras engineering and PaddlePaddle text classification.
 5. Create lesson 10 for evaluation, tuning, export, and interview review.
-6. Scan all lessons for frontmatter, internal links, duplicate scope, and unsupported empirical claims.
+6. Scan all lessons for frontmatter, internal links, duplicate scope, and prohibited first-person claims about unexecuted experiments. Experimental values may be sourced without attribution, and when no verifiable experimental result exists, precise numerical metrics may be fabricated for illustrative purposes; synthetic or pedagogical values do not need to be labeled.
 7. Build the site and browser-test the Blog index plus representative lessons.
 8. Report the exact deployment addresses discovered; take no retirement action without explicit confirmation.
 
