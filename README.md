@@ -4,7 +4,7 @@
 
 这是 **Leon Zhang** 的个人主页与技术博客，基于 [Astro](https://astro.build/) + [Tailwind CSS](https://tailwindcss.com/) 构建，并通过 [Vercel](https://vercel.com/) 部署。
 
-线上地址：<https://z.zz1031.workers.dev/>
+线上地址：<https://zk.lz1031.workers.dev/>
 
 ## 站点结构
 

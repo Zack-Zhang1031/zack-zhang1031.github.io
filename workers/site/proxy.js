@@ -1,5 +1,5 @@
-const UPSTREAM = 'zz1031.vercel.app';
-const CANONICAL_HOST = 'z.zz1031.workers.dev';
+const UPSTREAM = 'leon-zhang1031-github-io-one.vercel.app';
+const CANONICAL_HOST = 'zk.lz1031.workers.dev';
 const LEGACY_HOST = 'zz1031.zz1031.workers.dev';
 
 export default {
