@@ -7,5 +7,10 @@ export default defineConfig({
   site: 'https://z.zz1031.workers.dev',
   output: 'static',
   adapter: vercel(),
-  integrations: [tailwind(), sitemap()],
+  integrations: [
+    tailwind(),
+    sitemap({
+      filter: (page) => !new URL(page).pathname.startsWith('/jing/'),
+    }),
+  ],
 });

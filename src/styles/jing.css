@@ -1,0 +1,249 @@
+/* ==========================================================================
+   静心堂 Jingxin Hall — scoped styles. Loaded only by JingLayout.astro.
+   Light: paper / pale ink / vermilion. Dark: night room / warm light / gold.
+   ========================================================================== */
+
+.jing-body {
+  /* shared */
+  --jing-radius: 10px;
+  --jing-font: "Songti SC", "Noto Serif SC", "SimSun", serif;
+  --jing-font-ui: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --jing-t: 0.25s ease;
+
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--jing-font);
+  line-height: 1.9;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Dark (default): 夜室 · 暖灯 · 暗金 */
+html.dark .jing-body {
+  --jing-bg: #14110d;
+  --jing-bg-raised: #1d1915;
+  --jing-bg-card: #221d17;
+  --jing-text: #d9cdb4;
+  --jing-text-dim: #9a8d74;
+  --jing-accent: #b8934a;
+  --jing-accent-soft: rgba(184, 147, 74, 0.16);
+  --jing-border: #38311f;
+  --jing-vermilion: #c0553e;
+
+  background:
+    radial-gradient(120% 90% at 50% 0%, #1b1712 0%, var(--jing-bg) 60%);
+  color: var(--jing-text);
+}
+
+/* Light: 宣纸 · 淡墨 · 朱砂 */
+html.light .jing-body {
+  --jing-bg: #f4eee1;
+  --jing-bg-raised: #faf6ec;
+  --jing-bg-card: #fffdf6;
+  --jing-text: #2e2a24;
+  --jing-text-dim: #7d7461;
+  --jing-accent: #9a3b2e;
+  --jing-accent-soft: rgba(154, 59, 46, 0.10);
+  --jing-border: #ddd2ba;
+  --jing-vermilion: #9a3b2e;
+
+  background:
+    radial-gradient(120% 90% at 50% 0%, #faf5e9 0%, var(--jing-bg) 60%);
+  color: var(--jing-text);
+}
+
+.jing-shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 1.25rem 3rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.jing-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 0 0.9rem;
+  border-bottom: 1px solid var(--jing-border);
+}
+
+.jing-crumb {
+  font-size: 1.05rem;
+  letter-spacing: 0.35em;
+  color: var(--jing-text);
+  text-decoration: none;
+}
+.jing-crumb:hover { color: var(--jing-accent); }
+
+.jing-icon-btn {
+  border: 1px solid var(--jing-border);
+  border-radius: 50%;
+  width: 2.2rem;
+  height: 2.2rem;
+  background: transparent;
+  color: var(--jing-text-dim);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: color var(--jing-t), border-color var(--jing-t);
+}
+.jing-icon-btn:hover { color: var(--jing-accent); border-color: var(--jing-accent); }
+.jing-icon-btn:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
+
+.jing-main { flex: 1; padding: 2rem 0; }
+
+.jing-main h1, .jing-main h2, .jing-main h3 {
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--jing-text);
+}
+
+.jing-main a { color: var(--jing-accent); }
+
+.jing-foot {
+  border-top: 1px solid var(--jing-border);
+  padding: 1.25rem 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-family: var(--jing-font-ui);
+  font-size: 0.78rem;
+  color: var(--jing-text-dim);
+}
+
+.jing-home {
+  align-self: flex-start;
+  color: var(--jing-text-dim);
+  text-decoration: none;
+  border: 1px solid var(--jing-border);
+  border-radius: var(--jing-radius);
+  padding: 0.3rem 0.9rem;
+  transition: color var(--jing-t), border-color var(--jing-t);
+}
+.jing-home:hover { color: var(--jing-accent); border-color: var(--jing-accent); }
+.jing-home:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
+
+.jing-note { margin: 0; }
+
+.jing-back-to-top {
+  position: fixed;
+  right: 1rem;
+  bottom: 1.25rem;
+  z-index: 60;
+  width: 2.6rem;
+  height: 2.6rem;
+  border: 1px solid var(--jing-border);
+  border-radius: 50%;
+  background: var(--jing-bg-raised);
+  color: var(--jing-accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--jing-t), visibility var(--jing-t);
+}
+.jing-back-to-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+.jing-back-to-top:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
+
+/* --- 大厅组件 --- */
+
+.jing-hall-title {
+  text-align: center;
+  margin: 1.5rem 0 0.5rem;
+  font-size: 2rem;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em; /* visually re-center letter-spaced text */
+}
+
+.jing-hall-sub {
+  text-align: center;
+  color: var(--jing-text-dim);
+  font-size: 0.85rem;
+  margin: 0 0 2rem;
+  font-family: var(--jing-font-ui);
+}
+
+.jing-intro {
+  background: var(--jing-bg-card);
+  border: 1px solid var(--jing-border);
+  border-radius: var(--jing-radius);
+  padding: 1.4rem 1.5rem;
+  margin-bottom: 2.2rem;
+}
+.jing-intro p { margin: 0 0 0.8rem; }
+.jing-intro p:last-child { margin-bottom: 0; }
+.jing-intro .jing-intro-warn { color: var(--jing-vermilion); font-size: 0.85rem; }
+
+.jing-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  font-family: var(--jing-font-ui);
+  font-size: 0.78rem;
+  color: var(--jing-text-dim);
+  margin-bottom: 2.2rem;
+}
+.jing-status strong { color: var(--jing-text); font-weight: 600; }
+
+.jing-rooms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.jing-room {
+  border: 1px solid var(--jing-border);
+  border-radius: var(--jing-radius);
+  padding: 1rem 1.1rem;
+  background: var(--jing-bg-card);
+  transition: border-color var(--jing-t), background var(--jing-t);
+}
+.jing-room h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.12em;
+}
+.jing-room p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--jing-text-dim);
+  font-family: var(--jing-font-ui);
+  line-height: 1.7;
+}
+
+a.jing-room { display: block; text-decoration: none; color: inherit; }
+a.jing-room:hover { border-color: var(--jing-accent); background: var(--jing-accent-soft); }
+a.jing-room:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
+
+.jing-room--pending { opacity: 0.55; }
+.jing-room-tag {
+  display: inline-block;
+  font-family: var(--jing-font-ui);
+  font-size: 0.68rem;
+  color: var(--jing-text-dim);
+  border: 1px solid var(--jing-border);
+  border-radius: 999px;
+  padding: 0 0.5rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+}
+
+@media (max-width: 560px) {
+  .jing-rooms { grid-template-columns: 1fr; }
+  .jing-hall-title { font-size: 1.6rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jing-body *, .jing-body *::before, .jing-body *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

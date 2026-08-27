@@ -950,6 +950,22 @@ button.nav-link {
 .comment-account span { color: var(--text-muted); }
 .footer-right { text-align: right; }
 
+/* 静心堂入口印章 — 唯一的公开发现入口，刻意低调 */
+.jing-seal-row { margin-top: 0.55rem; }
+.jing-seal {
+  display: inline-block;
+  padding: 0.05rem 0.42rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-muted);
+  font-family: "Songti SC", "SimSun", serif;
+  text-decoration: none;
+  opacity: 0.55;
+  transition: opacity var(--t), color var(--t), border-color var(--t);
+}
+.jing-seal:hover { opacity: 1; color: var(--accent); border-color: var(--accent); }
+.jing-seal:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; opacity: 1; }
+
 .back-to-top {
   position: fixed;
   right: max(1rem, calc((100vw - 1180px) / 2));
