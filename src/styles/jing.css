@@ -236,6 +236,97 @@ a.jing-room:focus-visible { outline: 2px solid var(--jing-accent); outline-offse
   vertical-align: middle;
 }
 
+/* --- 房间页通用 --- */
+
+.jing-main h1 {
+  font-size: 1.5rem;
+  letter-spacing: 0.3em;
+  margin: 0.5rem 0 0.75rem;
+}
+
+.jing-page-desc {
+  color: var(--jing-text-dim);
+  font-size: 0.88rem;
+  margin: 0 0 1.75rem;
+}
+.jing-page-desc code {
+  font-family: var(--jing-font-ui);
+  font-size: 0.8em;
+  border: 1px solid var(--jing-border);
+  border-radius: 4px;
+  padding: 0 0.3em;
+}
+
+.jing-btn {
+  display: inline-block;
+  border: 1px solid var(--jing-border);
+  border-radius: var(--jing-radius);
+  background: var(--jing-bg-card);
+  color: var(--jing-text);
+  font-family: var(--jing-font-ui);
+  font-size: 0.85rem;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  transition: border-color var(--jing-t), color var(--jing-t), background var(--jing-t);
+}
+.jing-btn:hover { border-color: var(--jing-accent); color: var(--jing-accent); }
+.jing-btn:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
+.jing-btn-danger:hover { border-color: var(--jing-vermilion); color: var(--jing-vermilion); }
+.jing-btn-file { position: relative; }
+
+/* --- 私人笔记 --- */
+
+.jing-notes-status {
+  min-height: 1.4em;
+  font-family: var(--jing-font-ui);
+  font-size: 0.82rem;
+  color: var(--jing-accent);
+}
+
+.jing-notes-view h2 {
+  font-size: 1.1rem;
+  letter-spacing: 0.15em;
+  margin: 0 0 0.6rem;
+}
+.jing-notes-view > p { color: var(--jing-text-dim); font-size: 0.85rem; }
+
+.jing-field { margin: 0.9rem 0; }
+.jing-field label {
+  display: block;
+  font-family: var(--jing-font-ui);
+  font-size: 0.8rem;
+  color: var(--jing-text-dim);
+  margin-bottom: 0.3rem;
+}
+.jing-field input[type="password"],
+.jing-field input[type="number"],
+.jing-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--jing-border);
+  border-radius: var(--jing-radius);
+  background: var(--jing-bg-raised);
+  color: var(--jing-text);
+  font-family: var(--jing-font-ui);
+  font-size: 0.95rem;
+  padding: 0.55rem 0.7rem;
+}
+.jing-field textarea { resize: vertical; line-height: 1.8; }
+.jing-field input:focus-visible, .jing-field textarea:focus-visible {
+  outline: 2px solid var(--jing-accent);
+  outline-offset: 1px;
+}
+.jing-field-inline { display: flex; align-items: center; gap: 0.6rem; }
+.jing-field-inline label { margin-bottom: 0; }
+.jing-field-inline input { width: 5.5rem; }
+
+.jing-notes-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.9rem 0;
+}
+
 @media (max-width: 560px) {
   .jing-rooms { grid-template-columns: 1fr; }
   .jing-hall-title { font-size: 1.6rem; }

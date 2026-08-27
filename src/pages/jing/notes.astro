@@ -1,0 +1,13 @@
+---
+import JingLayout from '../../layouts/JingLayout.astro';
+import LocalNotebook from '../../components/jing/LocalNotebook.astro';
+---
+
+<JingLayout title="私人笔记" description="静心堂 · 密码加密的本地私人笔记">
+  <h1>私人笔记</h1>
+  <p class="jing-page-desc">
+    把想留住的推演片段或心得记在这里。笔记用你设置的密码在本机加密，
+    明文只存在于解锁期间，闲置自动锁定，可导出为 <code>.jing</code> 加密文件备份。
+  </p>
+  <LocalNotebook />
+</JingLayout>

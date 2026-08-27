@@ -1,0 +1,260 @@
+---
+/**
+ * LocalNotebook — encrypted private notes.
+ *
+ * All crypto and storage go through src/lib/jing/vault.ts; this component
+ * only wires DOM events. Plaintext exists solely in the textarea and the
+ * in-memory session; the idle auto-lock wipes it.
+ */
+---
+
+<div class="jing-notes" id="jing-notes-app">
+  <p class="jing-notes-status" id="notes-status" role="status" aria-live="polite"></p>
+
+  <section id="notes-create" class="jing-notes-view" hidden>
+    <h2>创建加密笔记</h2>
+    <p>第一次使用需要设置密码。密码只存在你的记忆里——忘记密码将无法恢复笔记。</p>
+    <p class="jing-field">
+      <label for="notes-new-password">密码（至少 4 位）</label>
+      <input type="password" id="notes-new-password" autocomplete="new-password" minlength="4" />
+    </p>
+    <p class="jing-field">
+      <label for="notes-new-password2">再输一次</label>
+      <input type="password" id="notes-new-password2" autocomplete="new-password" minlength="4" />
+    </p>
+    <button type="button" id="notes-create-btn" class="jing-btn">创建并解锁</button>
+  </section>
+
+  <section id="notes-unlock" class="jing-notes-view" hidden>
+    <h2>解锁笔记</h2>
+    <p class="jing-field">
+      <label for="notes-password">密码</label>
+      <input type="password" id="notes-password" autocomplete="current-password" />
+    </p>
+    <button type="button" id="notes-unlock-btn" class="jing-btn">解锁</button>
+  </section>
+
+  <section id="notes-editor" class="jing-notes-view" hidden>
+    <p class="jing-field">
+      <label for="notes-text">笔记内容（保存时加密，仅本机存储）</label>
+      <textarea id="notes-text" rows="12" spellcheck="false"></textarea>
+    </p>
+    <div class="jing-notes-actions">
+      <button type="button" id="notes-save-btn" class="jing-btn">保存（加密）</button>
+      <button type="button" id="notes-lock-btn" class="jing-btn">立即锁定</button>
+      <button type="button" id="notes-export-btn" class="jing-btn">导出 .jing</button>
+      <label class="jing-btn jing-btn-file" for="notes-import-input">
+        导入 .jing
+        <input type="file" id="notes-import-input" accept=".jing,application/json" hidden />
+      </label>
+      <button type="button" id="notes-clear-btn" class="jing-btn jing-btn-danger">清空全部</button>
+    </div>
+    <p class="jing-field jing-field-inline">
+      <label for="notes-lock-minutes">自动锁定（分钟，下次解锁生效）</label>
+      <input type="number" id="notes-lock-minutes" min="1" max="120" />
+    </p>
+  </section>
+
+  <section id="notes-import-auth" class="jing-notes-view" hidden>
+    <h2>验证导入文件</h2>
+    <p>导入前需要用该文件原来的密码验证，验证失败不会覆盖现有笔记。</p>
+    <p class="jing-field">
+      <label for="notes-import-password">文件密码</label>
+      <input type="password" id="notes-import-password" autocomplete="off" />
+    </p>
+    <div class="jing-notes-actions">
+      <button type="button" id="notes-import-confirm" class="jing-btn">验证并导入</button>
+      <button type="button" id="notes-import-cancel" class="jing-btn">取消</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  import {
+    VaultError,
+    VaultSession,
+    hasStoredVault,
+  } from '../../lib/jing/vault';
+  import { loadSettings, saveSettings } from '../../lib/jing/settings';
+
+  type ViewId = 'notes-create' | 'notes-unlock' | 'notes-editor' | 'notes-import-auth';
+
+  const app = document.getElementById('jing-notes-app');
+  if (app) {
+    const status = document.getElementById('notes-status') as HTMLElement;
+    const views: ViewId[] = ['notes-create', 'notes-unlock', 'notes-editor', 'notes-import-auth'];
+
+    const text = document.getElementById('notes-text') as HTMLTextAreaElement;
+    const lockMinutes = document.getElementById('notes-lock-minutes') as HTMLInputElement;
+
+    let session: VaultSession | null = null;
+    let pendingImport: string | null = null;
+
+    const say = (msg: string) => { status.textContent = msg; };
+
+    const show = (id: ViewId) => {
+      views.forEach((v) => {
+        const el = document.getElementById(v);
+        if (el) el.hidden = v !== id;
+      });
+    };
+
+    const sessionOptions = () => ({
+      storage: localStorage,
+      lockTimeoutMs: loadSettings(localStorage).settings.lockTimeoutMinutes * 60 * 1000,
+      onLock: () => {
+        session = null;
+        text.value = '';
+        show('notes-unlock');
+        say('已自动锁定。');
+      },
+    });
+
+    const describeError = (err: unknown): string => {
+      if (err instanceof VaultError) {
+        switch (err.code) {
+          case 'wrong-password': return '密码错误或数据已被改动。';
+          case 'damaged': return err.message;
+          case 'unsupported-version': return err.message;
+          case 'unsupported-crypto': return err.message;
+          case 'storage-denied': return err.message;
+        }
+      }
+      return '操作失败，请重试。';
+    };
+
+    const openEditor = () => {
+      if (!session) return;
+      text.value = session.getNotes();
+      lockMinutes.value = String(loadSettings(localStorage).settings.lockTimeoutMinutes);
+      show('notes-editor');
+    };
+
+    /* initial view */
+    if (hasStoredVault(localStorage)) {
+      show('notes-unlock');
+      say('检测到本机已有加密笔记，请输入密码解锁。');
+    } else {
+      show('notes-create');
+      say('本机还没有加密笔记。');
+    }
+
+    /* create */
+    document.getElementById('notes-create-btn')?.addEventListener('click', async () => {
+      const p1 = (document.getElementById('notes-new-password') as HTMLInputElement).value;
+      const p2 = (document.getElementById('notes-new-password2') as HTMLInputElement).value;
+      if (p1.length < 4) { say('密码至少 4 位。'); return; }
+      if (p1 !== p2) { say('两次输入的密码不一致。'); return; }
+      try {
+        session = await VaultSession.create(p1, sessionOptions());
+        say('已创建并解锁。');
+        openEditor();
+      } catch (err) {
+        say(describeError(err));
+      }
+    });
+
+    /* unlock */
+    document.getElementById('notes-unlock-btn')?.addEventListener('click', async () => {
+      const pw = (document.getElementById('notes-password') as HTMLInputElement).value;
+      try {
+        session = await VaultSession.unlock(pw, sessionOptions());
+        say('已解锁。');
+        openEditor();
+      } catch (err) {
+        say(describeError(err));
+      }
+    });
+    document.getElementById('notes-password')?.addEventListener('keydown', (e) => {
+      if ((e as KeyboardEvent).key === 'Enter') {
+        document.getElementById('notes-unlock-btn')?.click();
+      }
+    });
+
+    /* save / lock / export / clear */
+    document.getElementById('notes-save-btn')?.addEventListener('click', async () => {
+      if (!session) { say('笔记已锁定，请先解锁。'); return; }
+      try {
+        await session.saveNotes(text.value);
+        say('已保存（加密存储于本机）。');
+      } catch (err) {
+        say(describeError(err));
+      }
+    });
+
+    document.getElementById('notes-lock-btn')?.addEventListener('click', () => {
+      session?.lock();
+      session = null;
+      text.value = '';
+      show('notes-unlock');
+      say('已锁定。');
+    });
+
+    document.getElementById('notes-export-btn')?.addEventListener('click', () => {
+      if (!session) { say('笔记已锁定，请先解锁。'); return; }
+      const file = session.exportFile();
+      if (!file) { say('没有可导出的笔记。'); return; }
+      const blob = new Blob([file], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `jing-notes-${new Date().toISOString().slice(0, 10)}.jing`;
+      a.click();
+      URL.revokeObjectURL(url);
+      say('已导出加密文件。');
+    });
+
+    document.getElementById('notes-clear-btn')?.addEventListener('click', () => {
+      if (!window.confirm('确定清空本机全部加密笔记？此操作不可恢复。')) return;
+      session?.clearAll();
+      session = null;
+      text.value = '';
+      show('notes-create');
+      say('已清空。');
+    });
+
+    /* import: read file -> ask password -> validate -> apply */
+    document.getElementById('notes-import-input')?.addEventListener('change', async (e) => {
+      const input = e.target as HTMLInputElement;
+      const file = input.files?.[0];
+      input.value = '';
+      if (!file) return;
+      pendingImport = await file.text();
+      show('notes-import-auth');
+      say('请输入导入文件原来的密码。');
+    });
+
+    document.getElementById('notes-import-confirm')?.addEventListener('click', async () => {
+      if (pendingImport === null) return;
+      const pw = (document.getElementById('notes-import-password') as HTMLInputElement).value;
+      try {
+        session = await VaultSession.importFrom(pw, pendingImport, sessionOptions());
+        pendingImport = null;
+        say('导入成功。');
+        openEditor();
+      } catch (err) {
+        say(describeError(err));
+      }
+    });
+
+    document.getElementById('notes-import-cancel')?.addEventListener('click', () => {
+      pendingImport = null;
+      show(hasStoredVault(localStorage) ? 'notes-unlock' : 'notes-create');
+      say('已取消导入，现有笔记未改动。');
+    });
+
+    /* lock timeout preference */
+    lockMinutes.addEventListener('change', () => {
+      const current = loadSettings(localStorage);
+      saveSettings(localStorage, {
+        ...current.settings,
+        lockTimeoutMinutes: Number(lockMinutes.value),
+      });
+      say('自动锁定时间已更新，下次解锁时生效。');
+    });
+
+    /* any interaction counts as activity */
+    app.addEventListener('input', () => session?.touch());
+    app.addEventListener('click', () => session?.touch());
+  }
+</script>

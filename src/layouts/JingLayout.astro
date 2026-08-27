@@ -4,11 +4,14 @@ import '../styles/jing.css';
 interface Props {
   title: string;
   description?: string;
+  /** true on the hall index; child rooms show a 返回静心堂 crumb instead. */
+  isHall?: boolean;
 }
 
 const {
   title,
   description = '静心堂 — 本地运行的传统文化研习空间',
+  isHall = false,
 } = Astro.props;
 ---
 
@@ -32,7 +35,11 @@ const {
 <body class="jing-body">
   <div class="jing-shell">
     <header class="jing-topbar">
-      <a class="jing-crumb" href="/jing/">静心堂</a>
+      {isHall ? (
+        <span class="jing-crumb" aria-current="page">静心堂</span>
+      ) : (
+        <a class="jing-crumb" href="/jing/">← 返回静心堂</a>
+      )}
       <button id="jing-theme-toggle" class="jing-icon-btn" type="button" aria-label="切换明暗主题" title="切换明暗主题">
         <span aria-hidden="true">☾</span>
       </button>
