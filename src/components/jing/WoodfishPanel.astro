@@ -1,0 +1,187 @@
+---
+/**
+ * WoodfishPanel — quiet counting woodfish.
+ *
+ * Count, average rhythm, and elapsed time only; no merit points,
+ * rankings, streaks, or rewards. Sound (woodfish strike + optional
+ * water ambience) is created only after the user enables sound through
+ * the SoundControl toggle. Keyboard (Space/Enter on the fish) and touch
+ * are supported through the native button.
+ */
+import SoundControl from './SoundControl.astro';
+---
+
+<div class="jing-muyu" id="jing-muyu-app">
+  <div class="jing-muyu-stats" role="status" aria-live="polite">
+    <div class="jing-muyu-stat"><span class="jing-muyu-num" id="muyu-count">0</span><span class="jing-muyu-label">计数</span></div>
+    <div class="jing-muyu-stat"><span class="jing-muyu-num" id="muyu-rhythm">—</span><span class="jing-muyu-label">均速（次/分）</span></div>
+    <div class="jing-muyu-stat"><span class="jing-muyu-num" id="muyu-elapsed">00:00</span><span class="jing-muyu-label">时长</span></div>
+  </div>
+
+  <button type="button" id="muyu-fish" class="jing-muyu-fish" aria-label="敲一下木鱼">
+    <svg viewBox="0 0 120 96" aria-hidden="true" focusable="false">
+      <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-body" />
+      <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-sheen" />
+      <circle cx="38" cy="40" r="5" class="fish-eye" />
+      <path d="M 78 30 Q 96 22 104 34 Q 96 40 84 40" class="fish-mouth" />
+      <path d="M 22 66 Q 60 84 98 66" class="fish-belly" />
+    </svg>
+  </button>
+
+  <div class="jing-muyu-controls">
+    <button type="button" id="muyu-pause" class="jing-btn" aria-pressed="false">暂停</button>
+    <button type="button" id="muyu-reset" class="jing-btn">归零</button>
+    <SoundControl />
+  </div>
+  <p class="jing-muyu-hint">点击、轻触或按空格键敲击。声音默认关闭，需手动开启。</p>
+</div>
+
+<script>
+  import { AMBIENCE_SRC, WOODFISH_SOUND_SRC } from '../../data/jing/figures';
+
+  const app = document.getElementById('jing-muyu-app');
+  if (app) {
+    const countEl = document.getElementById('muyu-count')!;
+    const rhythmEl = document.getElementById('muyu-rhythm')!;
+    const elapsedEl = document.getElementById('muyu-elapsed')!;
+    const fish = document.getElementById('muyu-fish') as HTMLButtonElement;
+    const pauseBtn = document.getElementById('muyu-pause') as HTMLButtonElement;
+    const resetBtn = document.getElementById('muyu-reset') as HTMLButtonElement;
+
+    let count = 0;
+    let intervals: number[] = [];
+    let lastStrike = 0;
+    let elapsedSec = 0;
+    let paused = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    /* audio is created only after explicit opt-in via SoundControl */
+    let strikeAudio: HTMLAudioElement | null = null;
+    let waterAudio: HTMLAudioElement | null = null;
+
+    const soundControl = app.querySelector('[data-sound-control]');
+    soundControl?.addEventListener('jing:sound', (e) => {
+      const { enabled, volume } = (e as CustomEvent).detail as { enabled: boolean; volume: number };
+      if (enabled && !strikeAudio) {
+        strikeAudio = new Audio(WOODFISH_SOUND_SRC);
+        strikeAudio.preload = 'auto';
+        waterAudio = new Audio(AMBIENCE_SRC.water);
+        waterAudio.loop = true;
+      }
+      if (strikeAudio) strikeAudio.volume = volume;
+      if (waterAudio) {
+        waterAudio.volume = volume * 0.5;
+        if (enabled) void waterAudio.play().catch(() => {});
+        else waterAudio.pause();
+      }
+    });
+
+    const fmt = (sec: number) =>
+      `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+
+    const render = () => {
+      countEl.textContent = String(count);
+      elapsedEl.textContent = fmt(elapsedSec);
+      if (intervals.length >= 2) {
+        const recent = intervals.slice(-8);
+        const avgMs = recent.reduce((a, b) => a + b, 0) / recent.length;
+        rhythmEl.textContent = avgMs > 0 ? String(Math.round(60000 / avgMs)) : '—';
+      } else {
+        rhythmEl.textContent = '—';
+      }
+    };
+
+    const startTimer = () => {
+      if (timer) return;
+      timer = setInterval(() => {
+        if (!paused) {
+          elapsedSec += 1;
+          render();
+        }
+      }, 1000);
+    };
+
+    fish.addEventListener('click', () => {
+      if (paused) return;
+      const now = performance.now();
+      if (lastStrike > 0) intervals.push(now - lastStrike);
+      lastStrike = now;
+      count += 1;
+      startTimer();
+      render();
+
+      if (strikeAudio) {
+        strikeAudio.currentTime = 0;
+        void strikeAudio.play().catch(() => {});
+      }
+      fish.classList.remove('is-hit');
+      void fish.offsetWidth;
+      fish.classList.add('is-hit');
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      paused = !paused;
+      pauseBtn.textContent = paused ? '继续' : '暂停';
+      pauseBtn.setAttribute('aria-pressed', String(paused));
+      if (waterAudio) {
+        if (paused) waterAudio.pause();
+        else if (soundControl?.querySelector('.jing-sound-toggle')?.getAttribute('aria-pressed') === 'true') {
+          void waterAudio.play().catch(() => {});
+        }
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      count = 0;
+      intervals = [];
+      lastStrike = 0;
+      elapsedSec = 0;
+      paused = false;
+      pauseBtn.textContent = '暂停';
+      pauseBtn.setAttribute('aria-pressed', 'false');
+      if (timer) { clearInterval(timer); timer = null; }
+      render();
+    });
+
+    render();
+  }
+</script>
+
+<style>
+  .jing-muyu { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+
+  .jing-muyu-stats { display: flex; gap: 2.5rem; }
+  .jing-muyu-stat { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
+  .jing-muyu-num { font-size: 1.6rem; font-variant-numeric: tabular-nums; color: var(--jing-accent); }
+  .jing-muyu-label { font-family: var(--jing-font-ui); font-size: 0.72rem; color: var(--jing-text-dim); }
+
+  .jing-muyu-fish {
+    border: none;
+    background: none;
+    padding: 0;
+    width: min(220px, 60vw);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .jing-muyu-fish:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 6px; border-radius: 50%; }
+
+  .fish-body { fill: #7a5230; }
+  html.dark .fish-body { fill: #8a5f38; }
+  .fish-sheen { fill: url(#none); fill: rgba(255, 240, 210, 0.07); }
+  .fish-eye { fill: #2d1d0e; }
+  .fish-mouth { fill: none; stroke: #2d1d0e; stroke-width: 3; stroke-linecap: round; }
+  .fish-belly { fill: none; stroke: rgba(45, 29, 14, 0.55); stroke-width: 2.5; stroke-linecap: round; }
+
+  .jing-muyu-fish.is-hit svg { animation: muyu-hit 0.18s ease; }
+  @keyframes muyu-hit {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.94); }
+    100% { transform: scale(1); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .jing-muyu-fish.is-hit svg { animation: none; }
+  }
+
+  .jing-muyu-controls { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
+  .jing-muyu-hint { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0; }
+</style>

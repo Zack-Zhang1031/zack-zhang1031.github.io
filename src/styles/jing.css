@@ -327,6 +327,49 @@ a.jing-room:focus-visible { outline: 2px solid var(--jing-accent); outline-offse
   margin: 0.9rem 0;
 }
 
+/* --- 圣像陈列 --- */
+
+.jing-figures {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.jing-figure {
+  margin: 0;
+  background: var(--jing-bg-card);
+  border: 1px solid var(--jing-border);
+  border-radius: var(--jing-radius);
+  overflow: hidden;
+}
+.jing-figure img {
+  display: block;
+  width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+  background: var(--jing-bg-raised);
+}
+.jing-figure figcaption { padding: 1.1rem 1.25rem 1.25rem; }
+.jing-figure h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  letter-spacing: 0.2em;
+}
+.jing-figure-title {
+  font-family: var(--jing-font-ui);
+  font-size: 0.72rem;
+  color: var(--jing-text-dim);
+  letter-spacing: 0.1em;
+  margin-left: 0.7rem;
+}
+.jing-figure figcaption > p { margin: 0 0 0.6rem; font-size: 0.92rem; }
+.jing-figure-credit {
+  font-family: var(--jing-font-ui);
+  font-size: 0.7rem;
+  color: var(--jing-text-dim);
+  line-height: 1.6;
+}
+
 @media (max-width: 560px) {
   .jing-rooms { grid-template-columns: 1fr; }
   .jing-hall-title { font-size: 1.6rem; }

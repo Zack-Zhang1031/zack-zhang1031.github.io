@@ -36,9 +36,11 @@ describe('Jingxin source ledger', () => {
     }
   });
 
-  it('does not treat an incomplete section as publishable', () => {
-    expect(getSourceGate('figures').ready).toBe(false);
-    expect(getSourceGate('audio').ready).toBe(false);
+  it('gates each section by verification state', () => {
+    // media verified 2026-08-27; lots and rules remain gated until
+    // their transcription/fixture tasks complete
+    expect(getSourceGate('figures').ready).toBe(true);
+    expect(getSourceGate('audio').ready).toBe(true);
     expect(getSourceGate('lots').ready).toBe(false);
     expect(getSourceGate('rules').ready).toBe(false);
   });

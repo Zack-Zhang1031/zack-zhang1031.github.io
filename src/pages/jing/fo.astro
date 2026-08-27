@@ -1,0 +1,30 @@
+---
+import JingLayout from '../../layouts/JingLayout.astro';
+import ReverencePanel from '../../components/jing/ReverencePanel.astro';
+import { BUDDHIST_FIGURES } from '../../data/jing/figures';
+---
+
+<JingLayout title="礼佛" description="静心堂 · 佛室">
+  <h1>礼佛</h1>
+  <p class="jing-page-desc">
+    佛室供奉释迦牟尼佛、观世音菩萨、地藏菩萨三尊。图像仅作瞻仰与介绍之用，不是可点击的机关。
+  </p>
+
+  <div class="jing-figures">
+    {BUDDHIST_FIGURES.map((figure) => (
+      <figure class="jing-figure">
+        <img src={figure.image.src} alt={figure.image.alt} loading="lazy" decoding="async" />
+        <figcaption>
+          <h2>{figure.name}<span class="jing-figure-title">{figure.title}</span></h2>
+          <p>{figure.intro}</p>
+          <p class="jing-figure-credit">
+            {figure.image.attribution} · {figure.image.license} ·
+            <a href={figure.image.sourceUrl} target="_blank" rel="noopener">来源</a>
+          </p>
+        </figcaption>
+      </figure>
+    ))}
+  </div>
+
+  <ReverencePanel tradition="buddhist" />
+</JingLayout>
