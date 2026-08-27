@@ -5,3 +5,4 @@
 - [Deep learning course implementation plan](plans/2026-08-26-deep-learning-course-series.md)
 - [Jingxin Hall design specification](specs/2026-08-26-jingxin-hall-design.md)
 - [Jingxin Hall implementation plan](plans/2026-08-26-jingxin-hall.md)
+- [AI research content course specification](specs/2026-08-27-ai-research-content-course-brief.md)

@@ -24,9 +24,11 @@ Add a ten-part deep-learning course to the existing Blog. The series alternates 
 
 - Ordinary lessons target 4,000–6,000 Chinese characters; project/tuning lessons target 7,000–10,000 when the subject requires it.
 - Code must be internally coherent and suitable for Notebook/Colab, Windows CUDA, and CPU fallback.
+- Local model training is not required for article production.
 - Do not claim that unexecuted training was personally run.
-- Do not use unattributed third-party benchmark numbers.
-- Any synthetic project metrics must be called `参考运行记录` or `示例结果`.
+- Experimental numbers may come from official documentation, public datasets, papers, or publicly verifiable benchmarks, and must identify the source.
+- When no verifiable result is available, describe expected behavior and trends without inventing exact metrics.
+- Any synthetic or pedagogical project metrics must be called `参考运行记录` or `示例结果`.
 - Keep dependencies inside code examples; do not add website runtime dependencies.
 
 ## Data Model
@@ -46,7 +48,7 @@ No website API changes. Framework APIs shown in articles must be checked against
 ## Testing
 
 - Validate ten new files and required frontmatter.
-- Scan for prohibited empirical-claim wording.
+- Scan for prohibited empirical-claim wording, unsupported exact metrics, and missing benchmark attribution.
 - Build all Astro routes with `npm run build`.
 - Spot-check the Blog list and at least one lesson at 390px width.
 
