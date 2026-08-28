@@ -4,15 +4,19 @@
  * 铜钱 / 蓍草 / 数字 / 时间 / 手动. Results are rendered only; nothing
  * persists and nothing leaves the browser.
  */
+import SoundControl from './SoundControl.astro';
 ---
 
 <div class="jing-yijing" id="jing-yijing-app">
-  <div class="jing-yj-tabs" role="tablist" aria-label="起卦方式">
-    <button type="button" role="tab" id="yj-tab-coins" aria-controls="yj-panel-coins" aria-selected="true">铜钱</button>
-    <button type="button" role="tab" id="yj-tab-yarrow" aria-controls="yj-panel-yarrow" aria-selected="false">蓍草</button>
-    <button type="button" role="tab" id="yj-tab-numbers" aria-controls="yj-panel-numbers" aria-selected="false">数字</button>
-    <button type="button" role="tab" id="yj-tab-time" aria-controls="yj-panel-time" aria-selected="false">时间</button>
-    <button type="button" role="tab" id="yj-tab-manual" aria-controls="yj-panel-manual" aria-selected="false">手动</button>
+  <div class="jing-yj-topbar">
+    <div class="jing-yj-tabs" role="tablist" aria-label="起卦方式">
+      <button type="button" role="tab" id="yj-tab-coins" aria-controls="yj-panel-coins" aria-selected="true">铜钱</button>
+      <button type="button" role="tab" id="yj-tab-yarrow" aria-controls="yj-panel-yarrow" aria-selected="false">蓍草</button>
+      <button type="button" role="tab" id="yj-tab-numbers" aria-controls="yj-panel-numbers" aria-selected="false">数字</button>
+      <button type="button" role="tab" id="yj-tab-time" aria-controls="yj-panel-time" aria-selected="false">时间</button>
+      <button type="button" role="tab" id="yj-tab-manual" aria-controls="yj-panel-manual" aria-selected="false">手动</button>
+    </div>
+    <SoundControl layers={['rain', 'insects', 'tea']} />
   </div>
 
   <section id="yj-panel-coins" role="tabpanel" aria-labelledby="yj-tab-coins">
@@ -91,6 +95,10 @@
       </div>
     </div>
     <p class="jing-yj-hint">卦象只列名相与结构，不作吉凶断言。结果不保存，刷新即清。</p>
+    <div class="jing-yj-note-actions">
+      <button type="button" id="yj-note-copy" class="jing-btn">复制卦录（可粘贴到笔记）</button>
+      <span id="yj-note-state" class="jing-yj-note-state" role="status"></span>
+    </div>
   </section>
 </div>
 
@@ -99,11 +107,42 @@
   import { deriveAll } from '../../lib/jing/yijing/derive';
   import { YAO_LABEL, isMoving, isYang, type YaoValue } from '../../lib/jing/yijing/lines';
   import { cryptoRandomSource } from '../../lib/jing/random';
+  import { FX_SRC, LAYER_SRC, playFx, registerAmbience } from '../../lib/jing/sound-fx';
 
   const app = document.getElementById('jing-yijing-app');
   if (app) {
     const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
     const result = $('yj-result');
+
+    /* ---- 声音：铜钱动作音 + 可选氛围层（需用户开启） ---- */
+    let soundOn = false;
+    let soundVol = 0.6;
+    let layerAudio: HTMLAudioElement | null = null;
+    let layerId: string | null = null;
+
+    app.querySelector('[data-sound-control]')?.addEventListener('jing:sound', (e) => {
+      const { enabled, volume, layer } = (e as CustomEvent).detail as
+        { enabled: boolean; volume: number; layer: string | null };
+      soundOn = enabled;
+      soundVol = volume;
+      if (!enabled || !layer) {
+        layerAudio?.pause();
+        return;
+      }
+      if (!layerAudio || layerId !== layer) {
+        layerAudio?.pause();
+        layerAudio = new Audio(LAYER_SRC[layer]);
+        layerAudio.loop = true;
+        layerId = layer;
+        registerAmbience(layerAudio);
+      }
+      layerAudio.volume = volume * 0.4;
+      void layerAudio.play().catch(() => {});
+    });
+
+    const fx = (src: string, scale = 1) => {
+      if (soundOn) playFx(src, soundVol * scale);
+    };
 
     /* ---- tabs ---- */
     const tabs = Array.from(app.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
@@ -125,7 +164,7 @@
         const pos = 6 - i;
         const yang = isYang(value);
         const mark = isMoving(value) ? `<span class="jing-yj-mark">${value === 9 ? '○' : '×'}</span>` : '<span class="jing-yj-mark"></span>';
-        return `<div class="jing-yj-line" data-pos="${pos}">`
+        return `<div class="jing-yj-line" data-pos="${pos}" style="animation-delay:${(pos - 1) * 90}ms">`
           + `<span class="jing-yj-bar ${yang ? 'is-yang' : 'is-yin'}">${yang ? '' : '<i></i><i></i>'}</span>`
           + mark
           + `<span class="jing-yj-line-label">${YAO_LABEL[value]}</span></div>`;
@@ -155,6 +194,7 @@
     $('yj-coins-throw').addEventListener('click', () => {
       if (coinValues.length >= 6) return;
       coinValues.push(throwCoins(cryptoRandomSource).value);
+      fx(FX_SRC.coinsToss, 0.85);
       renderCoins();
     });
     $('yj-coins-reset').addEventListener('click', () => {
@@ -214,6 +254,26 @@
       }
     });
 
+    /* ---- 卦录复制：粘贴到笔记房 ---- */
+    $('yj-note-copy').addEventListener('click', async () => {
+      const state = $('yj-note-state');
+      const summary = [
+        $('yj-primary').textContent ?? '',
+        $('yj-moving').textContent ?? '',
+        `之卦：${$('yj-changed').textContent ?? '—'}`,
+        `互卦：${$('yj-mutual').textContent ?? '—'}`,
+        `错卦：${$('yj-opposite').textContent ?? '—'}`,
+        `综卦：${$('yj-reversed').textContent ?? '—'}`,
+        '—— 静心堂 · 周易研习，卦象只列名相，不作吉凶断言',
+      ].join('\n');
+      try {
+        await navigator.clipboard.writeText(summary);
+        state.innerHTML = '已复制。<a class="jing-note-link" href="/jing/notes/">去笔记房粘贴 →</a>';
+      } catch {
+        state.textContent = '复制失败，请手动选择文本复制。';
+      }
+    });
+
     renderCoins();
   }
 </script>
@@ -221,6 +281,9 @@
 <style>
   .jing-yijing { display: flex; flex-direction: column; gap: 1.25rem; }
 
+  .jing-yj-topbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+  .jing-yj-note-actions { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.7rem; flex-wrap: wrap; }
+  .jing-yj-note-state { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); }
   .jing-yj-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
   .jing-yj-tabs [role="tab"] {
     border: 1px solid var(--jing-border); background: var(--jing-bg-raised);
@@ -274,7 +337,11 @@
   .jing-yj-reading { display: flex; gap: 1.6rem; align-items: flex-start; flex-wrap: wrap; }
 
   .jing-yj-diagram { display: flex; flex-direction: column; gap: 0.4rem; min-width: 150px; }
-  .jing-yj-line { display: flex; align-items: center; gap: 0.6rem; }
+  .jing-yj-line { display: flex; align-items: center; gap: 0.6rem; transform-origin: left center; animation: jing-yao-in 0.5s ease both; }
+  @keyframes jing-yao-in {
+    from { opacity: 0; transform: scaleX(0.35); }
+    to { opacity: 1; transform: none; }
+  }
   .jing-yj-bar { height: 12px; width: 110px; display: inline-flex; gap: 14px; }
   .jing-yj-bar.is-yang { background: var(--jing-text); border-radius: 2px; }
   .jing-yj-bar.is-yin i { flex: 1; background: var(--jing-text); border-radius: 2px; }

@@ -13,6 +13,19 @@ const {
   description = '静心堂 — 本地运行的传统文化研习空间',
   isHall = false,
 } = Astro.props;
+
+const ROOMS = [
+  { href: '/jing/muyu/', name: '木鱼' },
+  { href: '/jing/fo/', name: '礼佛' },
+  { href: '/jing/dao/', name: '敬道' },
+  { href: '/jing/yixue/', name: '易学' },
+  { href: '/jing/bazi/', name: '八字' },
+  { href: '/jing/yijing/', name: '周易' },
+  { href: '/jing/qimen/', name: '奇门' },
+  { href: '/jing/chouqian/', name: '抽签' },
+  { href: '/jing/notes/', name: '笔记' },
+];
+const currentPath = Astro.url.pathname;
 ---
 
 <!DOCTYPE html>
@@ -22,7 +35,7 @@ const {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex,nofollow" />
   <meta name="description" content={description} />
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/svg+xml" href="/jing/favicon.svg" />
   <title>{title} · 静心堂</title>
   <script is:inline>
     // Share the public site's light/dark convention; no Jingxin personal data
@@ -55,6 +68,17 @@ const {
     </footer>
   </div>
 
+  {!isHall && (
+    <nav class="jing-room-nav" aria-label="房间快捷导航">
+      <ul>
+        <li><a href="/jing/" aria-current={currentPath === '/jing/' ? 'page' : undefined}>堂</a></li>
+        {ROOMS.map((room) => (
+          <li><a href={room.href} aria-current={currentPath === room.href ? 'page' : undefined}>{room.name}</a></li>
+        ))}
+      </ul>
+    </nav>
+  )}
+
   <button id="jing-back-to-top" class="jing-back-to-top" type="button" aria-label="返回页面顶端" title="返回顶部">
     <span aria-hidden="true">↑</span>
   </button>
@@ -84,6 +108,35 @@ const {
         window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
       });
       updateTop();
+
+      /* 入定：静置四分钟后全堂微暗，任何输入即回神 */
+      var zenTimer = null;
+      function wake() {
+        document.body.classList.remove('is-zen');
+        if (zenTimer) clearTimeout(zenTimer);
+        zenTimer = setTimeout(function () {
+          document.body.classList.add('is-zen');
+        }, 4 * 60 * 1000);
+      }
+      ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+        window.addEventListener(ev, wake, { passive: true });
+      });
+      wake();
+
+      /* 翻页纸声：房间之间切换时一记极轻纸声（需任一房间开过声音） */
+      document.addEventListener('click', function (e) {
+        var link = e.target && e.target.closest ? e.target.closest('a[href^="/jing/"]') : null;
+        if (!link) return;
+        if (sessionStorage.getItem('jing.sound-on') !== '1') return;
+        try {
+          var vol = 0.5;
+          var raw = localStorage.getItem('jing.settings.v1');
+          if (raw) vol = JSON.parse(raw).volume || 0.5;
+          var audio = new Audio('/jing/audio/paper-unfurl.mp3');
+          audio.volume = Math.min(0.5, vol * 0.5);
+          audio.play().catch(function () {});
+        } catch (err) { /* 声音只是点缀，失败即静默 */ }
+      }, true);
     })();
   </script>
 </body>

@@ -18,26 +18,37 @@ import SoundControl from './SoundControl.astro';
     <div class="jing-muyu-stat"><span class="jing-muyu-num" id="muyu-elapsed">00:00</span><span class="jing-muyu-label">时长</span></div>
   </div>
 
-  <button type="button" id="muyu-fish" class="jing-muyu-fish" aria-label="敲一下木鱼">
-    <svg viewBox="0 0 120 96" aria-hidden="true" focusable="false">
-      <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-body" />
-      <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-sheen" />
-      <circle cx="38" cy="40" r="5" class="fish-eye" />
-      <path d="M 78 30 Q 96 22 104 34 Q 96 40 84 40" class="fish-mouth" />
-      <path d="M 22 66 Q 60 84 98 66" class="fish-belly" />
-    </svg>
-  </button>
+  <div class="jing-muyu-stage">
+    <button type="button" id="muyu-fish" class="jing-muyu-fish" aria-label="敲一下木鱼">
+      <svg viewBox="0 0 120 96" aria-hidden="true" focusable="false">
+        <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-body" />
+        <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-sheen" />
+        <circle cx="38" cy="40" r="5" class="fish-eye" />
+        <path d="M 78 30 Q 96 22 104 34 Q 96 40 84 40" class="fish-mouth" />
+        <path d="M 22 66 Q 60 84 98 66" class="fish-belly" />
+      </svg>
+    </button>
+  </div>
 
   <div class="jing-muyu-controls">
     <button type="button" id="muyu-pause" class="jing-btn" aria-pressed="false">暂停</button>
     <button type="button" id="muyu-reset" class="jing-btn">归零</button>
-    <SoundControl />
+    <SoundControl layers={['rain', 'insects', 'tea']} />
   </div>
-  <p class="jing-muyu-hint">点击、轻触或按空格键敲击。声音默认关闭，需手动开启。</p>
+  <div class="jing-muyu-sit">
+    <label class="jing-muyu-sit-label">安坐
+      <input id="muyu-sit-min" type="number" min="1" max="120" step="1" value="10" aria-label="安坐分钟数" />
+      分钟
+    </label>
+    <button type="button" id="muyu-sit-start" class="jing-btn">开始安坐</button>
+    <span id="muyu-sit-status" class="jing-muyu-sit-status" role="status"></span>
+  </div>
+  <p class="jing-muyu-hint">点击、轻触或按空格键敲击。声音默认关闭，需手动开启。安坐只是倒计时，到时一记引磬，别无他物。</p>
 </div>
 
 <script>
   import { AMBIENCE_SRC, WOODFISH_SOUND_SRC } from '../../data/jing/figures';
+  import { LAYER_SRC, playFx, registerAmbience } from '../../lib/jing/sound-fx';
 
   const app = document.getElementById('jing-muyu-app');
   if (app) {
@@ -58,21 +69,43 @@ import SoundControl from './SoundControl.astro';
     /* audio is created only after explicit opt-in via SoundControl */
     let strikeAudio: HTMLAudioElement | null = null;
     let waterAudio: HTMLAudioElement | null = null;
+    let layerAudio: HTMLAudioElement | null = null;
+    let layerId: string | null = null;
+    let soundOn = false;
+    let soundVol = 0.6;
 
     const soundControl = app.querySelector('[data-sound-control]');
     soundControl?.addEventListener('jing:sound', (e) => {
-      const { enabled, volume } = (e as CustomEvent).detail as { enabled: boolean; volume: number };
+      const { enabled, volume, layer } = (e as CustomEvent).detail as
+        { enabled: boolean; volume: number; layer: string | null };
+      soundOn = enabled;
+      soundVol = volume;
       if (enabled && !strikeAudio) {
         strikeAudio = new Audio(WOODFISH_SOUND_SRC);
         strikeAudio.preload = 'auto';
         waterAudio = new Audio(AMBIENCE_SRC.water);
         waterAudio.loop = true;
+        registerAmbience(waterAudio);
       }
       if (strikeAudio) strikeAudio.volume = volume;
       if (waterAudio) {
         waterAudio.volume = volume * 0.5;
         if (enabled) void waterAudio.play().catch(() => {});
         else waterAudio.pause();
+      }
+      /* 可选第二氛围层：雨 / 虫 / 茶 */
+      if (!enabled || !layer) {
+        layerAudio?.pause();
+      } else {
+        if (!layerAudio || layerId !== layer) {
+          layerAudio?.pause();
+          layerAudio = new Audio(LAYER_SRC[layer]);
+          layerAudio.loop = true;
+          layerId = layer;
+          registerAmbience(layerAudio);
+        }
+        layerAudio.volume = volume * 0.35;
+        void layerAudio.play().catch(() => {});
       }
     });
 
@@ -86,8 +119,13 @@ import SoundControl from './SoundControl.astro';
         const recent = intervals.slice(-8);
         const avgMs = recent.reduce((a, b) => a + b, 0) / recent.length;
         rhythmEl.textContent = avgMs > 0 ? String(Math.round(60000 / avgMs)) : '—';
+        /* 节奏方差足够低时，鱼身笼一层平稳微光（纯粹视觉反馈，无功德语义） */
+        const variance = recent.reduce((a, b) => a + (b - avgMs) ** 2, 0) / recent.length;
+        const cv = avgMs > 0 ? Math.sqrt(variance) / avgMs : Infinity;
+        fish.classList.toggle('is-steady', recent.length >= 6 && cv < 0.12);
       } else {
         rhythmEl.textContent = '—';
+        fish.classList.remove('is-steady');
       }
     };
 
@@ -101,7 +139,7 @@ import SoundControl from './SoundControl.astro';
       }, 1000);
     };
 
-    fish.addEventListener('click', () => {
+    fish.addEventListener('click', (e) => {
       if (paused) return;
       const now = performance.now();
       if (lastStrike > 0) intervals.push(now - lastStrike);
@@ -114,9 +152,28 @@ import SoundControl from './SoundControl.astro';
         strikeAudio.currentTime = 0;
         void strikeAudio.play().catch(() => {});
       }
+      /* 鱼身向敲击侧微倾（键盘敲击居中不倾） */
+      const fishRect = fish.getBoundingClientRect();
+      const rel = e.clientX
+        ? (e.clientX - (fishRect.left + fishRect.width / 2)) / (fishRect.width / 2)
+        : 0;
+      fish.style.setProperty('--hit-tilt', `${(rel * 2).toFixed(2)}deg`);
       fish.classList.remove('is-hit');
       void fish.offsetWidth;
       fish.classList.add('is-hit');
+
+      /* 涟漪自敲击点荡开 */
+      const stage = fish.parentElement!;
+      const stageRect = stage.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'jing-muyu-ripple';
+      ripple.setAttribute('aria-hidden', 'true');
+      ripple.style.left = `${e.clientX ? e.clientX - stageRect.left : stageRect.width / 2}px`;
+      ripple.style.top = `${e.clientY ? e.clientY - stageRect.top : stageRect.height / 2}px`;
+      ripple.style.width = '40%';
+      ripple.style.height = '42%';
+      stage.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 1000);
     });
 
     pauseBtn.addEventListener('click', () => {
@@ -141,6 +198,42 @@ import SoundControl from './SoundControl.astro';
       pauseBtn.setAttribute('aria-pressed', 'false');
       if (timer) { clearInterval(timer); timer = null; }
       render();
+    });
+
+    /* ---- 安坐计时：纯倒计时，到时一记引磬 ---- */
+    const sitMin = document.getElementById('muyu-sit-min') as HTMLInputElement;
+    const sitStartBtn = document.getElementById('muyu-sit-start') as HTMLButtonElement;
+    const sitStatus = document.getElementById('muyu-sit-status')!;
+    let sitRemaining = 0;
+    let sitTimer: ReturnType<typeof setInterval> | null = null;
+
+    const stopSit = (completed: boolean) => {
+      if (sitTimer) { clearInterval(sitTimer); sitTimer = null; }
+      sitStartBtn.textContent = '开始安坐';
+      sitMin.disabled = false;
+      if (completed) {
+        sitStatus.textContent = '安坐已满。';
+        if (soundOn) playFx(AMBIENCE_SRC.chime, soundVol * 0.8);
+      }
+    };
+
+    sitStartBtn.addEventListener('click', () => {
+      if (sitTimer) {
+        stopSit(false);
+        sitStatus.textContent = '已作罢。';
+        return;
+      }
+      const minutes = Math.min(120, Math.max(1, Math.round(Number(sitMin.value) || 10)));
+      sitMin.value = String(minutes);
+      sitRemaining = minutes * 60;
+      sitStartBtn.textContent = '结束安坐';
+      sitMin.disabled = true;
+      sitStatus.textContent = `余 ${fmt(sitRemaining)}`;
+      sitTimer = setInterval(() => {
+        sitRemaining -= 1;
+        if (sitRemaining <= 0) stopSit(true);
+        else sitStatus.textContent = `余 ${fmt(sitRemaining)}`;
+      }, 1000);
     });
 
     render();
@@ -172,16 +265,61 @@ import SoundControl from './SoundControl.astro';
   .fish-mouth { fill: none; stroke: #2d1d0e; stroke-width: 3; stroke-linecap: round; }
   .fish-belly { fill: none; stroke: rgba(45, 29, 14, 0.55); stroke-width: 2.5; stroke-linecap: round; }
 
-  .jing-muyu-fish.is-hit svg { animation: muyu-hit 0.18s ease; }
+  .jing-muyu-fish.is-hit svg { animation: muyu-hit 0.2s ease; }
   @keyframes muyu-hit {
-    0% { transform: scale(1); }
-    40% { transform: scale(0.94); }
-    100% { transform: scale(1); }
+    0% { transform: scale(1) rotate(0deg); }
+    40% { transform: scale(0.94) rotate(var(--hit-tilt, 0deg)); }
+    100% { transform: scale(1) rotate(0deg); }
   }
+
+  /* 敲击涟漪：动画禁用时保持不可见 */
+  .jing-muyu-stage { position: relative; display: flex; justify-content: center; }
+  .jing-muyu-ripple {
+    position: absolute; left: 50%; top: 50%;
+    width: 60%; height: 62%;
+    transform: translate(-50%, -50%);
+    border: 1.5px solid var(--jing-accent);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    animation: muyu-ripple 0.9s ease-out;
+  }
+  @keyframes muyu-ripple {
+    from { opacity: 0.55; transform: translate(-50%, -50%) scale(0.72); }
+    to { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
+  }
+
+  /* 节奏稳定时的呼吸微光 */
+  .jing-muyu-fish.is-steady svg { animation: muyu-steady 4.5s ease-in-out infinite; }
+  @keyframes muyu-steady {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(184, 147, 74, 0.25)); }
+    50% { filter: drop-shadow(0 0 14px rgba(184, 147, 74, 0.5)); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .jing-muyu-fish.is-hit svg { animation: none; }
+    .jing-muyu-fish.is-hit svg,
+    .jing-muyu-ripple,
+    .jing-muyu-fish.is-steady svg { animation: none; }
+    .jing-muyu-ripple { opacity: 0; }
+    .jing-muyu-fish.is-steady svg { filter: drop-shadow(0 0 8px rgba(184, 147, 74, 0.35)); }
   }
 
   .jing-muyu-controls { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
-  .jing-muyu-hint { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0; }
+
+  .jing-muyu-sit { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
+  .jing-muyu-sit-label {
+    font-family: var(--jing-font-ui); font-size: 0.78rem; color: var(--jing-text-dim);
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .jing-muyu-sit-label input {
+    width: 3.4rem; text-align: center; font-family: inherit; font-size: 0.85rem;
+    background: var(--jing-bg-raised); color: var(--jing-text);
+    border: 1px solid var(--jing-border); border-radius: 6px; padding: 0.2rem 0.3rem;
+  }
+  .jing-muyu-sit-status {
+    font-family: var(--jing-font-ui); font-size: 0.78rem; color: var(--jing-accent);
+    font-variant-numeric: tabular-nums; min-width: 5em;
+  }
+
+  .jing-muyu-hint { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0; max-width: 34em; text-align: center; }
 </style>

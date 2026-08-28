@@ -41,6 +41,16 @@ test.describe('Jingxin woodfish room', () => {
     await context.close();
   });
 
+  test('offers a sit countdown with a cancel path', async ({ page }) => {
+    await page.goto('/jing/muyu/');
+    await page.locator('#muyu-sit-min').fill('1');
+    await page.locator('#muyu-sit-start').click();
+    await expect(page.locator('#muyu-sit-status')).toContainText('余');
+    await expect(page.locator('#muyu-sit-start')).toHaveText('结束安坐');
+    await page.locator('#muyu-sit-start').click();
+    await expect(page.locator('#muyu-sit-status')).toContainText('已作罢');
+  });
+
   test('contains no merit/rank/reward language', async ({ page }) => {
     await page.goto('/jing/muyu/');
     const body = await page.textContent('body');
@@ -124,5 +134,27 @@ test.describe('Jingxin reverence rooms', () => {
     await page.waitForTimeout(500);
     // buddhist room audio must never be requested from the taoist room
     expect(audioRequests.some((u) => u.includes('/chime.') || u.includes('/bell.'))).toBe(false);
+  });
+});
+
+test.describe('Jingxin reverence scene animation', () => {
+  test('buddhist scene animates during guided phases when motion is allowed', async ({ page }) => {
+    await page.goto('/jing/fo/');
+    await page.locator('#reverence-buddhist .jing-reverence-begin').click();
+    const scene = page.locator('#reverence-buddhist .jing-scene');
+    await expect(scene).toBeVisible();
+    await expect(scene).toHaveClass(/is-animated/);
+    await expect(page.locator('#reverence-buddhist .jing-smoke-wisp')).toHaveCount(2);
+  });
+
+  test('taoist scene shows taiji and stays static under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/jing/dao/');
+    await page.locator('#reverence-taoist .jing-reverence-begin').click();
+    const scene = page.locator('#reverence-taoist .jing-scene');
+    await expect(scene).toBeVisible();
+    await expect(scene).not.toHaveClass(/is-animated/);
+    await expect(page.locator('#reverence-taoist .jing-taiji')).toHaveCount(1);
+    await expect(page.locator('#reverence-taoist .jing-phase-text')).toHaveText('一礼 · 静心');
   });
 });

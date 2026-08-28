@@ -39,11 +39,18 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
       <summary>{SCHOOL_LABEL[school]}<span class="jing-qm-ju" id={`qm-ju-${school}`}></span></summary>
       <div class="jing-qm-board" id={`qm-board-${school}`}></div>
       <p class="jing-qm-meta" id={`qm-meta-${school}`}></p>
-      <ol class="jing-qm-derivation" id={`qm-derivation-${school}`}></ol>
+      <details class="jing-qm-steps">
+        <summary>推演步骤</summary>
+        <ol class="jing-qm-derivation" id={`qm-derivation-${school}`}></ol>
+      </details>
     </details>
   ))}
 
   <p class="jing-qm-hint">盘面仅作三派规则对照研习，不作吉凶断言。结果不保存，刷新即清。</p>
+  <div class="jing-qm-actions">
+    <button type="button" id="qm-note-copy" class="jing-btn">复制对照摘要（可粘贴到笔记）</button>
+    <span id="qm-note-state" class="jing-qm-note-state" role="status"></span>
+  </div>
 </section>
 
 <script>
@@ -61,9 +68,9 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     const DUN_LABEL = { yang: '阳遁', yin: '阴遁' } as const;
 
     const renderBoard = (chart: QimenChart) =>
-      GRID_ORDER.map((palaceNum) => {
+      GRID_ORDER.map((palaceNum, i) => {
         const cell = chart.palaces.find((p) => p.palace === palaceNum)!;
-        return `<div class="jing-qm-cell${palaceNum === 5 ? ' is-center' : ''}">`
+        return `<div class="jing-qm-cell${palaceNum === 5 ? ' is-center' : ''}" style="animation-delay:${i * 70}ms">`
           + `<span class="jing-qm-cell-god">${cell.god}</span>`
           + `<span class="jing-qm-cell-star">${cell.star}</span>`
           + `<span class="jing-qm-cell-door">${cell.door}</span>`
@@ -113,6 +120,27 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     form.addEventListener('reset', () => {
       errorEl.hidden = true;
       result.hidden = true;
+    });
+
+    /* ---- 对照摘要复制：粘贴到笔记房 ---- */
+    $('qm-note-copy').addEventListener('click', async () => {
+      const state = $('qm-note-state');
+      const lines = [
+        $('qm-context').textContent ?? '',
+        $('qm-agree').textContent ?? '',
+      ];
+      for (const school of ['chai-bu', 'zhi-run', 'mao-shan']) {
+        const summary = document.querySelector(`#qm-school-${school} > summary`)?.textContent?.trim() ?? school;
+        const meta = $(`qm-meta-${school}`).textContent ?? '';
+        lines.push(`${summary}｜${meta}`);
+      }
+      lines.push('—— 静心堂 · 奇门三派对照研习，不作吉凶断言');
+      try {
+        await navigator.clipboard.writeText(lines.join('\n'));
+        state.innerHTML = '已复制。<a class="jing-note-link" href="/jing/notes/">去笔记房粘贴 →</a>';
+      } catch {
+        state.textContent = '复制失败，请手动选择文本复制。';
+      }
     });
 
     window.addEventListener('pageshow', () => {
@@ -166,6 +194,16 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     background: var(--jing-bg-card); padding: 0.35rem 0.3rem;
     display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
     font-size: 0.85rem; line-height: 1.5;
+    animation: jing-cell-in 0.45s ease both;
+  }
+  @keyframes jing-cell-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .jing-qm-steps { margin-top: 0.4rem; }
+  .jing-qm-steps summary {
+    letter-spacing: 0.1em; font-family: var(--jing-font-ui);
+    font-size: 0.72rem; color: var(--jing-text-dim); padding: 0.2rem 0;
   }
   .jing-qm-cell.is-center { background: var(--jing-accent-soft); }
   .jing-qm-cell-god { font-family: var(--jing-font-ui); font-size: 0.62rem; color: var(--jing-vermilion); min-height: 1em; }
@@ -176,6 +214,8 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
   .jing-qm-cell-name { font-family: var(--jing-font-ui); font-size: 0.62rem; color: var(--jing-text-dim); }
 
   .jing-qm-meta { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0.4rem 0; }
+  .jing-qm-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .jing-qm-note-state { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); }
   .jing-qm-derivation { margin: 0; padding-left: 1.4rem; font-size: 0.8rem; color: var(--jing-text-dim); }
 
   @media (max-width: 560px) {

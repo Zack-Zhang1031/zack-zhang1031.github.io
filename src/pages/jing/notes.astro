@@ -9,5 +9,23 @@ import LocalNotebook from '../../components/jing/LocalNotebook.astro';
     把想留住的推演片段或心得记在这里。笔记用你设置的密码在本机加密，
     明文只存在于解锁期间，闲置自动锁定，可导出为 <code>.jing</code> 加密文件备份。
   </p>
+  <p class="jing-notes-today" id="notes-today"></p>
   <LocalNotebook />
 </JingLayout>
+
+<script>
+  /* 今日问候条：日干支 + 农历 + 朔望 + 节气（若有），走历法引擎，纯本地 */
+  import { todayCalendar } from '../../lib/jing/calendar/engine';
+
+  const el = document.getElementById('notes-today');
+  if (el) {
+    const today = todayCalendar();
+    const jieqi = today.jieqi ? ` · 时值${today.jieqi}` : '';
+    const shuoWang = today.lunarDay === 1 ? ' · 今日朔' : today.lunarDay === 15 ? ' · 今日望' : '';
+    el.textContent = `今日 ${today.dayGanzhi} 日 · ${today.lunarText}${shuoWang}${jieqi} · 记一笔，或只是坐一会儿`;
+    /* 冬季节气日，问候条带一点雪意 */
+    if (today.jieqi && ['立冬', '小雪', '大雪', '冬至', '小寒', '大寒'].includes(today.jieqi)) {
+      el.classList.add('is-snow');
+    }
+  }
+</script>

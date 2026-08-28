@@ -164,9 +164,9 @@ import { CITIES } from '../../data/jing/cities';
           + ` → ${pillars.year} / ${pillars.month} / ${pillars.day} / ${pillars.hour}`
           + `（日主${envelope.output.dayMaster.stem}${envelope.output.dayMaster.element}）`;
 
-        $('bazi-pillars').innerHTML = (['year', 'month', 'day', 'hour'] as const).map((key) => {
+        $('bazi-pillars').innerHTML = (['year', 'month', 'day', 'hour'] as const).map((key, i) => {
           const god = key === 'day' ? '日主' : envelope.output.tenGods[key];
-          return `<div class="jing-bazi-pillar"><span class="jing-bazi-pillar-name">${PILLAR_NAMES[key]}</span>`
+          return `<div class="jing-bazi-pillar" style="animation-delay:${i * 120}ms"><span class="jing-bazi-pillar-name">${PILLAR_NAMES[key]}</span>`
             + `<strong>${pillars[key]}</strong><span class="jing-bazi-pillar-god">${god}</span></div>`;
         }).join('');
         $('bazi-elements').textContent = '五行分布：'
@@ -205,7 +205,7 @@ import { CITIES } from '../../data/jing/cities';
       const state = $('bazi-copy-state');
       try {
         await navigator.clipboard.writeText(text);
-        state.textContent = '已复制。';
+        state.innerHTML = '已复制。<a class="jing-note-link" href="/jing/notes/">去笔记房粘贴 →</a>';
       } catch {
         state.textContent = '复制失败，请手动选择文本复制。';
       }
@@ -287,6 +287,11 @@ import { CITIES } from '../../data/jing/cities';
     display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
     border: 1px solid var(--jing-border); border-radius: 8px; padding: 0.7rem 0.3rem;
     background: var(--jing-bg-card);
+    animation: jing-pillar-in 0.55s ease both;
+  }
+  @keyframes jing-pillar-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
   }
   .jing-bazi-pillar strong { font-size: 1.4rem; letter-spacing: 0.15em; color: var(--jing-text); }
   .jing-bazi-pillar-name, .jing-bazi-pillar-god {
