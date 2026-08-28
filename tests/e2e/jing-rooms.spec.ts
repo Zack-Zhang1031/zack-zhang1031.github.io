@@ -126,3 +126,25 @@ test.describe('Jingxin reverence rooms', () => {
     expect(audioRequests.some((u) => u.includes('/chime.') || u.includes('/bell.'))).toBe(false);
   });
 });
+
+test.describe('Jingxin reverence scene animation', () => {
+  test('buddhist scene animates during guided phases when motion is allowed', async ({ page }) => {
+    await page.goto('/jing/fo/');
+    await page.locator('#reverence-buddhist .jing-reverence-begin').click();
+    const scene = page.locator('#reverence-buddhist .jing-scene');
+    await expect(scene).toBeVisible();
+    await expect(scene).toHaveClass(/is-animated/);
+    await expect(page.locator('#reverence-buddhist .jing-smoke-wisp')).toHaveCount(2);
+  });
+
+  test('taoist scene shows taiji and stays static under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/jing/dao/');
+    await page.locator('#reverence-taoist .jing-reverence-begin').click();
+    const scene = page.locator('#reverence-taoist .jing-scene');
+    await expect(scene).toBeVisible();
+    await expect(scene).not.toHaveClass(/is-animated/);
+    await expect(page.locator('#reverence-taoist .jing-taiji')).toHaveCount(1);
+    await expect(page.locator('#reverence-taoist .jing-phase-text')).toHaveText('一礼 · 静心');
+  });
+});

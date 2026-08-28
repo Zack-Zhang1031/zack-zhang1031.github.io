@@ -26,6 +26,46 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
   </div>
 
   <div class="jing-reverence-phases" data-stage="phases" hidden>
+    <div class="jing-scene" data-scene={tradition} aria-hidden="true">
+      {tradition === 'buddhist' ? (
+        <svg class="jing-scene-svg" viewBox="0 0 160 120">
+          <!-- 香烟 -->
+          <g class="jing-smoke" fill="none" stroke="var(--jing-text-dim)" stroke-width="1.2" stroke-linecap="round">
+            <path class="jing-smoke-wisp w1" d="M72 74 C 70 62, 76 54, 72 42 C 68 32, 74 24, 71 14" />
+            <path class="jing-smoke-wisp w2" d="M84 74 C 86 62, 80 52, 85 40 C 89 30, 83 22, 86 12" />
+          </g>
+          <!-- 香 -->
+          <line x1="72" y1="76" x2="72" y2="92" stroke="var(--jing-vermilion)" stroke-width="1.6" />
+          <line x1="84" y1="76" x2="84" y2="92" stroke="var(--jing-vermilion)" stroke-width="1.6" />
+          <circle class="jing-ember" cx="72" cy="75" r="1.8" fill="var(--jing-vermilion)" />
+          <circle class="jing-ember e2" cx="84" cy="75" r="1.8" fill="var(--jing-vermilion)" />
+          <!-- 炉 -->
+          <path d="M52 92 h52 l-5 14 a24 8 0 0 1 -42 0 z"
+            fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.4" />
+          <!-- 莲 -->
+          <g class="jing-lotus" stroke="var(--jing-accent)" stroke-width="1.2" fill="var(--jing-accent-soft)">
+            <path class="jing-petal p1" d="M128 108 C 120 100, 120 90, 128 84 C 136 90, 136 100, 128 108 Z" />
+            <path class="jing-petal p2" d="M128 108 C 118 106, 112 98, 114 90 C 122 92, 128 98, 128 108 Z" />
+            <path class="jing-petal p3" d="M128 108 C 138 106, 144 98, 142 90 C 134 92, 128 98, 128 108 Z" />
+          </g>
+        </svg>
+      ) : (
+        <svg class="jing-scene-svg" viewBox="0 0 160 120">
+          <!-- 太极 -->
+          <g class="jing-taiji" transform="translate(56 52)">
+            <circle r="26" fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.4" />
+            <path d="M0 -26 A 26 26 0 0 1 0 26 A 13 13 0 0 1 0 0 A 13 13 0 0 0 0 -26 Z" fill="var(--jing-accent)" />
+            <circle cy="-13" r="3.2" fill="var(--jing-accent)" />
+            <circle cy="13" r="3.2" fill="var(--jing-bg-card)" />
+          </g>
+          <!-- 云烟 -->
+          <g class="jing-smoke" fill="none" stroke="var(--jing-text-dim)" stroke-width="1.2" stroke-linecap="round">
+            <path class="jing-smoke-wisp w1" d="M104 86 C 112 80, 108 70, 116 64 C 124 58, 120 48, 128 42" />
+            <path class="jing-smoke-wisp w2" d="M116 92 C 126 88, 124 76, 134 70 C 142 65, 140 56, 148 50" />
+          </g>
+        </svg>
+      )}
+    </div>
     <div class="jing-breath-circle" aria-hidden="true"></div>
     <p class="jing-phase-text" role="status" aria-live="polite"></p>
     <button type="button" class="jing-btn jing-phase-next" hidden>继续</button>
@@ -51,6 +91,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     const phaseText = root.querySelector<HTMLElement>('.jing-phase-text')!;
     const nextBtn = root.querySelector<HTMLButtonElement>('.jing-phase-next')!;
     const circle = root.querySelector<HTMLElement>('.jing-breath-circle')!;
+    const scene = root.querySelector<HTMLElement>('.jing-scene')!;
 
     const phases = ['一礼 · 静心', '二礼 · 致敬', '三礼 · 安住'];
 
@@ -88,6 +129,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
 
     const runStatic = (index: number) => {
       circle.classList.remove('is-animated');
+      scene.classList.remove('is-animated');
       if (index >= phases.length) {
         showStage('done');
         return;
@@ -100,11 +142,13 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     const runAnimated = () => {
       nextBtn.hidden = true;
       circle.classList.add('is-animated');
+      scene.classList.add('is-animated');
       phases.forEach((text, i) => {
         timers.push(setTimeout(() => { phaseText.textContent = text; }, i * 6000));
       });
       timers.push(setTimeout(() => {
         circle.classList.remove('is-animated');
+        scene.classList.remove('is-animated');
         showStage('done');
       }, phases.length * 6000));
     };
@@ -158,4 +202,47 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
 
   .jing-reverence-end { color: var(--jing-text-dim); letter-spacing: 0.1em; }
   .jing-reverence-done { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+
+  /* ---- 礼敬场景动画（仅动态路径，reduced-motion 静态展示） ---- */
+  .jing-scene { display: flex; justify-content: center; }
+  .jing-scene-svg { width: 150px; height: auto; }
+
+  .jing-smoke-wisp { stroke-dasharray: 4 5; opacity: 0.5; }
+  .jing-scene.is-animated .jing-smoke-wisp { animation: jing-smoke-rise 4.5s linear infinite; }
+  .jing-scene.is-animated .jing-smoke-wisp.w2 { animation-delay: 1.8s; }
+  @keyframes jing-smoke-rise {
+    0% { stroke-dashoffset: 0; opacity: 0.15; }
+    35% { opacity: 0.6; }
+    100% { stroke-dashoffset: -36; opacity: 0.15; }
+  }
+
+  .jing-scene.is-animated .jing-ember { animation: jing-ember-glow 2.2s ease-in-out infinite; }
+  .jing-scene.is-animated .jing-ember.e2 { animation-delay: 1.1s; }
+  @keyframes jing-ember-glow {
+    0%, 100% { opacity: 0.5; r: 1.5; }
+    50% { opacity: 1; r: 2.2; }
+  }
+
+  .jing-lotus .jing-petal { opacity: 0.55; }
+  .jing-scene.is-animated .jing-petal { animation: jing-petal-open 6s ease-in-out infinite; }
+  .jing-scene.is-animated .jing-petal.p2 { animation-delay: 2s; }
+  .jing-scene.is-animated .jing-petal.p3 { animation-delay: 4s; }
+  @keyframes jing-petal-open {
+    0%, 100% { opacity: 0.35; transform: scale(0.96); }
+    50% { opacity: 0.95; transform: scale(1.02); }
+  }
+  .jing-lotus .jing-petal { transform-origin: 128px 108px; }
+
+  .jing-scene.is-animated .jing-taiji { animation: jing-taiji-turn 24s linear infinite; transform-origin: 56px 52px; transform-box: view-box; }
+  @keyframes jing-taiji-turn {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .jing-scene.is-animated .jing-smoke-wisp,
+    .jing-scene.is-animated .jing-ember,
+    .jing-scene.is-animated .jing-petal,
+    .jing-scene.is-animated .jing-taiji { animation: none; }
+  }
 </style>

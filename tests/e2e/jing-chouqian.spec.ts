@@ -34,6 +34,7 @@ test.describe('Jingxin lot room', () => {
   test('cups never overwrite the drawn lot', async ({ page }) => {
     await page.goto('/jing/chouqian/');
     await page.locator('#lot-draw').click();
+    await expect(page.locator('#lot-result')).toBeVisible({ timeout: 4000 });
     const title = await page.locator('#lot-title').textContent();
 
     await page.locator('#lot-cups').click();
@@ -48,6 +49,7 @@ test.describe('Jingxin lot room', () => {
   test('rapid redraw keeps the original lot and shows a calm warning', async ({ page }) => {
     await page.goto('/jing/chouqian/');
     await page.locator('#lot-draw').click();
+    await expect(page.locator('#lot-result')).toBeVisible({ timeout: 4000 });
     const title = await page.locator('#lot-title').textContent();
 
     await page.locator('#lot-draw').click();
@@ -58,6 +60,7 @@ test.describe('Jingxin lot room', () => {
   test('switching collection does not clear the current lot', async ({ page }) => {
     await page.goto('/jing/chouqian/');
     await page.locator('#lot-draw').click();
+    await expect(page.locator('#lot-result')).toBeVisible({ timeout: 4000 });
     const title = await page.locator('#lot-title').textContent();
     await page.locator('#lot-tab-luzu').click();
     await expect(page.locator('#lot-edition')).toContainText('吕祖灵签');
@@ -87,5 +90,25 @@ test.describe('Jingxin lot room', () => {
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(1);
+  });
+});
+
+test.describe('Jingxin lot draw animation', () => {
+  test('plays the tube-shake animation before revealing the lot', async ({ page }) => {
+    await page.goto('/jing/chouqian/');
+    await page.locator('#lot-draw').click();
+    await expect(page.locator('#lot-stage')).toBeVisible();
+    await expect(page.locator('#lot-stage')).toHaveClass(/is-playing/);
+    await expect(page.locator('#lot-result')).toBeVisible({ timeout: 4000 });
+    await expect(page.locator('#lot-stage')).toBeHidden();
+  });
+
+  test('reduced motion skips the animation and reveals immediately', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/jing/chouqian/');
+    await page.locator('#lot-draw').click();
+    await expect(page.locator('#lot-result')).toBeVisible();
+    await expect(page.locator('#lot-stage')).toBeHidden();
+    await expect(page.locator('#lot-title')).toContainText('签');
   });
 });
