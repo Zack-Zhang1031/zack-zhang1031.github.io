@@ -120,16 +120,34 @@ test.describe('Jingxin reverence rooms', () => {
     expect(body).not.toMatch(/保佑|灵验|必灵|功德\+|加持成功/);
   });
 
+  test('only the start stage is visible before reverence begins', async ({ page }) => {
+    await page.goto('/jing/fo/');
+    await expect(page.locator('#reverence-buddhist [data-stage="phases"]')).toBeHidden();
+    await expect(page.locator('#reverence-buddhist [data-stage="done"]')).toBeHidden();
+    await expect(page.locator('#reverence-buddhist .jing-phase-next')).toBeHidden();
+
+    await page.locator('#reverence-buddhist .jing-reverence-begin').click();
+    await expect(page.locator('#reverence-buddhist [data-stage="start"]')).toBeHidden();
+    await expect(page.locator('#reverence-buddhist [data-stage="phases"]')).toBeVisible();
+    await expect(page.locator('#reverence-buddhist [data-stage="done"]')).toBeHidden();
+  });
+
   test('taoist ambience never loads before opt-in', async ({ page }) => {
     const audioRequests: string[] = [];
     page.on('request', (req) => {
       if (req.url().includes('/jing/audio/')) audioRequests.push(req.url());
     });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/jing/dao/');
     await page.locator('#reverence-taoist .jing-reverence-begin').click();
     await page.waitForTimeout(500);
     expect(audioRequests).toEqual([]);
 
+    /* 声音开关只在起始舞台上：走完三礼回到起点再开声音 */
+    for (let i = 0; i < 3; i += 1) {
+      await page.locator('#reverence-taoist .jing-phase-next').click();
+    }
+    await page.locator('#reverence-taoist .jing-reverence-again').click();
     await page.locator('#reverence-taoist .jing-sound-toggle').click();
     await page.waitForTimeout(500);
     // buddhist room audio must never be requested from the taoist room

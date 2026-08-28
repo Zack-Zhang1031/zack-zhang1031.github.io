@@ -30,7 +30,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
       {tradition === 'buddhist' ? (
         <svg class="jing-scene-svg" viewBox="0 0 160 120">
           <!-- 香烟 -->
-          <g class="jing-smoke" fill="none" stroke="var(--jing-text-dim)" stroke-width="1.2" stroke-linecap="round">
+          <g class="jing-smoke" fill="none" stroke="var(--jing-text-dim)" stroke-width="1.5" stroke-linecap="round">
             <path class="jing-smoke-wisp w1" d="M72 74 C 70 62, 76 54, 72 42 C 68 32, 74 24, 71 14" />
             <path class="jing-smoke-wisp w2" d="M84 74 C 86 62, 80 52, 85 40 C 89 30, 83 22, 86 12" />
           </g>
@@ -69,12 +69,14 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
             <path d="M8 26 Q 22 18, 36 26 T 64 26" />
             <path d="M96 16 Q 108 10, 120 16 T 152 16" />
           </g>
-          <!-- 太极 -->
+          <!-- 太极：外层定位、内层自转（CSS 动画会覆盖 attribute transform，不能同层） -->
           <g class="jing-taiji" transform="translate(56 52)">
-            <circle r="26" fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.4" />
-            <path d="M0 -26 A 26 26 0 0 1 0 26 A 13 13 0 0 1 0 0 A 13 13 0 0 0 0 -26 Z" fill="var(--jing-accent)" />
-            <circle cy="-13" r="3.2" fill="var(--jing-accent)" />
-            <circle cy="13" r="3.2" fill="var(--jing-bg-card)" />
+            <g class="jing-taiji-spin">
+              <circle r="26" fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.4" />
+              <path d="M0 -26 A 26 26 0 0 1 0 26 A 13 13 0 0 1 0 0 A 13 13 0 0 0 0 -26 Z" fill="var(--jing-accent)" />
+              <circle cy="-13" r="3.2" fill="var(--jing-accent)" />
+              <circle cy="13" r="3.2" fill="var(--jing-bg-card)" />
+            </g>
           </g>
           <!-- 太极水面倒影 -->
           <g class="jing-taiji-echo" transform="translate(0 128.8) scale(1 -0.4)" opacity="0.13">
@@ -97,7 +99,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
               fill="var(--jing-vermilion)" />
           </g>
           <!-- 云烟 -->
-          <g class="jing-smoke" fill="none" stroke="var(--jing-text-dim)" stroke-width="1.2" stroke-linecap="round">
+          <g class="jing-smoke" fill="none" stroke="var(--jing-text-dim)" stroke-width="1.5" stroke-linecap="round">
             <path class="jing-smoke-wisp w1" d="M104 86 C 112 80, 108 70, 116 64 C 124 58, 120 48, 128 42" />
             <path class="jing-smoke-wisp w2" d="M116 92 C 126 88, 124 76, 134 70 C 142 65, 140 56, 148 50" />
           </g>
@@ -259,6 +261,8 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
 
     root.querySelector('.jing-reverence-begin')?.addEventListener('click', () => {
       showStage('phases');
+      /* 阶段舞台从按钮处向下生长，带进视野中央免得引导文字落在屏外 */
+      stages.phases.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
       if (reducedMotion()) runStatic(0);
       else runAnimated();
     });
@@ -287,7 +291,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.2rem;
+    gap: 0.9rem;
     padding: 1rem 0;
   }
   .jing-breath-circle {
@@ -309,15 +313,19 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
 
   /* ---- 礼敬场景动画（仅动态路径，reduced-motion 静态展示） ---- */
   .jing-scene { display: flex; justify-content: center; }
-  .jing-scene-svg { width: 150px; height: auto; }
+  .jing-scene-svg { width: 200px; height: auto; }
 
-  .jing-smoke-wisp { stroke-dasharray: 4 5; opacity: 0.5; }
+  /* 暗色下太极的阴面融进背景，补一层亮底与柔光让它浮出来 */
+  html.dark .jing-scene[data-scene="taoist"] .jing-taiji-spin > circle:first-child { fill: var(--jing-bg-raised); }
+  html.dark .jing-scene[data-scene="taoist"] .jing-taiji { filter: drop-shadow(0 0 7px rgba(184, 147, 74, 0.28)); }
+
+  .jing-smoke-wisp { stroke-dasharray: 4 5; opacity: 0.6; }
   .jing-scene.is-animated .jing-smoke-wisp { animation: jing-smoke-rise 4.5s linear infinite; }
   .jing-scene.is-animated .jing-smoke-wisp.w2 { animation-delay: 1.8s; }
   @keyframes jing-smoke-rise {
-    0% { stroke-dashoffset: 0; opacity: 0.15; }
-    35% { opacity: 0.6; }
-    100% { stroke-dashoffset: -36; opacity: 0.15; }
+    0% { stroke-dashoffset: 0; opacity: 0.3; }
+    35% { opacity: 0.75; }
+    100% { stroke-dashoffset: -36; opacity: 0.3; }
   }
 
   .jing-scene.is-animated .jing-ember { animation: jing-ember-glow 2.2s ease-in-out infinite; }
@@ -337,7 +345,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
   }
   .jing-lotus .jing-petal { transform-origin: 128px 108px; }
 
-  .jing-scene.is-animated .jing-taiji { animation: jing-taiji-turn 24s linear infinite; transform-origin: 56px 52px; transform-box: view-box; }
+  .jing-scene.is-animated .jing-taiji-spin { animation: jing-taiji-turn 24s linear infinite; transform-box: fill-box; transform-origin: center; }
   @keyframes jing-taiji-turn {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
@@ -408,7 +416,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     .jing-scene.is-animated .jing-smoke-wisp,
     .jing-scene.is-animated .jing-ember,
     .jing-scene.is-animated .jing-petal,
-    .jing-scene.is-animated .jing-taiji,
+    .jing-scene.is-animated .jing-taiji-spin,
     .jing-scene.is-animated .jing-flame,
     .jing-scene.is-animated .jing-cloud,
     .jing-ripple,
