@@ -37,11 +37,12 @@ describe('Jingxin source ledger', () => {
   });
 
   it('gates each section by verification state', () => {
-    // media verified 2026-08-27; lots and rules remain gated until
-    // their transcription/fixture tasks complete
+    // media verified 2026-08-27; rules verified 2026-08-28 with the Qimen
+    // golden fixtures; lots verified 2026-08-28 with dual-transcription
+    // freezes of all three 100-lot collections
     expect(getSourceGate('figures').ready).toBe(true);
     expect(getSourceGate('audio').ready).toBe(true);
-    expect(getSourceGate('lots').ready).toBe(false);
-    expect(getSourceGate('rules').ready).toBe(false);
+    expect(getSourceGate('lots').ready).toBe(true);
+    expect(getSourceGate('rules').ready).toBe(true);
   });
 });
