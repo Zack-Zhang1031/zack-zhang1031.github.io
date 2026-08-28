@@ -170,6 +170,10 @@ html.light .jing-body {
 
 /* --- 大厅组件 --- */
 
+/* hidden 属性必须永远生效：作者样式里的 display 规则会盖掉 UA 的 [hidden] 样式，
+   没有这条兜底，任何带 display 的组件类都会让 hidden 元素漏出来 */
+.jing-body [hidden] { display: none !important; }
+
 .jing-hall-title {
   text-align: center;
   margin: 1.5rem 0 0.5rem;
