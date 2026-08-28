@@ -22,6 +22,8 @@ export interface LotEntry {
   number: number;
   /** 传统等级，如 大吉 / 上签 / 下下；吕祖本无等级则为「无等级」。 */
   grade: string;
+  /** 干支（仅关帝古本有）。 */
+  ganzhi?: string;
   /** 典故签题。 */
   title: string;
   /** 签诗原文（公有领域文本转录）。 */
