@@ -250,16 +250,17 @@ export const sourceLedger: readonly SourceRecord[] = [
     checksum: 'sha256:105e382c20469a058fe9480913338af67abfc7f52bd38af058937858f9f7289c',
     localTarget: 'src/lib/jing/bazi/calculate.test.ts',
   }),
-  blocked({
+  verified({
     id: 'rules-yijing',
     section: 'rules',
-    title: '中国哲学书电子化计划《周易》',
+    title: '《周易》六十四卦名与卦序（结构性数据，未转录卦爻辞）',
     url: 'https://ctext.org/book-of-changes/zh',
-    attribution: 'Chinese Text Project',
-    retrievedAt: '2026-08-26',
-    version: 'reference-2026-08-26',
+    attribution: 'Chinese Text Project（参照底本）',
+    license: '卦名、卦序为公有领域事实性资料；本站不转录卦爻辞原文',
+    retrievedAt: '2026-08-28',
+    version: 'structural-2026-08-28',
+    checksum: 'sha256:e70135ca8bcfd4692d67cb1bc50095a81ac10d4121e8fc0df00aff08659b6d30',
     localTarget: 'src/data/jing/hexagrams.ts',
-    blockedReason: '尚未冻结六十四卦名、卦序、卦辞的许可边界与本地校验和。',
   }),
   blocked({
     id: 'rules-qimen-chai-bu',

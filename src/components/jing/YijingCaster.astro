@@ -1,0 +1,295 @@
+---
+/**
+ * YijingCaster — five casting methods over one canonical line model.
+ * 铜钱 / 蓍草 / 数字 / 时间 / 手动. Results are rendered only; nothing
+ * persists and nothing leaves the browser.
+ */
+---
+
+<div class="jing-yijing" id="jing-yijing-app">
+  <div class="jing-yj-tabs" role="tablist" aria-label="起卦方式">
+    <button type="button" role="tab" id="yj-tab-coins" aria-controls="yj-panel-coins" aria-selected="true">铜钱</button>
+    <button type="button" role="tab" id="yj-tab-yarrow" aria-controls="yj-panel-yarrow" aria-selected="false">蓍草</button>
+    <button type="button" role="tab" id="yj-tab-numbers" aria-controls="yj-panel-numbers" aria-selected="false">数字</button>
+    <button type="button" role="tab" id="yj-tab-time" aria-controls="yj-panel-time" aria-selected="false">时间</button>
+    <button type="button" role="tab" id="yj-tab-manual" aria-controls="yj-panel-manual" aria-selected="false">手动</button>
+  </div>
+
+  <section id="yj-panel-coins" role="tabpanel" aria-labelledby="yj-tab-coins">
+    <p class="jing-yj-hint">三枚铜钱一掷：字三背二，合计得六、七、八、九。连掷六次，自初爻至上爻。</p>
+    <div class="jing-yj-actions">
+      <button type="button" id="yj-coins-throw" class="jing-btn jing-btn-primary">掷一次（第 <span id="yj-coins-next">1</span> 掷）</button>
+      <button type="button" id="yj-coins-reset" class="jing-btn">重来</button>
+    </div>
+    <ol id="yj-coins-log" class="jing-yj-log" aria-live="polite"></ol>
+  </section>
+
+  <section id="yj-panel-yarrow" role="tabpanel" aria-labelledby="yj-tab-yarrow" hidden>
+    <p class="jing-yj-hint">大衍之数四十九：分二、挂一、揲四、归奇，三变得一爻，六变成卦。过程逐变列出。</p>
+    <div class="jing-yj-actions">
+      <button type="button" id="yj-yarrow-cast" class="jing-btn jing-btn-primary">演卦</button>
+      <button type="button" id="yj-yarrow-reset" class="jing-btn">重来</button>
+    </div>
+    <ol id="yj-yarrow-log" class="jing-yj-log" aria-live="polite"></ol>
+  </section>
+
+  <section id="yj-panel-numbers" role="tabpanel" aria-labelledby="yj-tab-numbers" hidden>
+    <p class="jing-yj-hint">梅花易数简式：上卦 = 数一 mod 8，下卦 = 数二 mod 8，动爻 = 数三 mod 6（先天卦数：乾一兑二离三震四巽五坎六艮七坤八）。</p>
+    <div class="jing-yj-inputs">
+      <label>数一<input id="yj-num-1" type="number" step="1" placeholder="3" /></label>
+      <label>数二<input id="yj-num-2" type="number" step="1" placeholder="5" /></label>
+      <label>数三<input id="yj-num-3" type="number" step="1" placeholder="8" /></label>
+    </div>
+    <div class="jing-yj-actions">
+      <button type="button" id="yj-numbers-cast" class="jing-btn jing-btn-primary">起卦</button>
+    </div>
+    <p id="yj-numbers-formula" class="jing-yj-formula" aria-live="polite"></p>
+  </section>
+
+  <section id="yj-panel-time" role="tabpanel" aria-labelledby="yj-tab-time" hidden>
+    <p class="jing-yj-hint">梅花易数简式：上卦 =（年+月+日）mod 8，下卦 =（年+月+日+时）mod 8，动爻 =（年+月+日+时）mod 6。时为 0—23。</p>
+    <div class="jing-yj-inputs jing-yj-inputs-4">
+      <label>年<input id="yj-time-y" type="number" min="1900" max="2100" step="1" placeholder="2024" /></label>
+      <label>月<input id="yj-time-m" type="number" min="1" max="12" step="1" placeholder="2" /></label>
+      <label>日<input id="yj-time-d" type="number" min="1" max="31" step="1" placeholder="4" /></label>
+      <label>时<input id="yj-time-h" type="number" min="0" max="23" step="1" placeholder="12" /></label>
+    </div>
+    <div class="jing-yj-actions">
+      <button type="button" id="yj-time-cast" class="jing-btn jing-btn-primary">起卦</button>
+    </div>
+    <p id="yj-time-formula" class="jing-yj-formula" aria-live="polite"></p>
+  </section>
+
+  <section id="yj-panel-manual" role="tabpanel" aria-labelledby="yj-tab-manual" hidden>
+    <p class="jing-yj-hint">直接录入六爻：6 老阴、7 少阳、8 少阴、9 老阳。自下而上填写。</p>
+    <div class="jing-yj-inputs jing-yj-inputs-6">
+      <label>初爻<input id="yj-man-1" type="number" step="1" placeholder="7" /></label>
+      <label>二爻<input id="yj-man-2" type="number" step="1" placeholder="8" /></label>
+      <label>三爻<input id="yj-man-3" type="number" step="1" placeholder="9" /></label>
+      <label>四爻<input id="yj-man-4" type="number" step="1" placeholder="7" /></label>
+      <label>五爻<input id="yj-man-5" type="number" step="1" placeholder="6" /></label>
+      <label>上爻<input id="yj-man-6" type="number" step="1" placeholder="8" /></label>
+    </div>
+    <p id="yj-manual-error" class="jing-yj-error" role="alert" hidden></p>
+    <div class="jing-yj-actions">
+      <button type="button" id="yj-manual-cast" class="jing-btn jing-btn-primary">起卦</button>
+    </div>
+  </section>
+
+  <section id="yj-result" class="jing-yj-result" hidden aria-live="polite">
+    <div class="jing-yj-reading">
+      <div id="yj-diagram" class="jing-yj-diagram" aria-label="卦画（自上而下）"></div>
+      <div class="jing-yj-names">
+        <p id="yj-primary" class="jing-yj-primary"></p>
+        <p id="yj-moving" class="jing-yj-moving"></p>
+        <dl class="jing-yj-derived">
+          <div><dt>之卦</dt><dd id="yj-changed">—</dd></div>
+          <div><dt>互卦</dt><dd id="yj-mutual">—</dd></div>
+          <div><dt>错卦</dt><dd id="yj-opposite">—</dd></div>
+          <div><dt>综卦</dt><dd id="yj-reversed">—</dd></div>
+        </dl>
+      </div>
+    </div>
+    <p class="jing-yj-hint">卦象只列名相与结构，不作吉凶断言。结果不保存，刷新即清。</p>
+  </section>
+</div>
+
+<script>
+  import { castManual, castNumbers, castTime, castYarrow, throwCoins } from '../../lib/jing/yijing/cast';
+  import { deriveAll } from '../../lib/jing/yijing/derive';
+  import { YAO_LABEL, isMoving, isYang, type YaoValue } from '../../lib/jing/yijing/lines';
+  import { cryptoRandomSource } from '../../lib/jing/random';
+
+  const app = document.getElementById('jing-yijing-app');
+  if (app) {
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+    const result = $('yj-result');
+
+    /* ---- tabs ---- */
+    const tabs = Array.from(app.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => {
+        for (const t of tabs) {
+          const selected = t === tab;
+          t.setAttribute('aria-selected', String(selected));
+          const panel = document.getElementById(t.getAttribute('aria-controls')!);
+          if (panel) (panel as HTMLElement).hidden = !selected;
+        }
+      });
+    }
+
+    /* ---- shared rendering ---- */
+    const renderResult = (values: YaoValue[]) => {
+      const views = deriveAll(values);
+      $('yj-diagram').innerHTML = [...values].reverse().map((value, i) => {
+        const pos = 6 - i;
+        const yang = isYang(value);
+        const mark = isMoving(value) ? `<span class="jing-yj-mark">${value === 9 ? '○' : '×'}</span>` : '<span class="jing-yj-mark"></span>';
+        return `<div class="jing-yj-line" data-pos="${pos}">`
+          + `<span class="jing-yj-bar ${yang ? 'is-yang' : 'is-yin'}">${yang ? '' : '<i></i><i></i>'}</span>`
+          + mark
+          + `<span class="jing-yj-line-label">${YAO_LABEL[value]}</span></div>`;
+      }).join('');
+      $('yj-primary').textContent = `本卦：${views.primary.name}（第 ${views.primary.seq} 卦）`;
+      $('yj-moving').textContent = views.moving.length > 0
+        ? `动爻：${views.moving.join('、')} 爻`
+        : '六爻安静，无动爻';
+      $('yj-changed').textContent = views.changed ? `${views.changed.name}（第 ${views.changed.seq} 卦）` : '—';
+      $('yj-mutual').textContent = `${views.mutual.name}（第 ${views.mutual.seq} 卦）`;
+      $('yj-opposite').textContent = `${views.opposite.name}（第 ${views.opposite.seq} 卦）`;
+      $('yj-reversed').textContent = `${views.reversed.name}（第 ${views.reversed.seq} 卦）`;
+      result.hidden = false;
+      result.scrollIntoView({ block: 'nearest' });
+    };
+
+    /* ---- coins ---- */
+    let coinValues: YaoValue[] = [];
+    const coinsLog = $('yj-coins-log');
+    const renderCoins = () => {
+      $('yj-coins-next').textContent = String(Math.min(coinValues.length + 1, 6));
+      ($('yj-coins-throw') as HTMLButtonElement).disabled = coinValues.length >= 6;
+      coinsLog.innerHTML = coinValues.map((value, i) =>
+        `<li>第 ${i + 1} 掷得 ${YAO_LABEL[value]}（${value}）</li>`).join('');
+      if (coinValues.length === 6) renderResult(coinValues);
+    };
+    $('yj-coins-throw').addEventListener('click', () => {
+      if (coinValues.length >= 6) return;
+      coinValues.push(throwCoins(cryptoRandomSource).value);
+      renderCoins();
+    });
+    $('yj-coins-reset').addEventListener('click', () => {
+      coinValues = [];
+      result.hidden = true;
+      renderCoins();
+    });
+
+    /* ---- yarrow ---- */
+    $('yj-yarrow-cast').addEventListener('click', () => {
+      const { values, lines } = castYarrow(cryptoRandomSource);
+      $('yj-yarrow-log').innerHTML = lines.map((line, i) =>
+        `<li>第 ${i + 1} 爻：三变各归奇 ${line.changes.map((c) => c.removed).join('、')}，余 ${line.changes[2].remaining} 策 → ${YAO_LABEL[line.value]}（${line.value}）</li>`
+      ).join('');
+      renderResult(values);
+    });
+    $('yj-yarrow-reset').addEventListener('click', () => {
+      $('yj-yarrow-log').innerHTML = '';
+      result.hidden = true;
+    });
+
+    /* ---- numbers ---- */
+    $('yj-numbers-cast').addEventListener('click', () => {
+      const a = Number(($('yj-num-1') as HTMLInputElement).value);
+      const b = Number(($('yj-num-2') as HTMLInputElement).value);
+      const c = Number(($('yj-num-3') as HTMLInputElement).value);
+      if (![a, b, c].every((n) => Number.isFinite(n))) return;
+      const cast = castNumbers(a, b, c);
+      $('yj-numbers-formula').textContent = cast.formula;
+      renderResult(cast.values);
+    });
+
+    /* ---- time ---- */
+    $('yj-time-cast').addEventListener('click', () => {
+      const y = Number(($('yj-time-y') as HTMLInputElement).value);
+      const m = Number(($('yj-time-m') as HTMLInputElement).value);
+      const d = Number(($('yj-time-d') as HTMLInputElement).value);
+      const h = Number(($('yj-time-h') as HTMLInputElement).value);
+      if (![y, m, d, h].every((n) => Number.isFinite(n))) return;
+      const cast = castTime(y, m, d, h);
+      $('yj-time-formula').textContent = cast.formula;
+      renderResult(cast.values);
+    });
+
+    /* ---- manual ---- */
+    $('yj-manual-cast').addEventListener('click', () => {
+      const errorEl = $('yj-manual-error');
+      const raw = [1, 2, 3, 4, 5, 6].map((i) => ($(`yj-man-${i}`) as HTMLInputElement).value);
+      try {
+        renderResult(castManual(raw));
+        errorEl.hidden = true;
+        errorEl.textContent = '';
+      } catch (error) {
+        errorEl.textContent = error instanceof Error ? error.message : '录入有误';
+        errorEl.hidden = false;
+        result.hidden = true;
+      }
+    });
+
+    renderCoins();
+  }
+</script>
+
+<style>
+  .jing-yijing { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .jing-yj-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .jing-yj-tabs [role="tab"] {
+    border: 1px solid var(--jing-border); background: var(--jing-bg-raised);
+    color: var(--jing-text-dim); border-radius: 999px;
+    padding: 0.35rem 1rem; cursor: pointer; font-size: 0.9rem; letter-spacing: 0.2em;
+    font-family: inherit;
+  }
+  .jing-yj-tabs [role="tab"][aria-selected="true"] {
+    border-color: var(--jing-accent); color: var(--jing-accent);
+  }
+
+  .jing-yijing section[role="tabpanel"] {
+    border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
+    background: var(--jing-bg-raised); padding: 1rem 1.1rem;
+  }
+  .jing-yijing section[role="tabpanel"][hidden] { display: none; }
+
+  .jing-yj-hint { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0 0 0.8rem; }
+  .jing-yj-actions { display: flex; gap: 0.7rem; margin: 0.4rem 0 0.8rem; }
+
+  .jing-yj-log { margin: 0; padding-left: 1.4rem; font-size: 0.85rem; color: var(--jing-text-dim); }
+  .jing-yj-log li { margin: 0.25rem 0; }
+
+  .jing-yj-inputs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-bottom: 0.8rem; }
+  .jing-yj-inputs-4 { grid-template-columns: repeat(4, 1fr); }
+  .jing-yj-inputs-6 { grid-template-columns: repeat(6, 1fr); }
+  .jing-yj-inputs label {
+    display: flex; flex-direction: column; gap: 0.3rem;
+    font-family: var(--jing-font-ui); font-size: 0.72rem; color: var(--jing-text-dim);
+  }
+  .jing-yj-inputs input {
+    font-family: var(--jing-font-ui); font-size: 0.95rem;
+    color: var(--jing-text); background: var(--jing-bg-card);
+    border: 1px solid var(--jing-border); border-radius: 6px;
+    padding: 0.45rem 0.5rem; width: 100%; box-sizing: border-box;
+  }
+  .jing-yj-formula { font-family: var(--jing-font-ui); font-size: 0.78rem; color: var(--jing-accent); margin: 0; }
+  .jing-yj-error {
+    margin: 0 0 0.8rem; padding: 0.6rem 0.9rem;
+    border: 1px solid var(--jing-vermilion); border-radius: 6px;
+    color: var(--jing-vermilion); font-family: var(--jing-font-ui); font-size: 0.85rem;
+  }
+  .jing-yj-error[hidden] { display: none; }
+
+  .jing-yj-result {
+    border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
+    background: var(--jing-bg-raised); padding: 1.1rem;
+  }
+  .jing-yj-result[hidden] { display: none; }
+
+  .jing-yj-reading { display: flex; gap: 1.6rem; align-items: flex-start; flex-wrap: wrap; }
+
+  .jing-yj-diagram { display: flex; flex-direction: column; gap: 0.4rem; min-width: 150px; }
+  .jing-yj-line { display: flex; align-items: center; gap: 0.6rem; }
+  .jing-yj-bar { height: 12px; width: 110px; display: inline-flex; gap: 14px; }
+  .jing-yj-bar.is-yang { background: var(--jing-text); border-radius: 2px; }
+  .jing-yj-bar.is-yin i { flex: 1; background: var(--jing-text); border-radius: 2px; }
+  .jing-yj-mark { width: 1em; color: var(--jing-vermilion); font-size: 0.9rem; text-align: center; }
+  .jing-yj-line-label { font-family: var(--jing-font-ui); font-size: 0.68rem; color: var(--jing-text-dim); }
+
+  .jing-yj-primary { margin: 0 0 0.3rem; font-size: 1.15rem; letter-spacing: 0.1em; }
+  .jing-yj-moving { margin: 0 0 0.8rem; font-family: var(--jing-font-ui); font-size: 0.8rem; color: var(--jing-vermilion); }
+  .jing-yj-derived { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1.4rem; }
+  .jing-yj-derived div { display: flex; gap: 0.6rem; font-size: 0.9rem; }
+  .jing-yj-derived dt { color: var(--jing-text-dim); font-family: var(--jing-font-ui); font-size: 0.75rem; padding-top: 0.15em; }
+  .jing-yj-derived dd { margin: 0; }
+
+  @media (max-width: 560px) {
+    .jing-yj-inputs, .jing-yj-inputs-4, .jing-yj-inputs-6 { grid-template-columns: repeat(2, 1fr); }
+    .jing-yj-derived { grid-template-columns: 1fr; }
+  }
+</style>
