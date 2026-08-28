@@ -18,8 +18,11 @@ Thumbs.db
 *.log
 npm-debug.log*
 .playwright-cli/
+test-results/
+playwright-report/
 
 .vercel
 
 .vercel
 .env*
+.tmp/

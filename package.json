@@ -6,8 +6,11 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "check": "astro check",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.0",
@@ -16,6 +19,13 @@
     "@astrojs/vercel": "^8.0.0",
     "@waline/client": "^3.15.2",
     "astro": "^5.0.0",
+    "lunar-typescript": "1.8.6",
     "tailwindcss": "^3.4.0"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@playwright/test": "1.62.1",
+    "typescript": "6.0.3",
+    "vitest": "4.1.11"
   }
 }

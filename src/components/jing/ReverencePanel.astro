@@ -1,0 +1,161 @@
+---
+/**
+ * ReverencePanel — guided, non-gamified reverence flow for one tradition.
+ *
+ * Flow: read the introductions above -> 合掌礼敬 -> three slow phases ->
+ * neutral completion copy. Sacred images live outside this panel and are
+ * never controls. With reduced motion, phases advance through explicit
+ * static steps instead of timed animation.
+ */
+import SoundControl from './SoundControl.astro';
+import type { Tradition } from '../../data/jing/figures';
+
+interface Props {
+  tradition: Tradition;
+}
+
+const { tradition } = Astro.props;
+const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
+---
+
+<div class="jing-reverence" id={`reverence-${tradition}`} data-tradition={tradition}>
+  <div class="jing-reverence-start" data-stage="start">
+    <p class="jing-reverence-guide">请先静静阅读上方介绍，再决定是否礼敬。</p>
+    <button type="button" class="jing-btn jing-reverence-begin">{label}</button>
+    <SoundControl />
+  </div>
+
+  <div class="jing-reverence-phases" data-stage="phases" hidden>
+    <div class="jing-breath-circle" aria-hidden="true"></div>
+    <p class="jing-phase-text" role="status" aria-live="polite"></p>
+    <button type="button" class="jing-btn jing-phase-next" hidden>继续</button>
+  </div>
+
+  <div class="jing-reverence-done" data-stage="done" hidden>
+    <p class="jing-reverence-end">礼敬已毕。愿此刻的安静，伴随你接下来的时光。</p>
+    <button type="button" class="jing-btn jing-reverence-again">再礼一次</button>
+  </div>
+</div>
+
+<script>
+  import { AMBIENCE_BY_TRADITION, AMBIENCE_SRC } from '../../data/jing/figures';
+  import { loadSettings } from '../../lib/jing/settings';
+
+  document.querySelectorAll<HTMLElement>('.jing-reverence').forEach((root) => {
+    const tradition = root.dataset.tradition as 'buddhist' | 'taoist';
+    const stages = {
+      start: root.querySelector<HTMLElement>('[data-stage="start"]')!,
+      phases: root.querySelector<HTMLElement>('[data-stage="phases"]')!,
+      done: root.querySelector<HTMLElement>('[data-stage="done"]')!,
+    };
+    const phaseText = root.querySelector<HTMLElement>('.jing-phase-text')!;
+    const nextBtn = root.querySelector<HTMLButtonElement>('.jing-phase-next')!;
+    const circle = root.querySelector<HTMLElement>('.jing-breath-circle')!;
+
+    const phases = ['一礼 · 静心', '二礼 · 致敬', '三礼 · 安住'];
+
+    /* ambience created only after explicit opt-in */
+    let ambience: HTMLAudioElement[] = [];
+    const soundControl = root.querySelector('[data-sound-control]');
+    soundControl?.addEventListener('jing:sound', (e) => {
+      const { enabled, volume } = (e as CustomEvent).detail as { enabled: boolean; volume: number };
+      if (enabled && ambience.length === 0) {
+        ambience = AMBIENCE_BY_TRADITION[tradition].map((id) => {
+          const audio = new Audio(AMBIENCE_SRC[id]);
+          audio.loop = true;
+          return audio;
+        });
+      }
+      for (const audio of ambience) {
+        audio.volume = volume * 0.45;
+        if (enabled) void audio.play().catch(() => {});
+        else audio.pause();
+      }
+    });
+
+    const showStage = (name: keyof typeof stages) => {
+      (Object.keys(stages) as (keyof typeof stages)[]).forEach((k) => {
+        stages[k].hidden = k !== name;
+      });
+    };
+
+    let timers: ReturnType<typeof setTimeout>[] = [];
+    const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+    const reducedMotion = () =>
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || loadSettings(localStorage).settings.motion === 'reduce';
+
+    const runStatic = (index: number) => {
+      circle.classList.remove('is-animated');
+      if (index >= phases.length) {
+        showStage('done');
+        return;
+      }
+      phaseText.textContent = phases[index];
+      nextBtn.hidden = false;
+      nextBtn.onclick = () => runStatic(index + 1);
+    };
+
+    const runAnimated = () => {
+      nextBtn.hidden = true;
+      circle.classList.add('is-animated');
+      phases.forEach((text, i) => {
+        timers.push(setTimeout(() => { phaseText.textContent = text; }, i * 6000));
+      });
+      timers.push(setTimeout(() => {
+        circle.classList.remove('is-animated');
+        showStage('done');
+      }, phases.length * 6000));
+    };
+
+    root.querySelector('.jing-reverence-begin')?.addEventListener('click', () => {
+      showStage('phases');
+      if (reducedMotion()) runStatic(0);
+      else runAnimated();
+    });
+
+    root.querySelector('.jing-reverence-again')?.addEventListener('click', () => {
+      clearTimers();
+      phaseText.textContent = '';
+      showStage('start');
+    });
+  });
+</script>
+
+<style>
+  .jing-reverence {
+    border-top: 1px solid var(--jing-border);
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .jing-reverence-start { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+  .jing-reverence-guide { color: var(--jing-text-dim); font-size: 0.85rem; margin: 0; }
+
+  .jing-reverence-phases {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1rem 0;
+  }
+  .jing-breath-circle {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 1px solid var(--jing-accent);
+    background: var(--jing-accent-soft);
+  }
+  .jing-breath-circle.is-animated { animation: jing-breath 6s ease-in-out infinite; }
+  @keyframes jing-breath {
+    0%, 100% { transform: scale(0.75); opacity: 0.55; }
+    50% { transform: scale(1); opacity: 1; }
+  }
+  .jing-phase-text { font-size: 1.05rem; letter-spacing: 0.25em; margin: 0; min-height: 1.6em; }
+
+  .jing-reverence-end { color: var(--jing-text-dim); letter-spacing: 0.1em; }
+  .jing-reverence-done { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+</style>

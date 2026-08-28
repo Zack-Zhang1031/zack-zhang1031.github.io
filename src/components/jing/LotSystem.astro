@@ -1,0 +1,278 @@
+---
+/**
+ * LotSystem — three independent 100-lot collections (观音 / 吕祖 / 关帝),
+ * optional divination cups, repeat-draw calm warning.
+ *
+ * Everything computes in-browser with injected crypto randomness; results
+ * live only in memory and vanish on refresh. Modern notes are original
+ * hedged writing; classical texts are public-domain transcriptions.
+ */
+---
+
+<div class="jing-lots" id="jing-lots-app">
+  <div class="jing-lot-tabs" role="tablist" aria-label="签种">
+    <button type="button" role="tab" id="lot-tab-guanyin" aria-controls="lot-panel" aria-selected="true">观音灵签</button>
+    <button type="button" role="tab" id="lot-tab-luzu" aria-controls="lot-panel" aria-selected="false">吕祖灵签</button>
+    <button type="button" role="tab" id="lot-tab-guandi" aria-controls="lot-panel" aria-selected="false">关帝灵签</button>
+  </div>
+
+  <section id="lot-panel" role="tabpanel" aria-labelledby="lot-tab-guanyin">
+    <p id="lot-edition" class="jing-lot-edition"></p>
+    <p class="jing-lot-hint">
+      静心默念所问，再按下抽签。签诗为古典文本转录，简释为本站原创的现代整理，
+      只作文化参考，不构成任何现实建议。不保存、不联网，刷新即清。
+    </p>
+    <div class="jing-lot-actions">
+      <button type="button" id="lot-draw" class="jing-btn jing-btn-primary">抽签</button>
+      <button type="button" id="lot-cups" class="jing-btn" disabled>掷筊三回</button>
+      <button type="button" id="lot-copy" class="jing-btn" disabled>复制签文摘要</button>
+    </div>
+    <p id="lot-redraw-warn" class="jing-lot-warn" role="status" hidden>
+      方才的签还留着。求签宜诚宜缓，若一定要重抽，原来的签也不会被悄悄换掉。
+    </p>
+  </section>
+
+  <section id="lot-result" class="jing-lot-result" hidden aria-live="polite">
+    <header class="jing-lot-head">
+      <p id="lot-title" class="jing-lot-title"></p>
+      <p id="lot-grade" class="jing-lot-grade"></p>
+    </header>
+    <blockquote id="lot-verse" class="jing-lot-verse"></blockquote>
+    <p id="lot-allusion" class="jing-lot-allusion"></p>
+
+    <details class="jing-lot-classical">
+      <summary>古典辅文（公有领域转录）</summary>
+      <dl id="lot-classical-list"></dl>
+    </details>
+
+    <div class="jing-lot-topics">
+      <h3>现代简释（原创，仅供参考）</h3>
+      <ul id="lot-topics-list"></ul>
+    </div>
+
+    <ul id="lot-cautions" class="jing-lot-cautions" hidden></ul>
+
+    <div id="lot-cups-area" hidden>
+      <h3>掷筊</h3>
+      <p id="lot-cups-result" class="jing-lot-cups"></p>
+      <p class="jing-lot-hint">筊杯只是一种传统仪式参考，不会改变、也不覆盖上面这枝签。</p>
+    </div>
+  </section>
+</div>
+
+<script>
+  import { GUANYIN_COLLECTION } from '../../data/jing/lots/guanyin';
+  import { LUZU_COLLECTION } from '../../data/jing/lots/luzu';
+  import { GUANDI_COLLECTION } from '../../data/jing/lots/guandi';
+  import { drawLot, throwCups } from '../../lib/jing/lots/draw';
+  import { cryptoRandomSource } from '../../lib/jing/random';
+  import type { DrawResult, LotCollection } from '../../lib/jing/lots/types';
+
+  const app = document.getElementById('jing-lots-app');
+  if (app) {
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+
+    const COLLECTIONS: Record<string, LotCollection> = {
+      guanyin: GUANYIN_COLLECTION,
+      luzu: LUZU_COLLECTION,
+      guandi: GUANDI_COLLECTION,
+    };
+    const REDRAW_COOLDOWN_MS = 30_000;
+
+    let current: LotCollection = GUANYIN_COLLECTION;
+    let lastDraw: DrawResult | null = null;
+    let lastDrawAt = 0;
+    let cupsThrown = false;
+
+    const resultEl = $('lot-result');
+    const warnEl = $('lot-redraw-warn');
+
+    const editionText = () =>
+      `${current.name} · ${current.edition} · 数据修订 ${current.revision}`;
+
+    const renderEdition = () => {
+      $('lot-edition').textContent = editionText();
+      $('lot-panel').setAttribute('aria-labelledby', `lot-tab-${current.id}`);
+    };
+
+    /* ---- tabs ---- */
+    const tabs = Array.from(app.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    for (const tab of tabs) {
+      tab.addEventListener('click', () => {
+        for (const t of tabs) t.setAttribute('aria-selected', String(t === tab));
+        current = COLLECTIONS[tab.id.replace('lot-tab-', '')];
+        lastDrawAt = 0; // 换套即重新起问，不受冷静期限制；原签仍保留展示
+        warnEl.hidden = true;
+        renderEdition();
+      });
+    }
+
+    /* ---- rendering ---- */
+    const renderDraw = (draw: DrawResult) => {
+      const lot = draw.lot;
+      $('lot-title').textContent = `第 ${lot.number} 签 · ${lot.title}`;
+      const ganzhi = lot.ganzhi ? ` · ${lot.ganzhi}` : '';
+      $('lot-grade').textContent = `${current.name} · ${lot.grade}${ganzhi}`;
+      $('lot-verse').innerHTML = lot.verse.map((line) => `<p>${line}</p>`).join('');
+      $('lot-allusion').textContent = lot.allusion;
+      $('lot-classical-list').innerHTML = Object.entries(lot.classical)
+        .filter(([, value]) => value)
+        .map(([key, value]) => `<div><dt>${key}</dt><dd>${value}</dd></div>`)
+        .join('');
+      $('lot-topics-list').innerHTML = lot.topics
+        .map((topic) => `<li><strong>${topic.theme}</strong>：${topic.text}</li>`)
+        .join('');
+      const cautionsEl = $('lot-cautions');
+      cautionsEl.innerHTML = lot.cautions.map((c) => `<li>${c}</li>`).join('');
+      cautionsEl.hidden = lot.cautions.length === 0;
+      $('lot-cups-area').hidden = true;
+      cupsThrown = false;
+      ($('lot-cups') as HTMLButtonElement).disabled = false;
+      ($('lot-copy') as HTMLButtonElement).disabled = false;
+      resultEl.hidden = false;
+      resultEl.scrollIntoView({ block: 'nearest' });
+    };
+
+    $('lot-draw').addEventListener('click', () => {
+      const now = Date.now();
+      if (lastDraw && now - lastDrawAt < REDRAW_COOLDOWN_MS) {
+        warnEl.hidden = false;
+        return; // 保留原签，不覆盖
+      }
+      warnEl.hidden = true;
+      lastDraw = drawLot(current, cryptoRandomSource);
+      lastDrawAt = now;
+      renderDraw(lastDraw);
+    });
+
+    $('lot-cups').addEventListener('click', () => {
+      if (!lastDraw || cupsThrown) return;
+      cupsThrown = true;
+      const throws = throwCups(cryptoRandomSource);
+      const label = { sheng: '圣筊', xiao: '笑筊', yin: '阴筊' } as const;
+      $('lot-cups-result').textContent =
+        `三回依次为：${throws.map((t) => label[t]).join('、')}`;
+      $('lot-cups-area').hidden = false;
+      ($('lot-cups') as HTMLButtonElement).disabled = true;
+    });
+
+    $('lot-copy').addEventListener('click', async () => {
+      if (!lastDraw) return;
+      const lot = lastDraw.lot;
+      const summary = [
+        `${current.name} 第 ${lot.number} 签（${lot.grade}）${lot.title}`,
+        ...lot.verse,
+        `典故：${lot.allusion}`,
+        ...lot.topics.map((t) => `${t.theme}：${t.text}`),
+        '—— 静心堂 · 本地研习，签文只作文化参考',
+      ].join('\n');
+      try {
+        await navigator.clipboard.writeText(summary);
+        ($('lot-copy') as HTMLButtonElement).textContent = '已复制';
+        setTimeout(() => { ($('lot-copy') as HTMLButtonElement).textContent = '复制签文摘要'; }, 1600);
+      } catch {
+        ($('lot-copy') as HTMLButtonElement).textContent = '复制失败';
+      }
+    });
+
+    renderEdition();
+  }
+</script>
+
+<style>
+  .jing-lots { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .jing-lot-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  .jing-lot-tabs [role="tab"] {
+    border: 1px solid var(--jing-border); background: var(--jing-bg-raised);
+    color: var(--jing-text-dim); border-radius: 999px;
+    padding: 0.35rem 1rem; cursor: pointer; font-size: 0.9rem; letter-spacing: 0.2em;
+    font-family: inherit;
+  }
+  .jing-lot-tabs [role="tab"][aria-selected="true"] {
+    border-color: var(--jing-accent); color: var(--jing-accent);
+  }
+
+  .jing-lots section[role="tabpanel"] {
+    border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
+    background: var(--jing-bg-raised); padding: 1rem 1.1rem;
+  }
+
+  .jing-lot-edition {
+    margin: 0 0 0.5rem; font-family: var(--jing-font-ui);
+    font-size: 0.72rem; color: var(--jing-text-dim); letter-spacing: 0.05em;
+  }
+  .jing-lot-hint {
+    font-family: var(--jing-font-ui); font-size: 0.75rem;
+    color: var(--jing-text-dim); margin: 0 0 0.8rem; line-height: 1.7;
+  }
+  .jing-lot-actions { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+
+  .jing-lot-warn {
+    margin: 0.8rem 0 0; padding: 0.6rem 0.9rem;
+    border: 1px solid var(--jing-accent); border-radius: 6px;
+    color: var(--jing-accent); font-family: var(--jing-font-ui); font-size: 0.82rem;
+  }
+  .jing-lot-warn[hidden] { display: none; }
+
+  .jing-lot-result {
+    border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
+    background: var(--jing-bg-raised); padding: 1.1rem;
+  }
+  .jing-lot-result[hidden] { display: none; }
+
+  .jing-lot-head { margin-bottom: 0.7rem; }
+  .jing-lot-title { margin: 0; font-size: 1.15rem; letter-spacing: 0.1em; }
+  .jing-lot-grade {
+    margin: 0.25rem 0 0; font-family: var(--jing-font-ui);
+    font-size: 0.78rem; color: var(--jing-vermilion); letter-spacing: 0.1em;
+  }
+
+  .jing-lot-verse {
+    margin: 0 0 0.9rem; padding: 0.9rem 1rem;
+    border-left: 2px solid var(--jing-accent);
+    background: var(--jing-bg-card); border-radius: 0 6px 6px 0;
+  }
+  .jing-lot-verse p { margin: 0.2rem 0; letter-spacing: 0.15em; line-height: 1.9; }
+
+  .jing-lot-allusion {
+    margin: 0 0 0.9rem; font-size: 0.88rem; line-height: 1.9;
+    color: var(--jing-text);
+  }
+
+  .jing-lot-classical { margin: 0 0 0.9rem; }
+  .jing-lot-classical summary {
+    cursor: pointer; font-family: var(--jing-font-ui);
+    font-size: 0.78rem; color: var(--jing-text-dim);
+  }
+  .jing-lot-classical dl { margin: 0.6rem 0 0; display: grid; gap: 0.5rem; }
+  .jing-lot-classical dt {
+    font-family: var(--jing-font-ui); font-size: 0.72rem;
+    color: var(--jing-accent); margin-bottom: 0.15rem;
+  }
+  .jing-lot-classical dd { margin: 0; font-size: 0.85rem; line-height: 1.8; color: var(--jing-text-dim); }
+
+  .jing-lot-topics h3, #lot-cups-area h3 {
+    margin: 0 0 0.5rem; font-family: var(--jing-font-ui);
+    font-size: 0.78rem; color: var(--jing-text-dim); font-weight: normal;
+    letter-spacing: 0.1em;
+  }
+  .jing-lot-topics ul { margin: 0 0 0.9rem; padding-left: 1.2rem; }
+  .jing-lot-topics li { margin: 0.35rem 0; font-size: 0.88rem; line-height: 1.8; }
+  .jing-lot-topics strong { color: var(--jing-accent); font-weight: normal; }
+
+  .jing-lot-cautions {
+    margin: 0 0 0.9rem; padding: 0.7rem 0.9rem 0.7rem 1.8rem;
+    border: 1px solid var(--jing-vermilion); border-radius: 6px;
+  }
+  .jing-lot-cautions li {
+    margin: 0.3rem 0; font-size: 0.82rem; line-height: 1.7; color: var(--jing-vermilion);
+  }
+  .jing-lot-cautions[hidden] { display: none; }
+
+  .jing-lot-cups { margin: 0 0 0.4rem; font-size: 0.95rem; letter-spacing: 0.08em; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .jing-lot-result { scroll-behavior: auto; }
+  }
+</style>

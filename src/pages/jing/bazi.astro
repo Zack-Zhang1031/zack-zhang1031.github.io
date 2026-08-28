@@ -1,0 +1,14 @@
+---
+import JingLayout from '../../layouts/JingLayout.astro';
+import BaziForm from '../../components/jing/BaziForm.astro';
+---
+
+<JingLayout title="八字" description="静心堂 · 本地八字排盘研习">
+  <h1>八字</h1>
+  <p class="jing-page-desc">
+    在本机排四柱：年柱以立春换年、月柱以十二节换月，可选真太阳时修正与晚子时换日规则。
+    输入不会保存、不会上传，刷新页面即清空。结果仅为传统文献研习参考。
+  </p>
+
+  <BaziForm />
+</JingLayout>

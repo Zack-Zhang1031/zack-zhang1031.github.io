@@ -1,0 +1,80 @@
+---
+/**
+ * SoundControl — opt-in sound toggle + volume for a room.
+ *
+ * It never creates Audio objects by itself. Room controllers listen for the
+ * `jing:sound` CustomEvent on this root element and only then create or
+ * start audio. Volume and enabled state persist via jing settings.
+ */
+---
+
+<div class="jing-sound" data-sound-control>
+  <button
+    type="button"
+    class="jing-icon-btn jing-sound-toggle"
+    aria-pressed="false"
+    aria-label="开启环境音"
+    title="开启环境音"
+  >
+    <span aria-hidden="true">静音</span>
+  </button>
+  <label class="jing-sound-volume-wrap" hidden>
+    音量
+    <input type="range" class="jing-sound-volume" min="0" max="100" value="60" aria-label="音量" />
+  </label>
+</div>
+
+<script>
+  import { loadSettings, saveSettings } from '../../lib/jing/settings';
+
+  document.querySelectorAll<HTMLElement>('[data-sound-control]').forEach((root) => {
+    const toggle = root.querySelector<HTMLButtonElement>('.jing-sound-toggle');
+    const toggleLabel = toggle?.querySelector('span');
+    const volumeWrap = root.querySelector<HTMLElement>('.jing-sound-volume-wrap');
+    const volume = root.querySelector<HTMLInputElement>('.jing-sound-volume');
+    if (!toggle || !volume || !volumeWrap || !toggleLabel) return;
+
+    const loaded = loadSettings(localStorage);
+    volume.value = String(Math.round(loaded.settings.volume * 100));
+    let enabled = false;
+
+    const emit = () => {
+      root.dispatchEvent(new CustomEvent('jing:sound', {
+        detail: { enabled, volume: Number(volume.value) / 100 },
+        bubbles: false,
+      }));
+    };
+
+    toggle.addEventListener('click', () => {
+      enabled = !enabled;
+      toggle.setAttribute('aria-pressed', String(enabled));
+      toggle.setAttribute('aria-label', enabled ? '关闭环境音' : '开启环境音');
+      toggleLabel.textContent = enabled ? '有声' : '静音';
+      volumeWrap.hidden = !enabled;
+      emit();
+    });
+
+    volume.addEventListener('input', () => {
+      const current = loadSettings(localStorage);
+      saveSettings(localStorage, {
+        ...current.settings,
+        volume: Number(volume.value) / 100,
+      });
+      if (enabled) emit();
+    });
+  });
+</script>
+
+<style>
+  .jing-sound {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--jing-font-ui);
+    font-size: 0.78rem;
+    color: var(--jing-text-dim);
+  }
+  .jing-sound-toggle span { font-size: 0.72rem; letter-spacing: 0.1em; }
+  .jing-sound-volume-wrap { display: flex; align-items: center; gap: 0.4rem; }
+  .jing-sound-volume { accent-color: var(--jing-accent); }
+</style>

@@ -1,0 +1,186 @@
+---
+/**
+ * QimenForm — three independent 时家奇门 schools (拆补 / 置闰 / 茅山)
+ * rendered side by side for the same civil datetime. Read-only
+ * comparison: charts are aligned visually, never merged. All local.
+ */
+import { SCHOOL_LABEL } from '../../lib/jing/qimen/types';
+
+const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
+---
+
+<form id="qimen-form" class="jing-qimen" autocomplete="off" novalidate>
+  <fieldset class="jing-fieldset">
+    <legend>时刻</legend>
+    <div class="jing-qm-grid">
+      <label>年<input id="qm-year" type="number" min="1900" max="2100" step="1" placeholder="1986" required /></label>
+      <label>月<input id="qm-month" type="number" min="1" max="12" step="1" placeholder="5" required /></label>
+      <label>日<input id="qm-day" type="number" min="1" max="31" step="1" placeholder="29" required /></label>
+      <label>时<input id="qm-hour" type="number" min="0" max="23" step="1" placeholder="0" required /></label>
+      <label>分<input id="qm-minute" type="number" min="0" max="59" step="1" placeholder="0" required /></label>
+    </div>
+    <p class="jing-qm-hint">公历法定时。三派各自独立定局排盘，并排展示、互不改写。规则版本 qimen-1.0.0。</p>
+  </fieldset>
+
+  <div class="jing-qm-actions">
+    <button type="submit" class="jing-btn jing-btn-primary">排盘</button>
+    <button type="reset" class="jing-btn">清空</button>
+  </div>
+
+  <p id="qm-error" class="jing-qm-error" role="alert" hidden></p>
+</form>
+
+<section id="qm-result" class="jing-qm-result" hidden aria-live="polite">
+  <p id="qm-context" class="jing-qm-context"></p>
+  <p id="qm-agree" class="jing-qm-agree"></p>
+
+  {SCHOOLS.map((school) => (
+    <details class="jing-qm-school" id={`qm-school-${school}`} open>
+      <summary>{SCHOOL_LABEL[school]}<span class="jing-qm-ju" id={`qm-ju-${school}`}></span></summary>
+      <div class="jing-qm-board" id={`qm-board-${school}`}></div>
+      <p class="jing-qm-meta" id={`qm-meta-${school}`}></p>
+      <ol class="jing-qm-derivation" id={`qm-derivation-${school}`}></ol>
+    </details>
+  ))}
+
+  <p class="jing-qm-hint">盘面仅作三派规则对照研习，不作吉凶断言。结果不保存，刷新即清。</p>
+</section>
+
+<script>
+  import { compareSchools } from '../../lib/jing/qimen/compare';
+  import type { QimenChart, SchoolId } from '../../lib/jing/qimen/types';
+
+  const form = document.getElementById('qimen-form') as HTMLFormElement | null;
+  if (form) {
+    const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
+    const result = $('qm-result');
+    const errorEl = $('qm-error');
+
+    // 洛书九宫显示序：上排 巽4 离9 坤2，中排 震3 中5 兑7，下排 艮8 坎1 乾6
+    const GRID_ORDER = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+    const DUN_LABEL = { yang: '阳遁', yin: '阴遁' } as const;
+
+    const renderBoard = (chart: QimenChart) =>
+      GRID_ORDER.map((palaceNum) => {
+        const cell = chart.palaces.find((p) => p.palace === palaceNum)!;
+        return `<div class="jing-qm-cell${palaceNum === 5 ? ' is-center' : ''}">`
+          + `<span class="jing-qm-cell-god">${cell.god}</span>`
+          + `<span class="jing-qm-cell-star">${cell.star}</span>`
+          + `<span class="jing-qm-cell-door">${cell.door}</span>`
+          + `<span class="jing-qm-cell-stems"><b>${cell.heavenStem || '　'}</b><i>${cell.earthStem}</i></span>`
+          + `<span class="jing-qm-cell-name">${cell.name}${palaceNum === 5 ? '中' : ''}</span>`
+          + `</div>`;
+      }).join('');
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      errorEl.hidden = true;
+      try {
+        const input = {
+          year: Number(($('qm-year') as HTMLInputElement).value),
+          month: Number(($('qm-month') as HTMLInputElement).value),
+          day: Number(($('qm-day') as HTMLInputElement).value),
+          hour: Number(($('qm-hour') as HTMLInputElement).value),
+          minute: Number(($('qm-minute') as HTMLInputElement).value),
+        };
+        const comparison = compareSchools(input);
+
+        $('qm-context').textContent = `${comparison.inputSummary} · 节气「${comparison.solarTerm}」（交节 ${comparison.solarTermTime}）`;
+        $('qm-agree').textContent = comparison.juAgree
+          ? '三派本时同局。'
+          : '三派本时局数不同——这正是对照的意义：请分别查看各派推演。';
+
+        (Object.keys(comparison.charts) as SchoolId[]).forEach((school) => {
+          const chart = comparison.charts[school];
+          $(`qm-ju-${school}`).textContent =
+            `　${DUN_LABEL[chart.dun]} ${chart.juNumber} 局 · ${chart.yuan}元`;
+          $(`qm-board-${school}`).innerHTML = renderBoard(chart);
+          $(`qm-meta-${school}`).textContent =
+            `值符 ${chart.zhiFuStar} 落 ${chart.zhiFuPalace} 宫 · 值使 ${chart.zhiShiDoor} 落 ${chart.zhiShiPalace} 宫 · 空亡 ${chart.kongWang.join('、')}`;
+          $(`qm-derivation-${school}`).innerHTML = chart.derivation
+            .map((step) => `<li>${step}</li>`).join('');
+        });
+
+        result.hidden = false;
+        result.scrollIntoView({ block: 'nearest' });
+      } catch (error) {
+        errorEl.textContent = error instanceof Error ? error.message : '输入无法解析，请检查后重试。';
+        errorEl.hidden = false;
+        result.hidden = true;
+      }
+    });
+
+    form.addEventListener('reset', () => {
+      errorEl.hidden = true;
+      result.hidden = true;
+    });
+
+    window.addEventListener('pageshow', () => {
+      form.reset();
+      errorEl.hidden = true;
+      result.hidden = true;
+    });
+  }
+</script>
+
+<style>
+  .jing-qimen { display: flex; flex-direction: column; gap: 1.1rem; }
+  .jing-qm-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.6rem; }
+  .jing-qm-grid label {
+    display: flex; flex-direction: column; gap: 0.3rem;
+    font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim);
+  }
+  .jing-qimen input {
+    font-family: var(--jing-font-ui); font-size: 0.95rem;
+    color: var(--jing-text); background: var(--jing-bg-card);
+    border: 1px solid var(--jing-border); border-radius: 6px;
+    padding: 0.45rem 0.5rem; width: 100%; box-sizing: border-box;
+  }
+  .jing-qm-hint { margin: 0.6rem 0 0; font-family: var(--jing-font-ui); font-size: 0.72rem; color: var(--jing-text-dim); }
+  .jing-qm-actions { display: flex; gap: 0.8rem; }
+  .jing-btn-primary { border-color: var(--jing-accent); color: var(--jing-accent); }
+  .jing-qm-error {
+    margin: 0; padding: 0.7rem 0.9rem;
+    border: 1px solid var(--jing-vermilion); border-radius: 6px;
+    color: var(--jing-vermilion); font-family: var(--jing-font-ui); font-size: 0.85rem;
+  }
+  .jing-qm-error[hidden], .jing-qm-result[hidden] { display: none; }
+
+  .jing-qm-result { display: flex; flex-direction: column; gap: 0.9rem; margin-top: 1.75rem; }
+  .jing-qm-context { margin: 0; font-size: 0.95rem; }
+  .jing-qm-agree { margin: 0; font-family: var(--jing-font-ui); font-size: 0.78rem; color: var(--jing-vermilion); }
+
+  .jing-qm-school {
+    border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
+    background: var(--jing-bg-raised); padding: 0.5rem 1rem 1rem;
+  }
+  .jing-qm-school summary { cursor: pointer; letter-spacing: 0.25em; color: var(--jing-accent); padding: 0.4rem 0; }
+  .jing-qm-ju { letter-spacing: 0; font-family: var(--jing-font-ui); font-size: 0.78rem; color: var(--jing-text-dim); }
+
+  .jing-qm-board {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    max-width: 460px; margin: 0.6rem auto;
+  }
+  .jing-qm-cell {
+    border: 1px solid var(--jing-border); border-radius: 6px;
+    background: var(--jing-bg-card); padding: 0.35rem 0.3rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+    font-size: 0.85rem; line-height: 1.5;
+  }
+  .jing-qm-cell.is-center { background: var(--jing-accent-soft); }
+  .jing-qm-cell-god { font-family: var(--jing-font-ui); font-size: 0.62rem; color: var(--jing-vermilion); min-height: 1em; }
+  .jing-qm-cell-star { font-size: 0.8rem; color: var(--jing-text-dim); }
+  .jing-qm-cell-door { font-size: 0.9rem; min-height: 1.2em; }
+  .jing-qm-cell-stems b { font-size: 1.05rem; color: var(--jing-text); display: block; text-align: center; }
+  .jing-qm-cell-stems i { font-style: normal; font-size: 0.8rem; color: var(--jing-text-dim); display: block; text-align: center; }
+  .jing-qm-cell-name { font-family: var(--jing-font-ui); font-size: 0.62rem; color: var(--jing-text-dim); }
+
+  .jing-qm-meta { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0.4rem 0; }
+  .jing-qm-derivation { margin: 0; padding-left: 1.4rem; font-size: 0.8rem; color: var(--jing-text-dim); }
+
+  @media (max-width: 560px) {
+    .jing-qm-grid { grid-template-columns: repeat(3, 1fr); }
+    .jing-qm-board { gap: 2px; }
+    .jing-qm-cell { font-size: 0.75rem; }
+  }
+</style>

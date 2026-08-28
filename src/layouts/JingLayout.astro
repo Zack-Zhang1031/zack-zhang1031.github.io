@@ -1,0 +1,90 @@
+---
+import '../styles/jing.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  /** true on the hall index; child rooms show a 返回静心堂 crumb instead. */
+  isHall?: boolean;
+}
+
+const {
+  title,
+  description = '静心堂 — 本地运行的传统文化研习空间',
+  isHall = false,
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <meta name="description" content={description} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>{title} · 静心堂</title>
+  <script is:inline>
+    // Share the public site's light/dark convention; no Jingxin personal data
+    // is ever persisted here.
+    const t = localStorage.getItem('theme') || 'dark';
+    document.documentElement.classList.toggle('light', t === 'light');
+    document.documentElement.classList.toggle('dark', t !== 'light');
+  </script>
+</head>
+<body class="jing-body">
+  <div class="jing-shell">
+    <header class="jing-topbar">
+      {isHall ? (
+        <span class="jing-crumb" aria-current="page">静心堂</span>
+      ) : (
+        <a class="jing-crumb" href="/jing/">← 返回静心堂</a>
+      )}
+      <button id="jing-theme-toggle" class="jing-icon-btn" type="button" aria-label="切换明暗主题" title="切换明暗主题">
+        <span aria-hidden="true">☾</span>
+      </button>
+    </header>
+
+    <main class="jing-main">
+      <slot />
+    </main>
+
+    <footer class="jing-foot">
+      <a href="/" class="jing-home">返回主页</a>
+      <p class="jing-note">所有计算与笔记仅在本机浏览器内运行，不会上传任何信息。</p>
+    </footer>
+  </div>
+
+  <button id="jing-back-to-top" class="jing-back-to-top" type="button" aria-label="返回页面顶端" title="返回顶部">
+    <span aria-hidden="true">↑</span>
+  </button>
+
+  <script is:inline>
+    (function () {
+      var btn = document.getElementById('jing-theme-toggle');
+      function syncIcon() {
+        var light = document.documentElement.classList.contains('light');
+        if (btn) btn.querySelector('span').textContent = light ? '☀' : '☾';
+      }
+      syncIcon();
+      btn && btn.addEventListener('click', function () {
+        var light = document.documentElement.classList.toggle('light');
+        document.documentElement.classList.toggle('dark', !light);
+        localStorage.setItem('theme', light ? 'light' : 'dark');
+        syncIcon();
+      });
+
+      var top = document.getElementById('jing-back-to-top');
+      function updateTop() {
+        top && top.classList.toggle('is-visible', window.scrollY > 480);
+      }
+      window.addEventListener('scroll', updateTop, { passive: true });
+      top && top.addEventListener('click', function () {
+        var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+      });
+      updateTop();
+    })();
+  </script>
+</body>
+</html>

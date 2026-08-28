@@ -1,0 +1,94 @@
+---
+import JingLayout from '../../layouts/JingLayout.astro';
+import { BAGUA, WUXING, WUXING_ORDER } from '../../data/jing/yixue';
+---
+
+<JingLayout title="易学" description="静心堂 · 易学资料">
+  <h1>易学</h1>
+  <p class="jing-page-desc">
+    五行与八卦的基础资料，供研习时随手查阅。相生：木生火、火生土、土生金、金生水、水生木；
+    相克：木克土、土克水、水克火、火克金、金克木。
+  </p>
+
+  <h2 class="jing-section-title">五行</h2>
+  <table class="jing-table">
+    <thead>
+      <tr><th>行</th><th>相生</th><th>相克</th><th>方位</th><th>时令</th><th>象</th></tr>
+    </thead>
+    <tbody>
+      {WUXING_ORDER.map((name) => (
+        <tr>
+          <th scope="row">{name}</th>
+          <td>生{WUXING[name].sheng}</td>
+          <td>克{WUXING[name].ke}</td>
+          <td>{WUXING[name].direction}</td>
+          <td>{WUXING[name].season}</td>
+          <td>{WUXING[name].note}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+
+  <h2 class="jing-section-title">八卦</h2>
+  <p class="jing-page-desc">卦画自下而上读：初爻在最下，上爻在最上。</p>
+  <div class="jing-bagua">
+    {BAGUA.map((gua) => (
+      <div class="jing-gua">
+        <span class="jing-gua-symbol" aria-hidden="true">{gua.symbol}</span>
+        <h3>{gua.name}<span class="jing-gua-image">为{gua.image}</span></h3>
+        <p>其德{gua.nature} · 卦画 {gua.lines.join('')}</p>
+      </div>
+    ))}
+  </div>
+
+  <p class="jing-note-block">
+    以上为基础名相整理。深入研习请以《周易》原文与可靠注本为准。
+  </p>
+</JingLayout>
+
+<style>
+  .jing-section-title {
+    margin: 2rem 0 0.8rem; font-size: 1.1rem;
+    letter-spacing: 0.35em; color: var(--jing-accent);
+  }
+
+  .jing-table {
+    width: 100%; border-collapse: collapse; font-size: 0.9rem;
+    background: var(--jing-bg-raised); border-radius: var(--jing-radius); overflow: hidden;
+  }
+  .jing-table th, .jing-table td {
+    border: 1px solid var(--jing-border); padding: 0.5rem 0.7rem; text-align: left;
+  }
+  .jing-table thead th {
+    font-family: var(--jing-font-ui); font-size: 0.72rem; letter-spacing: 0.2em;
+    color: var(--jing-text-dim); font-weight: normal;
+  }
+  .jing-table tbody th { color: var(--jing-accent); font-size: 1.05rem; }
+
+  .jing-bagua {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin-top: 0.8rem;
+  }
+  .jing-gua {
+    border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
+    background: var(--jing-bg-raised); padding: 0.8rem 0.6rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.2rem; text-align: center;
+  }
+  .jing-gua-symbol { font-size: 1.9rem; color: var(--jing-text); line-height: 1.2; }
+  .jing-gua h3 { margin: 0; font-size: 1rem; letter-spacing: 0.3em; }
+  .jing-gua-image {
+    margin-left: 0.4em; font-family: var(--jing-font-ui);
+    font-size: 0.68rem; letter-spacing: 0; color: var(--jing-text-dim);
+  }
+  .jing-gua p { margin: 0; font-family: var(--jing-font-ui); font-size: 0.7rem; color: var(--jing-text-dim); }
+
+  .jing-note-block {
+    margin-top: 2rem; padding: 0.8rem 1rem;
+    border-left: 2px solid var(--jing-accent);
+    color: var(--jing-text-dim); font-size: 0.85rem;
+  }
+
+  @media (max-width: 560px) {
+    .jing-bagua { grid-template-columns: repeat(2, 1fr); }
+    .jing-table { font-size: 0.8rem; }
+  }
+</style>

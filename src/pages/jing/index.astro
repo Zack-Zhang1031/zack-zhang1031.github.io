@@ -1,0 +1,54 @@
+---
+import JingLayout from '../../layouts/JingLayout.astro';
+import HallIntro from '../../components/jing/HallIntro.astro';
+
+interface Room {
+  href: string;
+  name: string;
+  desc: string;
+  ready: boolean;
+}
+
+// Rooms flip to ready as their routes ship; pending rooms stay inert text.
+const rooms: Room[] = [
+  { href: '/jing/muyu/', name: '木鱼', desc: '计数、节奏与时长，安静地敲一会儿。', ready: true },
+  { href: '/jing/fo/', name: '礼佛', desc: '释迦牟尼、观世音、地藏王三尊介绍与合掌礼敬。', ready: true },
+  { href: '/jing/dao/', name: '敬道', desc: '玉清元始、上清灵宝、太清道德三天尊介绍与礼敬。', ready: true },
+  { href: '/jing/yixue/', name: '易学', desc: '五行、八卦与基础易学资料。', ready: true },
+  { href: '/jing/bazi/', name: '八字', desc: '本地排四柱，可选真太阳时与晚子时。', ready: true },
+  { href: '/jing/yijing/', name: '周易', desc: '铜钱、蓍草、数字、时间、手动五种起卦。', ready: true },
+  { href: '/jing/qimen/', name: '奇门', desc: '拆补、置闰、茅山三派独立排盘与对照。', ready: true },
+  { href: '/jing/chouqian/', name: '抽签', desc: '观音、吕祖、关帝三套百签，可掷筊。', ready: true },
+  { href: '/jing/notes/', name: '笔记', desc: '密码加密的本地私人笔记，可导出导入。', ready: true },
+];
+---
+
+<JingLayout title="静心堂" isHall>
+  <h1 class="jing-hall-title">静心堂</h1>
+  <p class="jing-hall-sub">一隅静室 · 本地研习 · 不扰不追</p>
+
+  <HallIntro />
+
+  <div class="jing-status" role="status">
+    <span>声音：<strong>关闭</strong>（各房间内手动开启）</span>
+    <span>数据：<strong>仅本机</strong>，刷新即清</span>
+  </div>
+
+  <ul class="jing-rooms">
+    {rooms.map((room) => (
+      <li>
+        {room.ready ? (
+          <a class="jing-room" href={room.href}>
+            <h2>{room.name}</h2>
+            <p>{room.desc}</p>
+          </a>
+        ) : (
+          <div class="jing-room jing-room--pending" aria-disabled="true">
+            <h2>{room.name}<span class="jing-room-tag">筹备中</span></h2>
+            <p>{room.desc}</p>
+          </div>
+        )}
+      </li>
+    ))}
+  </ul>
+</JingLayout>
