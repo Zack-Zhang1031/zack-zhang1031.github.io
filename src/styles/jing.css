@@ -8,7 +8,14 @@
   --jing-radius: 10px;
   --jing-font: "Songti SC", "Noto Serif SC", "SimSun", serif;
   --jing-font-ui: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --jing-font-verse: "Kaiti SC", "STKaiti", "KaiTi", "Songti SC", serif;
   --jing-t: 0.25s ease;
+  /* 三组房间色：佛·暖金 / 道·石青 / 术数·黛蓝（同明度同饱和度） */
+  --jing-tint-fo: #b8934a;
+  --jing-tint-dao: #4a7a6f;
+  --jing-tint-shu: #4a5f8a;
+  /* 宣纸纹理（本地 SVG turbulence，无外部请求） */
+  --jing-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.45 0 0 0 0 0.35 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23p)'/%3E%3C/svg%3E");
 
   margin: 0;
   min-height: 100vh;
@@ -90,7 +97,11 @@ html.light .jing-body {
 .jing-icon-btn:hover { color: var(--jing-accent); border-color: var(--jing-accent); }
 .jing-icon-btn:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
 
-.jing-main { flex: 1; padding: 2rem 0; }
+.jing-main { flex: 1; padding: 2rem 0; animation: jing-enter 0.45s ease both; }
+@keyframes jing-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 .jing-main h1, .jing-main h2, .jing-main h3 {
   font-weight: 600;
@@ -236,6 +247,114 @@ a.jing-room:focus-visible { outline: 2px solid var(--jing-accent); outline-offse
   vertical-align: middle;
 }
 
+/* 房间分组色条（佛·金 / 道·青 / 术数·蓝 / 静修·原色） */
+.jing-room[data-group="fo"] { border-left: 3px solid var(--jing-tint-fo); }
+.jing-room[data-group="dao"] { border-left: 3px solid var(--jing-tint-dao); }
+.jing-room[data-group="shu"] { border-left: 3px solid var(--jing-tint-shu); }
+
+/* 朱文印章——静心堂的视觉记号 */
+.jing-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1em;
+  height: 2.1em;
+  border: 1.5px solid var(--jing-vermilion);
+  border-radius: 5px;
+  color: var(--jing-vermilion);
+  font-family: var(--jing-font-verse);
+  font-size: 0.85em;
+  line-height: 1;
+  letter-spacing: 0;
+  opacity: 0.85;
+  transform: rotate(-2deg);
+  user-select: none;
+}
+
+/* 笔记房历法问候条 */
+.jing-notes-today {
+  margin: 0 0 1.2rem;
+  padding: 0.45rem 0.9rem;
+  border-left: 3px solid var(--jing-tint-fo);
+  background: var(--jing-bg-card);
+  background-image: var(--jing-paper);
+  border-radius: 0 6px 6px 0;
+  font-family: var(--jing-font-verse);
+  font-size: 0.88rem;
+  letter-spacing: 0.12em;
+  color: var(--jing-text-dim);
+}
+.jing-notes-today:empty { display: none; }
+
+/* 「不保存·刷新即清」印章式小字，置于结果区角落 */
+.jing-freshness {
+  margin: 0.9rem 0 0;
+  text-align: right;
+  font-family: var(--jing-font-ui);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  color: var(--jing-text-dim);
+}
+.jing-freshness::before {
+  content: '';
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-right: 0.45em;
+  border: 1px solid var(--jing-vermilion);
+  border-radius: 2px;
+  opacity: 0.7;
+  vertical-align: baseline;
+}
+
+/* 结果卡片宣纸纹理 */
+.jing-lot-result, .jing-yj-result, .jing-qm-result .jing-qm-school,
+.jing-bazi-result, .jing-lot-stage {
+  background-image: var(--jing-paper);
+}
+
+/* --- 移动端房间快捷导航 --- */
+.jing-room-nav {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 55;
+  padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--jing-bg-raised) 86%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-top: 1px solid var(--jing-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.jing-room-nav::-webkit-scrollbar { display: none; }
+.jing-room-nav ul {
+  display: flex;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  width: max-content;
+}
+.jing-room-nav a {
+  display: block;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-family: var(--jing-font-ui);
+  font-size: 0.75rem;
+  color: var(--jing-text-dim);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.jing-room-nav a[aria-current="page"] {
+  border-color: var(--jing-accent);
+  color: var(--jing-accent);
+}
+.jing-room-nav a:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
+
 /* --- 房间页通用 --- */
 
 .jing-main h1 {
@@ -248,6 +367,7 @@ a.jing-room:focus-visible { outline: 2px solid var(--jing-accent); outline-offse
   color: var(--jing-text-dim);
   font-size: 0.88rem;
   margin: 0 0 1.75rem;
+  line-height: 2;
 }
 .jing-page-desc code {
   font-family: var(--jing-font-ui);
@@ -373,6 +493,9 @@ a.jing-room:focus-visible { outline: 2px solid var(--jing-accent); outline-offse
 @media (max-width: 560px) {
   .jing-rooms { grid-template-columns: 1fr; }
   .jing-hall-title { font-size: 1.6rem; }
+  .jing-room-nav { display: block; }
+  .jing-shell { padding-bottom: 5.5rem; }
+  .jing-back-to-top { bottom: 4.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {

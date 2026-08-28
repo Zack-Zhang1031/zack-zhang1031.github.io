@@ -125,7 +125,7 @@
         const pos = 6 - i;
         const yang = isYang(value);
         const mark = isMoving(value) ? `<span class="jing-yj-mark">${value === 9 ? '○' : '×'}</span>` : '<span class="jing-yj-mark"></span>';
-        return `<div class="jing-yj-line" data-pos="${pos}">`
+        return `<div class="jing-yj-line" data-pos="${pos}" style="animation-delay:${(pos - 1) * 90}ms">`
           + `<span class="jing-yj-bar ${yang ? 'is-yang' : 'is-yin'}">${yang ? '' : '<i></i><i></i>'}</span>`
           + mark
           + `<span class="jing-yj-line-label">${YAO_LABEL[value]}</span></div>`;
@@ -274,7 +274,11 @@
   .jing-yj-reading { display: flex; gap: 1.6rem; align-items: flex-start; flex-wrap: wrap; }
 
   .jing-yj-diagram { display: flex; flex-direction: column; gap: 0.4rem; min-width: 150px; }
-  .jing-yj-line { display: flex; align-items: center; gap: 0.6rem; }
+  .jing-yj-line { display: flex; align-items: center; gap: 0.6rem; transform-origin: left center; animation: jing-yao-in 0.5s ease both; }
+  @keyframes jing-yao-in {
+    from { opacity: 0; transform: scaleX(0.35); }
+    to { opacity: 1; transform: none; }
+  }
   .jing-yj-bar { height: 12px; width: 110px; display: inline-flex; gap: 14px; }
   .jing-yj-bar.is-yang { background: var(--jing-text); border-radius: 2px; }
   .jing-yj-bar.is-yin i { flex: 1; background: var(--jing-text); border-radius: 2px; }

@@ -8,6 +8,10 @@ test.describe('Jingxin lot room', () => {
     await expect(tabs.nth(0)).toHaveText('观音灵签');
     await expect(tabs.nth(1)).toHaveText('吕祖灵签');
     await expect(tabs.nth(2)).toHaveText('关帝灵签');
+    // 版本来源默认折叠，展开后可见
+    const source = page.locator('.jing-lot-source');
+    await expect(source.locator('summary')).toContainText('版本');
+    await source.locator('summary').click();
     await expect(page.locator('#lot-edition')).toContainText('观音灵签');
     await expect(page.locator('#lot-edition')).toContainText('数据修订');
   });
@@ -21,6 +25,8 @@ test.describe('Jingxin lot room', () => {
     await expect(page.locator('#lot-title')).toContainText('签');
     await expect(page.locator('#lot-grade')).toContainText('观音灵签');
     await expect(page.locator('#lot-verse p')).toHaveCount(4);
+    await expect(page.locator('#lot-stamp')).toContainText('第');
+    await expect(page.locator('#lot-stamp')).toContainText('签');
     await expect(page.locator('#lot-allusion')).not.toBeEmpty();
     await expect(page.locator('#lot-topics-list li')).toHaveCount(3);
 
@@ -38,6 +44,7 @@ test.describe('Jingxin lot room', () => {
     const title = await page.locator('#lot-title').textContent();
 
     await page.locator('#lot-cups').click();
+    await expect(page.locator('.jing-cup-pair')).toHaveCount(3);
     await expect(page.locator('#lot-cups-result')).toContainText('三回依次为');
     await expect(page.locator('#lot-cups-result')).toContainText(/圣筊|笑筊|阴筊/);
     await expect(page.locator('#lot-title')).toHaveText(title!);
@@ -63,6 +70,7 @@ test.describe('Jingxin lot room', () => {
     await expect(page.locator('#lot-result')).toBeVisible({ timeout: 4000 });
     const title = await page.locator('#lot-title').textContent();
     await page.locator('#lot-tab-luzu').click();
+    await page.locator('.jing-lot-source summary').click();
     await expect(page.locator('#lot-edition')).toContainText('吕祖灵签');
     await expect(page.locator('#lot-title')).toHaveText(title!);
   });

@@ -9,5 +9,21 @@ import LocalNotebook from '../../components/jing/LocalNotebook.astro';
     把想留住的推演片段或心得记在这里。笔记用你设置的密码在本机加密，
     明文只存在于解锁期间，闲置自动锁定，可导出为 <code>.jing</code> 加密文件备份。
   </p>
+  <p class="jing-notes-today" id="notes-today"></p>
   <LocalNotebook />
 </JingLayout>
+
+<script>
+  /* 今日干支问候条：以 1900-01-01 甲戌日为锚点推算，纯本地、零依赖 */
+  const el = document.getElementById('notes-today');
+  if (el) {
+    const GAN = '甲乙丙丁戊己庚辛壬癸';
+    const ZHI = '子丑寅卯辰巳午未申酉戌亥';
+    const anchor = Date.UTC(1900, 0, 1); // 甲戌日
+    const now = new Date();
+    const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+    const n = Math.round((today - anchor) / 86_400_000);
+    const day = GAN[((n % 10) + 10) % 10] + ZHI[((10 + n) % 12 + 12) % 12];
+    el.textContent = `今日 ${day} 日 · 记一笔，或只是坐一会儿`;
+  }
+</script>

@@ -25,6 +25,7 @@ test.describe('Jingxin qimen room', () => {
       await expect(page.locator(`#qm-ju-${school}`)).toContainText('阳遁 2 局');
       await expect(page.locator(`#qm-board-${school} .jing-qm-cell`)).toHaveCount(9);
       await expect(page.locator(`#qm-meta-${school}`)).toContainText('值符');
+      await page.locator(`#qm-school-${school} .jing-qm-steps summary`).click();
       await expect(page.locator(`#qm-derivation-${school} li`).first()).toBeVisible();
     }
   });
@@ -38,6 +39,7 @@ test.describe('Jingxin qimen room', () => {
     await expect(page.locator('#qm-ju-chai-bu')).toContainText('阳遁 4 局');
     await expect(page.locator('#qm-ju-zhi-run')).toContainText('阴遁 1 局');
     await expect(page.locator('#qm-ju-mao-shan')).toContainText('阳遁 1 局');
+    await page.locator('#qm-school-zhi-run .jing-qm-steps summary').click();
     await expect(page.locator('#qm-derivation-zhi-run')).toContainText('置闰');
   });
 

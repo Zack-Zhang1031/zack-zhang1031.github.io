@@ -39,7 +39,10 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
       <summary>{SCHOOL_LABEL[school]}<span class="jing-qm-ju" id={`qm-ju-${school}`}></span></summary>
       <div class="jing-qm-board" id={`qm-board-${school}`}></div>
       <p class="jing-qm-meta" id={`qm-meta-${school}`}></p>
-      <ol class="jing-qm-derivation" id={`qm-derivation-${school}`}></ol>
+      <details class="jing-qm-steps">
+        <summary>推演步骤</summary>
+        <ol class="jing-qm-derivation" id={`qm-derivation-${school}`}></ol>
+      </details>
     </details>
   ))}
 
@@ -61,9 +64,9 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     const DUN_LABEL = { yang: '阳遁', yin: '阴遁' } as const;
 
     const renderBoard = (chart: QimenChart) =>
-      GRID_ORDER.map((palaceNum) => {
+      GRID_ORDER.map((palaceNum, i) => {
         const cell = chart.palaces.find((p) => p.palace === palaceNum)!;
-        return `<div class="jing-qm-cell${palaceNum === 5 ? ' is-center' : ''}">`
+        return `<div class="jing-qm-cell${palaceNum === 5 ? ' is-center' : ''}" style="animation-delay:${i * 70}ms">`
           + `<span class="jing-qm-cell-god">${cell.god}</span>`
           + `<span class="jing-qm-cell-star">${cell.star}</span>`
           + `<span class="jing-qm-cell-door">${cell.door}</span>`
@@ -166,6 +169,16 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     background: var(--jing-bg-card); padding: 0.35rem 0.3rem;
     display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
     font-size: 0.85rem; line-height: 1.5;
+    animation: jing-cell-in 0.45s ease both;
+  }
+  @keyframes jing-cell-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
+  .jing-qm-steps { margin-top: 0.4rem; }
+  .jing-qm-steps summary {
+    letter-spacing: 0.1em; font-family: var(--jing-font-ui);
+    font-size: 0.72rem; color: var(--jing-text-dim); padding: 0.2rem 0;
   }
   .jing-qm-cell.is-center { background: var(--jing-accent-soft); }
   .jing-qm-cell-god { font-family: var(--jing-font-ui); font-size: 0.62rem; color: var(--jing-vermilion); min-height: 1em; }

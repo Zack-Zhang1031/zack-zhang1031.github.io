@@ -18,15 +18,17 @@ import SoundControl from './SoundControl.astro';
     <div class="jing-muyu-stat"><span class="jing-muyu-num" id="muyu-elapsed">00:00</span><span class="jing-muyu-label">时长</span></div>
   </div>
 
-  <button type="button" id="muyu-fish" class="jing-muyu-fish" aria-label="敲一下木鱼">
-    <svg viewBox="0 0 120 96" aria-hidden="true" focusable="false">
-      <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-body" />
-      <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-sheen" />
-      <circle cx="38" cy="40" r="5" class="fish-eye" />
-      <path d="M 78 30 Q 96 22 104 34 Q 96 40 84 40" class="fish-mouth" />
-      <path d="M 22 66 Q 60 84 98 66" class="fish-belly" />
-    </svg>
-  </button>
+  <div class="jing-muyu-stage">
+    <button type="button" id="muyu-fish" class="jing-muyu-fish" aria-label="敲一下木鱼">
+      <svg viewBox="0 0 120 96" aria-hidden="true" focusable="false">
+        <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-body" />
+        <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-sheen" />
+        <circle cx="38" cy="40" r="5" class="fish-eye" />
+        <path d="M 78 30 Q 96 22 104 34 Q 96 40 84 40" class="fish-mouth" />
+        <path d="M 22 66 Q 60 84 98 66" class="fish-belly" />
+      </svg>
+    </button>
+  </div>
 
   <div class="jing-muyu-controls">
     <button type="button" id="muyu-pause" class="jing-btn" aria-pressed="false">暂停</button>
@@ -86,8 +88,13 @@ import SoundControl from './SoundControl.astro';
         const recent = intervals.slice(-8);
         const avgMs = recent.reduce((a, b) => a + b, 0) / recent.length;
         rhythmEl.textContent = avgMs > 0 ? String(Math.round(60000 / avgMs)) : '—';
+        /* 节奏方差足够低时，鱼身笼一层平稳微光（纯粹视觉反馈，无功德语义） */
+        const variance = recent.reduce((a, b) => a + (b - avgMs) ** 2, 0) / recent.length;
+        const cv = avgMs > 0 ? Math.sqrt(variance) / avgMs : Infinity;
+        fish.classList.toggle('is-steady', recent.length >= 6 && cv < 0.12);
       } else {
         rhythmEl.textContent = '—';
+        fish.classList.remove('is-steady');
       }
     };
 
@@ -117,6 +124,13 @@ import SoundControl from './SoundControl.astro';
       fish.classList.remove('is-hit');
       void fish.offsetWidth;
       fish.classList.add('is-hit');
+
+      /* 一击一圈涟漪 */
+      const ripple = document.createElement('span');
+      ripple.className = 'jing-muyu-ripple';
+      ripple.setAttribute('aria-hidden', 'true');
+      fish.parentElement!.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 1000);
     });
 
     pauseBtn.addEventListener('click', () => {
@@ -178,8 +192,37 @@ import SoundControl from './SoundControl.astro';
     40% { transform: scale(0.94); }
     100% { transform: scale(1); }
   }
+
+  /* 敲击涟漪：动画禁用时保持不可见 */
+  .jing-muyu-stage { position: relative; display: flex; justify-content: center; }
+  .jing-muyu-ripple {
+    position: absolute; left: 50%; top: 50%;
+    width: 60%; height: 62%;
+    transform: translate(-50%, -50%);
+    border: 1.5px solid var(--jing-accent);
+    border-radius: 50%;
+    opacity: 0;
+    pointer-events: none;
+    animation: muyu-ripple 0.9s ease-out;
+  }
+  @keyframes muyu-ripple {
+    from { opacity: 0.55; transform: translate(-50%, -50%) scale(0.72); }
+    to { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
+  }
+
+  /* 节奏稳定时的呼吸微光 */
+  .jing-muyu-fish.is-steady svg { animation: muyu-steady 4.5s ease-in-out infinite; }
+  @keyframes muyu-steady {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(184, 147, 74, 0.25)); }
+    50% { filter: drop-shadow(0 0 14px rgba(184, 147, 74, 0.5)); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .jing-muyu-fish.is-hit svg { animation: none; }
+    .jing-muyu-fish.is-hit svg,
+    .jing-muyu-ripple,
+    .jing-muyu-fish.is-steady svg { animation: none; }
+    .jing-muyu-ripple { opacity: 0; }
+    .jing-muyu-fish.is-steady svg { filter: drop-shadow(0 0 8px rgba(184, 147, 74, 0.35)); }
   }
 
   .jing-muyu-controls { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }

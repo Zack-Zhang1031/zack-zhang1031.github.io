@@ -17,7 +17,10 @@
   </div>
 
   <section id="lot-panel" role="tabpanel" aria-labelledby="lot-tab-guanyin">
-    <p id="lot-edition" class="jing-lot-edition"></p>
+    <details class="jing-lot-source">
+      <summary>签诗版本与来源</summary>
+      <p id="lot-edition" class="jing-lot-edition"></p>
+    </details>
     <p class="jing-lot-hint">
       静心默念所问，再按下抽签。签诗为古典文本转录，简释为本站原创的现代整理，
       只作文化参考，不构成任何现实建议。不保存、不联网，刷新即清。
@@ -52,7 +55,8 @@
         d="M34 86 h52 v58 a26 12 0 0 1 -52 0 z"
         fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.6" />
       <ellipse cx="60" cy="86" rx="26" ry="6" fill="none" stroke="var(--jing-accent)" stroke-width="1.4" />
-      <text x="60" y="122" text-anchor="middle" class="jing-lot-tube-char">签</text>
+      <g class="jing-lot-deco" id="lot-tube-deco" stroke="var(--jing-accent)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.55"></g>
+      <text x="60" y="126" text-anchor="middle" class="jing-lot-tube-char">签</text>
     </svg>
     <p class="jing-lot-stage-text">静心摇签中……</p>
   </div>
@@ -62,7 +66,10 @@
       <p id="lot-title" class="jing-lot-title"></p>
       <p id="lot-grade" class="jing-lot-grade"></p>
     </header>
-    <blockquote id="lot-verse" class="jing-lot-verse"></blockquote>
+    <div class="jing-lot-verse-wrap">
+      <blockquote id="lot-verse" class="jing-lot-verse"></blockquote>
+      <span class="jing-stamp jing-lot-stamp" id="lot-stamp" aria-hidden="true"></span>
+    </div>
     <p id="lot-allusion" class="jing-lot-allusion"></p>
 
     <details class="jing-lot-classical">
@@ -79,9 +86,12 @@
 
     <div id="lot-cups-area" hidden>
       <h3>掷筊</h3>
+      <div id="lot-cups-visual" class="jing-cups-visual" aria-hidden="true"></div>
       <p id="lot-cups-result" class="jing-lot-cups"></p>
       <p class="jing-lot-hint">筊杯只是一种传统仪式参考，不会改变、也不覆盖上面这枝签。</p>
     </div>
+
+    <p class="jing-freshness">不保存 · 不联网 · 刷新即清</p>
   </section>
 </div>
 
@@ -120,12 +130,30 @@
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
       || loadSettings(localStorage).settings.motion === 'reduce';
 
+    /* 签筒纹样随签种切换：观音莲 / 吕祖剑 / 关帝云龙 */
+    const TUBE_DECO: Record<string, string> = {
+      guanyin:
+        '<path d="M48 106 Q54 96 60 104 Q66 96 72 106" />' +
+        '<path d="M54 106 Q60 99 66 106" />' +
+        '<path d="M60 104 Q60 96 60 94" />',
+      luzu:
+        '<path d="M60 94 V110" />' +
+        '<path d="M53 100 H67" />' +
+        '<path d="M57 110 Q60 113 63 110" />',
+      guandi:
+        '<path d="M46 103 Q52 95 58 101 T70 99" />' +
+        '<path d="M64 99 q4 -4 8 0 q-2 4 -6 3" />' +
+        '<path d="M50 108 q4 -3 8 0" />',
+    };
+
     const editionText = () =>
       `${current.name} · ${current.edition} · 数据修订 ${current.revision}`;
 
     const renderEdition = () => {
       $('lot-edition').textContent = editionText();
       $('lot-panel').setAttribute('aria-labelledby', `lot-tab-${current.id}`);
+      const deco = document.getElementById('lot-tube-deco');
+      if (deco) deco.innerHTML = TUBE_DECO[current.id] ?? '';
     };
 
     /* ---- tabs ---- */
@@ -146,6 +174,7 @@
       $('lot-title').textContent = `第 ${lot.number} 签 · ${lot.title}`;
       const ganzhi = lot.ganzhi ? ` · ${lot.ganzhi}` : '';
       $('lot-grade').textContent = `${current.name} · ${lot.grade}${ganzhi}`;
+      $('lot-stamp').textContent = `第${lot.number}签`;
       $('lot-verse').innerHTML = lot.verse.map((line) => `<p>${line}</p>`).join('');
       $('lot-allusion').textContent = lot.allusion;
       $('lot-classical-list').innerHTML = Object.entries(lot.classical)
@@ -159,10 +188,15 @@
       cautionsEl.innerHTML = lot.cautions.map((c) => `<li>${c}</li>`).join('');
       cautionsEl.hidden = lot.cautions.length === 0;
       $('lot-cups-area').hidden = true;
+      $('lot-cups-visual').innerHTML = '';
       cupsThrown = false;
       ($('lot-cups') as HTMLButtonElement).disabled = false;
       ($('lot-copy') as HTMLButtonElement).disabled = false;
       resultEl.hidden = false;
+      /* 展卷：重触发 clip-path 展开动画 */
+      resultEl.classList.remove('is-unfurl');
+      void resultEl.offsetWidth;
+      resultEl.classList.add('is-unfurl');
       resultEl.scrollIntoView({ block: 'nearest' });
     };
 
@@ -201,6 +235,19 @@
       cupsThrown = true;
       const throws = throwCups(cryptoRandomSource);
       const label = { sheng: '圣筊', xiao: '笑筊', yin: '阴筊' } as const;
+      /* 筊杯图示：圣=一俯一仰，笑=两仰，阴=两俯；逐回翻转落下 */
+      const cup = (down: boolean) =>
+        `<path d="M2 16 A10 10 0 0 1 22 16 A7 7 0 0 0 2 16 Z"
+           transform="rotate(${down ? 180 : 0} 12 15)" />`;
+      $('lot-cups-visual').innerHTML = throws
+        .map((t, i) => {
+          const [a, b] = t === 'sheng' ? [false, true] : t === 'xiao' ? [false, false] : [true, true];
+          return `<svg class="jing-cup-pair" viewBox="0 0 48 38" style="animation-delay:${i * 0.4}s">
+            <g transform="translate(2 2)">${cup(a)}</g>
+            <g transform="translate(24 2)">${cup(b)}</g>
+            <text x="24" y="35" text-anchor="middle">${label[t]}</text></svg>`;
+        })
+        .join('');
       $('lot-cups-result').textContent =
         `三回依次为：${throws.map((t) => label[t]).join('、')}`;
       $('lot-cups-area').hidden = false;
@@ -249,8 +296,13 @@
     background: var(--jing-bg-raised); padding: 1rem 1.1rem;
   }
 
+  .jing-lot-source { margin: 0 0 0.6rem; }
+  .jing-lot-source summary {
+    cursor: pointer; font-family: var(--jing-font-ui);
+    font-size: 0.72rem; color: var(--jing-text-dim); letter-spacing: 0.1em;
+  }
   .jing-lot-edition {
-    margin: 0 0 0.5rem; font-family: var(--jing-font-ui);
+    margin: 0.45rem 0 0; font-family: var(--jing-font-ui);
     font-size: 0.72rem; color: var(--jing-text-dim); letter-spacing: 0.05em;
   }
   .jing-lot-hint {
@@ -279,12 +331,57 @@
     font-size: 0.78rem; color: var(--jing-vermilion); letter-spacing: 0.1em;
   }
 
-  .jing-lot-verse {
-    margin: 0 0 0.9rem; padding: 0.9rem 1rem;
-    border-left: 2px solid var(--jing-accent);
-    background: var(--jing-bg-card); border-radius: 0 6px 6px 0;
+  /* 签诗竖排：右起左行，旁钤朱文小印 */
+  .jing-lot-verse-wrap {
+    display: flex; justify-content: center; align-items: flex-start;
+    gap: 0.9rem; margin: 0 0 0.9rem;
   }
-  .jing-lot-verse p { margin: 0.2rem 0; letter-spacing: 0.15em; line-height: 1.9; }
+  .jing-lot-verse {
+    margin: 0; padding: 1rem 0.9rem;
+    writing-mode: vertical-rl;
+    max-height: 17rem; overflow-x: auto;
+    border-left: none; border-right: 2px solid var(--jing-accent);
+    background: var(--jing-bg-card); background-image: var(--jing-paper);
+    border-radius: 6px 0 0 6px;
+    font-family: var(--jing-font-verse);
+  }
+  .jing-lot-verse p {
+    margin: 0 0 0 0.7rem; letter-spacing: 0.35em; line-height: 2.1;
+    font-size: 1.02rem;
+  }
+  .jing-lot-verse p:first-child { margin-left: 0; }
+  .jing-lot-stamp {
+    writing-mode: vertical-rl;
+    width: auto; height: auto;
+    padding: 0.35rem 0.2rem;
+    font-size: 0.78rem; letter-spacing: 0.15em;
+    margin-top: 0.2rem;
+  }
+
+  /* 展卷：结果自中线向两侧展开 */
+  .jing-lot-result.is-unfurl { animation: jing-unfurl 0.8s ease both; }
+  @keyframes jing-unfurl {
+    from { clip-path: inset(0 46% 0 46%); opacity: 0.4; }
+    to { clip-path: inset(0 0 0 0); opacity: 1; }
+  }
+
+  /* 筊杯翻转 */
+  .jing-cups-visual { display: flex; gap: 0.9rem; margin: 0 0 0.5rem; }
+  .jing-cup-pair {
+    width: 56px; height: auto;
+    animation: jing-cup-flip 0.6s cubic-bezier(0.2, 0.8, 0.3, 1.1) both;
+  }
+  .jing-cup-pair path {
+    fill: var(--jing-bg-card); stroke: var(--jing-accent); stroke-width: 1.4;
+  }
+  .jing-cup-pair text {
+    fill: var(--jing-text-dim); font-size: 8.5px;
+    font-family: var(--jing-font-ui); letter-spacing: 0.1em;
+  }
+  @keyframes jing-cup-flip {
+    from { transform: perspective(200px) rotateX(85deg); opacity: 0; }
+    to { transform: perspective(200px) rotateX(0deg); opacity: 1; }
+  }
 
   .jing-lot-allusion {
     margin: 0 0 0.9rem; font-size: 0.88rem; line-height: 1.9;

@@ -39,6 +39,19 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
           <line x1="84" y1="76" x2="84" y2="92" stroke="var(--jing-vermilion)" stroke-width="1.6" />
           <circle class="jing-ember" cx="72" cy="75" r="1.8" fill="var(--jing-vermilion)" />
           <circle class="jing-ember e2" cx="84" cy="75" r="1.8" fill="var(--jing-vermilion)" />
+          <!-- 烛火 -->
+          <g class="jing-candle">
+            <rect x="37" y="90" width="6" height="16" rx="1.5"
+              fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1" />
+            <path class="jing-flame f1" d="M40 90 C 37.5 86, 38.5 82, 40 79 C 41.5 82, 42.5 86, 40 90 Z"
+              fill="var(--jing-vermilion)" />
+          </g>
+          <g class="jing-candle">
+            <rect x="108" y="90" width="6" height="16" rx="1.5"
+              fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1" />
+            <path class="jing-flame f2" d="M111 90 C 108.5 86, 109.5 82, 111 79 C 112.5 82, 113.5 86, 111 90 Z"
+              fill="var(--jing-vermilion)" />
+          </g>
           <!-- 炉 -->
           <path d="M52 92 h52 l-5 14 a24 8 0 0 1 -42 0 z"
             fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.4" />
@@ -51,12 +64,30 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
         </svg>
       ) : (
         <svg class="jing-scene-svg" viewBox="0 0 160 120">
+          <!-- 云气 -->
+          <g class="jing-cloud" fill="none" stroke="var(--jing-text-dim)" stroke-width="1.1" stroke-linecap="round">
+            <path d="M8 26 Q 22 18, 36 26 T 64 26" />
+            <path d="M96 16 Q 108 10, 120 16 T 152 16" />
+          </g>
           <!-- 太极 -->
           <g class="jing-taiji" transform="translate(56 52)">
             <circle r="26" fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.4" />
             <path d="M0 -26 A 26 26 0 0 1 0 26 A 13 13 0 0 1 0 0 A 13 13 0 0 0 0 -26 Z" fill="var(--jing-accent)" />
             <circle cy="-13" r="3.2" fill="var(--jing-accent)" />
             <circle cy="13" r="3.2" fill="var(--jing-bg-card)" />
+          </g>
+          <!-- 烛火 -->
+          <g class="jing-candle">
+            <rect x="33" y="94" width="6" height="16" rx="1.5"
+              fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1" />
+            <path class="jing-flame f1" d="M36 94 C 33.5 90, 34.5 86, 36 83 C 37.5 86, 38.5 90, 36 94 Z"
+              fill="var(--jing-vermilion)" />
+          </g>
+          <g class="jing-candle">
+            <rect x="73" y="94" width="6" height="16" rx="1.5"
+              fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1" />
+            <path class="jing-flame f2" d="M76 94 C 73.5 90, 74.5 86, 76 83 C 77.5 86, 78.5 90, 76 94 Z"
+              fill="var(--jing-vermilion)" />
           </g>
           <!-- 云烟 -->
           <g class="jing-smoke" fill="none" stroke="var(--jing-text-dim)" stroke-width="1.2" stroke-linecap="round">
@@ -67,6 +98,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
       )}
     </div>
     <div class="jing-breath-circle" aria-hidden="true"></div>
+    <div class="jing-ripples" aria-hidden="true"></div>
     <p class="jing-phase-text" role="status" aria-live="polite"></p>
     <button type="button" class="jing-btn jing-phase-next" hidden>继续</button>
   </div>
@@ -97,9 +129,13 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
 
     /* ambience created only after explicit opt-in */
     let ambience: HTMLAudioElement[] = [];
+    let soundOn = false;
+    let soundVol = 0.6;
     const soundControl = root.querySelector('[data-sound-control]');
     soundControl?.addEventListener('jing:sound', (e) => {
       const { enabled, volume } = (e as CustomEvent).detail as { enabled: boolean; volume: number };
+      soundOn = enabled;
+      soundVol = volume;
       if (enabled && ambience.length === 0) {
         ambience = AMBIENCE_BY_TRADITION[tradition].map((id) => {
           const audio = new Audio(AMBIENCE_SRC[id]);
@@ -113,6 +149,28 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
         else audio.pause();
       }
     });
+
+    /* 每一礼过渡：磬声一记（声音需用户先行开启）+ 涟漪一圈 */
+    const PHASE_CHIME: Record<string, string> = {
+      buddhist: AMBIENCE_SRC.chime,
+      taoist: AMBIENCE_SRC['windchime'],
+    };
+    let chimeAudio: HTMLAudioElement | null = null;
+    const playPhaseChime = () => {
+      if (!soundOn) return;
+      if (!chimeAudio) chimeAudio = new Audio(PHASE_CHIME[tradition]);
+      chimeAudio.volume = Math.min(1, soundVol * 0.7);
+      chimeAudio.currentTime = 0;
+      void chimeAudio.play().catch(() => {});
+    };
+
+    const ripples = root.querySelector<HTMLElement>('.jing-ripples')!;
+    const spawnRipple = () => {
+      const r = document.createElement('span');
+      r.className = 'jing-ripple';
+      ripples.appendChild(r);
+      setTimeout(() => r.remove(), 2200);
+    };
 
     const showStage = (name: keyof typeof stages) => {
       (Object.keys(stages) as (keyof typeof stages)[]).forEach((k) => {
@@ -132,11 +190,19 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
       scene.classList.remove('is-animated');
       if (index >= phases.length) {
         showStage('done');
+        settle();
         return;
       }
       phaseText.textContent = phases[index];
+      playPhaseChime();
       nextBtn.hidden = false;
       nextBtn.onclick = () => runStatic(index + 1);
+    };
+
+    const settle = () => {
+      stages.done.classList.remove('is-settled');
+      void stages.done.offsetWidth;
+      stages.done.classList.add('is-settled');
     };
 
     const runAnimated = () => {
@@ -144,12 +210,17 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
       circle.classList.add('is-animated');
       scene.classList.add('is-animated');
       phases.forEach((text, i) => {
-        timers.push(setTimeout(() => { phaseText.textContent = text; }, i * 6000));
+        timers.push(setTimeout(() => {
+          phaseText.textContent = text;
+          spawnRipple();
+          playPhaseChime();
+        }, i * 6000));
       });
       timers.push(setTimeout(() => {
         circle.classList.remove('is-animated');
         scene.classList.remove('is-animated');
         showStage('done');
+        settle();
       }, phases.length * 6000));
     };
 
@@ -239,10 +310,56 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     to { transform: rotate(360deg); }
   }
 
+  /* 烛火：双焰错频摇曳 */
+  .jing-flame { transform-box: fill-box; transform-origin: 50% 100%; opacity: 0.85; }
+  .jing-scene.is-animated .jing-flame.f1 { animation: jing-flame-flicker 1.7s ease-in-out infinite alternate; }
+  .jing-scene.is-animated .jing-flame.f2 { animation: jing-flame-flicker 1.3s ease-in-out 0.4s infinite alternate; }
+  @keyframes jing-flame-flicker {
+    0% { transform: scaleY(1) skewX(0deg); opacity: 0.9; }
+    40% { transform: scaleY(1.12) skewX(-4deg); opacity: 1; }
+    70% { transform: scaleY(0.92) skewX(3deg); opacity: 0.75; }
+    100% { transform: scaleY(1.05) skewX(-2deg); opacity: 0.95; }
+  }
+
+  /* 道房云气漂移 */
+  .jing-cloud { opacity: 0.35; }
+  .jing-scene.is-animated .jing-cloud { animation: jing-cloud-drift 26s ease-in-out infinite alternate; }
+  @keyframes jing-cloud-drift {
+    from { transform: translateX(-4px); opacity: 0.25; }
+    50% { opacity: 0.45; }
+    to { transform: translateX(6px); opacity: 0.3; }
+  }
+
+  /* 一礼一记涟漪 */
+  .jing-ripples { position: relative; height: 0; }
+  .jing-ripple {
+    position: absolute; left: 50%; top: -52px;
+    width: 16px; height: 16px; margin-left: -8px;
+    border: 1px solid var(--jing-accent); border-radius: 50%;
+    opacity: 0.7; pointer-events: none;
+    animation: jing-ripple-spread 1.8s ease-out forwards;
+  }
+  @keyframes jing-ripple-spread {
+    from { transform: scale(1); opacity: 0.65; }
+    to { transform: scale(6.5); opacity: 0; }
+  }
+
+  /* 三礼收场：缓缓亮起 */
+  .jing-reverence-done.is-settled { animation: jing-settle 2s ease both; }
+  @keyframes jing-settle {
+    from { opacity: 0; filter: brightness(1.5); }
+    to { opacity: 1; filter: none; }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .jing-scene.is-animated .jing-smoke-wisp,
     .jing-scene.is-animated .jing-ember,
     .jing-scene.is-animated .jing-petal,
-    .jing-scene.is-animated .jing-taiji { animation: none; }
+    .jing-scene.is-animated .jing-taiji,
+    .jing-scene.is-animated .jing-flame,
+    .jing-scene.is-animated .jing-cloud,
+    .jing-ripple,
+    .jing-reverence-done.is-settled { animation: none; }
+    .jing-ripple { opacity: 0; }
   }
 </style>
