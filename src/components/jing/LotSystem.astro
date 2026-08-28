@@ -26,11 +26,16 @@ import SoundControl from './SoundControl.astro';
       静心默念所问，再按下抽签。签诗为古典文本转录，简释为本站原创的现代整理，
       只作文化参考，不构成任何现实建议。不保存、不联网，刷新即清。
     </p>
+    <p class="jing-lot-ask">
+      <label for="lot-question">所问何事（可不填；只存此刻，刷新即散）</label>
+      <input id="lot-question" type="text" maxlength="20" placeholder="心中之事" autocomplete="off" />
+    </p>
     <div class="jing-lot-actions">
       <button type="button" id="lot-draw" class="jing-btn jing-btn-primary">抽签</button>
       <button type="button" id="lot-cups" class="jing-btn" disabled>掷筊三回</button>
       <button type="button" id="lot-copy" class="jing-btn" disabled>复制签文摘要</button>
       <button type="button" id="lot-bookmark" class="jing-btn" disabled>存为书签图</button>
+      <button type="button" id="lot-chant" class="jing-btn" disabled>诵一遍</button>
       <SoundControl layers={['rain', 'insects', 'tea']} />
     </div>
     <p id="lot-redraw-warn" class="jing-lot-warn" role="status" hidden>
@@ -57,6 +62,9 @@ import SoundControl from './SoundControl.astro';
       <path class="jing-lot-tube"
         d="M34 86 h52 v58 a26 12 0 0 1 -52 0 z"
         fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.6" />
+      <path class="jing-lot-tube-grain"
+        d="M34 86 h52 v58 a26 12 0 0 1 -52 0 z"
+        fill="var(--jing-wood)" stroke="none" opacity="0.35" />
       <ellipse cx="60" cy="86" rx="26" ry="6" fill="none" stroke="var(--jing-accent)" stroke-width="1.4" />
       <g class="jing-lot-deco" id="lot-tube-deco" stroke="var(--jing-accent)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.55"></g>
       <text x="60" y="126" text-anchor="middle" class="jing-lot-tube-char">签</text>
@@ -64,10 +72,33 @@ import SoundControl from './SoundControl.astro';
     <p class="jing-lot-stage-text">静心摇签中……</p>
   </div>
 
+  <div class="jing-lot-cleanse" id="lot-cleanse" hidden role="button" tabindex="0"
+    aria-label="净手静心，点击继续抽签">
+    <svg class="jing-cleanse-basin" viewBox="0 0 160 96" aria-hidden="true">
+      <path d="M28 40 h104 l-8 34 a48 14 0 0 1 -88 0 z"
+        fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.4" />
+      <ellipse cx="80" cy="40" rx="52" ry="10"
+        fill="var(--jing-accent-soft)" stroke="var(--jing-accent)" stroke-width="1.2" />
+      <g class="jing-cleanse-ripples" id="lot-cleanse-ripples"
+        fill="none" stroke="var(--jing-accent)" stroke-width="1"></g>
+    </svg>
+    <p class="jing-cleanse-text">净手，静心。指尖掠过水面。</p>
+    <p class="jing-cleanse-ready" id="lot-cleanse-ready" hidden>可以抽签了——点任意处继续。</p>
+  </div>
+
+  <div class="jing-lot-preview" id="lot-bookmark-preview" hidden role="dialog" aria-label="书签图预览">
+    <img id="lot-bookmark-img" alt="签诗书签预览" />
+    <div class="jing-lot-preview-actions">
+      <button type="button" id="lot-bookmark-save" class="jing-btn jing-btn-primary">存下这张图</button>
+      <button type="button" id="lot-bookmark-cancel" class="jing-btn">收起</button>
+    </div>
+  </div>
+
   <section id="lot-result" class="jing-lot-result" hidden aria-live="polite">
     <header class="jing-lot-head">
       <p id="lot-title" class="jing-lot-title"></p>
       <p id="lot-grade" class="jing-lot-grade"></p>
+      <p id="lot-question-echo" class="jing-lot-question" hidden></p>
     </header>
     <div class="jing-lot-verse-wrap">
       <blockquote id="lot-verse" class="jing-lot-verse"></blockquote>
@@ -89,6 +120,7 @@ import SoundControl from './SoundControl.astro';
 
     <div id="lot-cups-area" hidden>
       <h3>掷筊</h3>
+      <p class="jing-lot-hint">若心中无问，筊不必掷。</p>
       <div id="lot-cups-visual" class="jing-cups-visual" aria-hidden="true"></div>
       <p id="lot-cups-result" class="jing-lot-cups"></p>
       <p class="jing-lot-hint">筊杯只是一种传统仪式参考，不会改变、也不覆盖上面这枝签。</p>
@@ -127,7 +159,7 @@ import SoundControl from './SoundControl.astro';
     const resultEl = $('lot-result');
     const warnEl = $('lot-redraw-warn');
     const stageEl = $('lot-stage');
-    const DRAW_ANIMATION_MS = 1500;
+    const DRAW_ANIMATION_MS = 1900; // 摇 1.1s + 起签一顿 + 落签
     let animating = false;
 
     const reducedMotion = () =>
@@ -213,6 +245,10 @@ import SoundControl from './SoundControl.astro';
       const ganzhi = lot.ganzhi ? ` · ${lot.ganzhi}` : '';
       $('lot-grade').textContent = `${current.name} · ${lot.grade}${ganzhi}`;
       $('lot-stamp').textContent = `第${lot.number}签`;
+      const question = ($('lot-question') as HTMLInputElement).value.trim();
+      const echo = $('lot-question-echo');
+      echo.textContent = question ? `为「${question}」问` : '';
+      echo.hidden = !question;
       $('lot-verse').innerHTML = lot.verse.map((line) => `<p>${line}</p>`).join('');
       $('lot-allusion').textContent = lot.allusion;
       $('lot-classical-list').innerHTML = Object.entries(lot.classical)
@@ -231,6 +267,7 @@ import SoundControl from './SoundControl.astro';
       ($('lot-cups') as HTMLButtonElement).disabled = false;
       ($('lot-copy') as HTMLButtonElement).disabled = false;
       ($('lot-bookmark') as HTMLButtonElement).disabled = false;
+      ($('lot-chant') as HTMLButtonElement).disabled = false;
       resultEl.hidden = false;
       /* 展卷：重触发 clip-path 展开动画 */
       resultEl.classList.remove('is-unfurl');
@@ -246,6 +283,65 @@ import SoundControl from './SoundControl.astro';
       fx(FX_SRC.paperUnfurl, 0.55);
     };
 
+    /* 摇 1.1s → 起签 → 落签一顿，再展卷 */
+    const LAND_TICK_MS = 1520;
+
+    const runShake = () => {
+      animating = true;
+      fx(FX_SRC.shakeSticks, 0.9);
+      resultEl.hidden = true;
+      stageEl.hidden = false;
+      stageEl.classList.add('is-playing');
+      setTimeout(() => fx(FX_SRC.cupsDrop, 0.4), LAND_TICK_MS); // 落签一声轻「嗒」
+      setTimeout(() => {
+        stageEl.classList.remove('is-playing');
+        stageEl.hidden = true;
+        animating = false;
+        doDraw();
+      }, DRAW_ANIMATION_MS);
+    };
+
+    /* ---- 净手：每次到访的第一次抽签，先净手静心 ---- */
+    const cleanseEl = $('lot-cleanse');
+    const cleanseReady = $('lot-cleanse-ready');
+    const cleanseRipples = document.getElementById('lot-cleanse-ripples')!;
+    let cleansed = false;
+    let cleanseTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const finishCleanse = () => {
+      if (cleanseEl.hidden) return;
+      cleansed = true;
+      if (cleanseTimer) { clearTimeout(cleanseTimer); cleanseTimer = null; }
+      cleanseEl.hidden = true;
+      runShake();
+    };
+
+    const startCleanse = () => {
+      cleanseEl.hidden = false;
+      cleanseReady.hidden = true;
+      cleanseTimer = setTimeout(() => { cleanseReady.hidden = false; }, 2600);
+    };
+
+    cleanseEl.addEventListener('click', finishCleanse);
+    cleanseEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); finishCleanse(); }
+    });
+    cleanseEl.addEventListener('pointermove', (e) => {
+      const svg = cleanseEl.querySelector('svg');
+      if (!svg) return;
+      const ctm = svg.getScreenCTM();
+      if (!ctm) return;
+      const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse());
+      if (pt.y < 20 || pt.y > 52) return; // 只在水面起澜
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', String(pt.x));
+      c.setAttribute('cy', '40');
+      c.setAttribute('r', '3');
+      c.setAttribute('class', 'jing-cleanse-ripple');
+      cleanseRipples.appendChild(c);
+      setTimeout(() => c.remove(), 1400);
+    });
+
     $('lot-draw').addEventListener('click', () => {
       if (animating) return;
       const now = Date.now();
@@ -258,17 +354,11 @@ import SoundControl from './SoundControl.astro';
         doDraw();
         return;
       }
-      animating = true;
-      fx(FX_SRC.shakeSticks, 0.9);
-      resultEl.hidden = true;
-      stageEl.hidden = false;
-      stageEl.classList.add('is-playing');
-      setTimeout(() => {
-        stageEl.classList.remove('is-playing');
-        stageEl.hidden = true;
-        animating = false;
-        doDraw();
-      }, DRAW_ANIMATION_MS);
+      if (!cleansed) {
+        startCleanse();
+        return;
+      }
+      runShake();
     });
 
     $('lot-cups').addEventListener('click', () => {
@@ -283,7 +373,7 @@ import SoundControl from './SoundControl.astro';
       $('lot-cups-visual').innerHTML = throws
         .map((t, i) => {
           const [a, b] = t === 'sheng' ? [false, true] : t === 'xiao' ? [false, false] : [true, true];
-          return `<svg class="jing-cup-pair" viewBox="0 0 48 38" style="animation-delay:${i * 0.4}s">
+          return `<svg class="jing-cup-pair" viewBox="0 0 48 38" style="animation-delay:${i * 0.4 + 0.4}s;--tilt:${[-2, 1.6, -1.2][i]}deg">
             <g transform="translate(2 2)">${cup(a)}</g>
             <g transform="translate(24 2)">${cup(b)}</g>
             <text x="24" y="35" text-anchor="middle">${label[t]}</text></svg>`;
@@ -291,7 +381,7 @@ import SoundControl from './SoundControl.astro';
         .join('');
       $('lot-cups-result').textContent =
         `三回依次为：${throws.map((t) => label[t]).join('、')}`;
-      throws.forEach((_, i) => fx(FX_SRC.cupsDrop, 0.7, i * 400));
+      throws.forEach((_, i) => fx(FX_SRC.cupsDrop, 0.7, i * 400 + 400));
       $('lot-cups-area').hidden = false;
       ($('lot-cups') as HTMLButtonElement).disabled = true;
     });
@@ -315,15 +405,33 @@ import SoundControl from './SoundControl.astro';
       }
     });
 
-    /* ---- 书签图：canvas 竖排绘制，纯本地下载 ---- */
-    $('lot-bookmark').addEventListener('click', () => {
-      if (!lastDraw) return;
+    /* ---- 诵一遍：逐列高亮，不朗读，节奏交给默念 ---- */
+    let chanting = false;
+    $('lot-chant').addEventListener('click', () => {
+      if (chanting || resultEl.hidden) return;
+      const lines = Array.from($('lot-verse').querySelectorAll('p'));
+      if (lines.length === 0) return;
+      chanting = true;
+      ($('lot-chant') as HTMLButtonElement).disabled = true;
+      lines.forEach((p, i) => {
+        setTimeout(() => p.classList.add('is-chanting'), i * 1100);
+        setTimeout(() => p.classList.remove('is-chanting'), i * 1100 + 1100);
+      });
+      setTimeout(() => {
+        chanting = false;
+        ($('lot-chant') as HTMLButtonElement).disabled = false;
+      }, lines.length * 1100 + 400);
+    });
+
+    /* ---- 书签图：canvas 竖排绘制，先预览再存 ---- */
+    const buildBookmark = (): HTMLCanvasElement | null => {
+      if (!lastDraw) return null;
       const lot = lastDraw.lot;
       const canvas = document.createElement('canvas');
       canvas.width = 480;
       canvas.height = 1080;
       const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+      if (!ctx) return null;
 
       // 宣纸底 + 双线框
       ctx.fillStyle = '#f6f1e4';
@@ -373,12 +481,28 @@ import SoundControl from './SoundControl.astro';
       ctx.fillText('静', 29, 41);
       ctx.restore();
 
+      return canvas;
+    };
+
+    $('lot-bookmark').addEventListener('click', () => {
+      const canvas = buildBookmark();
+      if (!canvas) return;
+      ($('lot-bookmark-img') as HTMLImageElement).src = canvas.toDataURL('image/png');
+      $('lot-bookmark-preview').hidden = false;
+    });
+
+    $('lot-bookmark-save').addEventListener('click', () => {
+      const src = ($('lot-bookmark-img') as HTMLImageElement).src;
+      if (!src || !lastDraw) return;
       const a = document.createElement('a');
-      a.download = `jing-lot-${current.id}-${lot.number}.png`;
-      a.href = canvas.toDataURL('image/png');
+      a.download = `jing-lot-${current.id}-${lastDraw.lot.number}.png`;
+      a.href = src;
       a.click();
-      ($('lot-bookmark') as HTMLButtonElement).textContent = '已存图';
-      setTimeout(() => { ($('lot-bookmark') as HTMLButtonElement).textContent = '存为书签图'; }, 1600);
+      $('lot-bookmark-preview').hidden = true;
+    });
+
+    $('lot-bookmark-cancel').addEventListener('click', () => {
+      $('lot-bookmark-preview').hidden = true;
     });
 
     renderEdition();
@@ -473,6 +597,89 @@ import SoundControl from './SoundControl.astro';
     to { clip-path: inset(0 0 0 0); opacity: 1; }
   }
 
+  /* 墨晕：签诗逐列洇开，字距随之落定 */
+  .jing-lot-result.is-unfurl .jing-lot-verse p { animation: jing-ink-in 0.9s ease both; }
+  .jing-lot-result.is-unfurl .jing-lot-verse p:nth-child(1) { animation-delay: 0.25s; }
+  .jing-lot-result.is-unfurl .jing-lot-verse p:nth-child(2) { animation-delay: 0.45s; }
+  .jing-lot-result.is-unfurl .jing-lot-verse p:nth-child(3) { animation-delay: 0.65s; }
+  .jing-lot-result.is-unfurl .jing-lot-verse p:nth-child(4) { animation-delay: 0.85s; }
+  @keyframes jing-ink-in {
+    from { opacity: 0.1; filter: blur(2px); letter-spacing: 0.18em; }
+    to { opacity: 1; filter: blur(0); letter-spacing: 0.35em; }
+  }
+
+  /* 钤印：展卷将毕，印章一顿盖落 */
+  .jing-lot-result.is-unfurl .jing-lot-stamp { animation: jing-seal-in 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) 1.05s both; }
+  @keyframes jing-seal-in {
+    from { transform: rotate(-9deg) scale(1.7); opacity: 0.2; }
+    to { transform: rotate(-2deg) scale(1); opacity: 0.85; }
+  }
+
+  /* 诵：逐列高亮 */
+  .jing-lot-verse p.is-chanting {
+    color: var(--jing-accent);
+    background: var(--jing-accent-soft);
+    border-radius: 4px;
+    transition: color 0.3s ease, background 0.3s ease;
+  }
+
+  /* 问事留白 */
+  .jing-lot-ask {
+    margin: 0 0 0.9rem; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+    font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim);
+  }
+  .jing-lot-ask input {
+    font-family: var(--jing-font-verse); font-size: 0.9rem; letter-spacing: 0.1em;
+    background: transparent; border: none; border-bottom: 1px dashed var(--jing-border);
+    color: var(--jing-text); padding: 0.15rem 0.2rem; width: 10em;
+  }
+  .jing-lot-ask input:focus-visible { outline: none; border-bottom-color: var(--jing-accent); }
+  .jing-lot-question {
+    margin: 0.3rem 0 0; font-family: var(--jing-font-verse);
+    font-size: 0.85rem; color: var(--jing-text-dim); letter-spacing: 0.1em;
+  }
+
+  /* 净手屏 */
+  .jing-lot-cleanse {
+    border: 1px dashed var(--jing-border); border-radius: var(--jing-radius);
+    background: var(--jing-bg-raised); background-image: var(--jing-paper);
+    padding: 1.4rem 1rem; display: flex; flex-direction: column; align-items: center;
+    gap: 0.5rem; cursor: pointer; text-align: center;
+    animation: jing-enter 0.4s ease both;
+  }
+  .jing-lot-cleanse[hidden] { display: none; }
+  .jing-lot-cleanse:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
+  .jing-cleanse-basin { width: 170px; height: auto; }
+  .jing-cleanse-ripple {
+    transform-box: fill-box; transform-origin: center;
+    animation: jing-basin-ripple 1.3s ease-out forwards;
+  }
+  @keyframes jing-basin-ripple {
+    from { opacity: 0.6; transform: scale(0.4); }
+    to { opacity: 0; transform: scale(4.2); }
+  }
+  .jing-cleanse-text { margin: 0; font-size: 0.92rem; letter-spacing: 0.25em; color: var(--jing-text); }
+  .jing-cleanse-ready {
+    margin: 0; font-family: var(--jing-font-ui); font-size: 0.75rem;
+    color: var(--jing-accent); letter-spacing: 0.15em;
+  }
+
+  /* 书签预览 */
+  .jing-lot-preview {
+    position: fixed; inset: 0; z-index: 70;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 1rem; padding: 1.5rem;
+    background: color-mix(in srgb, var(--jing-bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .jing-lot-preview[hidden] { display: none; }
+  #lot-bookmark-img {
+    max-height: 74vh; max-width: 88vw; height: auto;
+    border-radius: 8px; box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+  }
+  .jing-lot-preview-actions { display: flex; gap: 0.8rem; }
+
   /* 筊杯翻转 */
   .jing-cups-visual { display: flex; gap: 0.9rem; margin: 0 0 0.5rem; }
   .jing-cup-pair {
@@ -486,9 +693,12 @@ import SoundControl from './SoundControl.astro';
     fill: var(--jing-text-dim); font-size: 8.5px;
     font-family: var(--jing-font-ui); letter-spacing: 0.1em;
   }
+  /* 筊杯：翻转落下后一记微弹，角度略偏 */
   @keyframes jing-cup-flip {
-    from { transform: perspective(200px) rotateX(85deg); opacity: 0; }
-    to { transform: perspective(200px) rotateX(0deg); opacity: 1; }
+    0% { transform: perspective(200px) rotateX(85deg); opacity: 0; }
+    70% { transform: perspective(200px) rotateX(0deg) rotate(var(--tilt, 0deg)) scale(0.96); opacity: 1; }
+    85% { transform: rotate(var(--tilt, 0deg)) scale(1.03); }
+    100% { transform: rotate(var(--tilt, 0deg)) scale(1); opacity: 1; }
   }
 
   .jing-lot-allusion {
@@ -546,15 +756,18 @@ import SoundControl from './SoundControl.astro';
   }
   .jing-lot-stage.is-playing .jing-lot-svg { animation: jing-lot-shake 0.55s ease-in-out 2; transform-origin: 60px 150px; }
   .jing-lot-rising { opacity: 0; }
-  .jing-lot-stage.is-playing .jing-lot-rising { animation: jing-lot-rise 0.5s ease-out 1.1s forwards; }
+  .jing-lot-stage.is-playing .jing-lot-rising { animation: jing-lot-rise 0.78s ease-out 1.08s forwards; }
   @keyframes jing-lot-shake {
     0%, 100% { transform: rotate(0deg); }
     25% { transform: rotate(-5deg); }
     75% { transform: rotate(5deg); }
   }
+  /* 起签后在筒口一顿，再落定 */
   @keyframes jing-lot-rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: translateY(-18px); }
+    0% { opacity: 0; transform: translateY(14px); }
+    55% { opacity: 1; transform: translateY(-20px); }
+    76% { opacity: 1; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(-15px); }
   }
   @media (prefers-reduced-motion: reduce) {
     .jing-lot-stage.is-playing .jing-lot-svg,

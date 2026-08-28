@@ -72,6 +72,8 @@ const { layers = [] } = Astro.props;
       toggleLabel.textContent = enabled ? '有声' : '静音';
       volumeWrap.hidden = !enabled;
       if (layerWrap) layerWrap.hidden = !enabled;
+      /* 供全堂翻页纸声判断「这位访客愿意听」 */
+      try { sessionStorage.setItem('jing.sound-on', enabled ? '1' : '0'); } catch { /* 静默 */ }
       emit();
     });
 

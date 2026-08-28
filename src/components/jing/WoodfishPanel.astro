@@ -139,7 +139,7 @@ import SoundControl from './SoundControl.astro';
       }, 1000);
     };
 
-    fish.addEventListener('click', () => {
+    fish.addEventListener('click', (e) => {
       if (paused) return;
       const now = performance.now();
       if (lastStrike > 0) intervals.push(now - lastStrike);
@@ -152,15 +152,27 @@ import SoundControl from './SoundControl.astro';
         strikeAudio.currentTime = 0;
         void strikeAudio.play().catch(() => {});
       }
+      /* 鱼身向敲击侧微倾（键盘敲击居中不倾） */
+      const fishRect = fish.getBoundingClientRect();
+      const rel = e.clientX
+        ? (e.clientX - (fishRect.left + fishRect.width / 2)) / (fishRect.width / 2)
+        : 0;
+      fish.style.setProperty('--hit-tilt', `${(rel * 2).toFixed(2)}deg`);
       fish.classList.remove('is-hit');
       void fish.offsetWidth;
       fish.classList.add('is-hit');
 
-      /* 一击一圈涟漪 */
+      /* 涟漪自敲击点荡开 */
+      const stage = fish.parentElement!;
+      const stageRect = stage.getBoundingClientRect();
       const ripple = document.createElement('span');
       ripple.className = 'jing-muyu-ripple';
       ripple.setAttribute('aria-hidden', 'true');
-      fish.parentElement!.appendChild(ripple);
+      ripple.style.left = `${e.clientX ? e.clientX - stageRect.left : stageRect.width / 2}px`;
+      ripple.style.top = `${e.clientY ? e.clientY - stageRect.top : stageRect.height / 2}px`;
+      ripple.style.width = '40%';
+      ripple.style.height = '42%';
+      stage.appendChild(ripple);
       setTimeout(() => ripple.remove(), 1000);
     });
 
@@ -253,11 +265,11 @@ import SoundControl from './SoundControl.astro';
   .fish-mouth { fill: none; stroke: #2d1d0e; stroke-width: 3; stroke-linecap: round; }
   .fish-belly { fill: none; stroke: rgba(45, 29, 14, 0.55); stroke-width: 2.5; stroke-linecap: round; }
 
-  .jing-muyu-fish.is-hit svg { animation: muyu-hit 0.18s ease; }
+  .jing-muyu-fish.is-hit svg { animation: muyu-hit 0.2s ease; }
   @keyframes muyu-hit {
-    0% { transform: scale(1); }
-    40% { transform: scale(0.94); }
-    100% { transform: scale(1); }
+    0% { transform: scale(1) rotate(0deg); }
+    40% { transform: scale(0.94) rotate(var(--hit-tilt, 0deg)); }
+    100% { transform: scale(1) rotate(0deg); }
   }
 
   /* 敲击涟漪：动画禁用时保持不可见 */

@@ -31,6 +31,7 @@ const rooms: Room[] = [
   <HallIntro />
 
   <div class="jing-status" role="status">
+    <span>时辰：<strong id="hall-hour-greeting">日闲</strong></span>
     <span>声音：<strong>关闭</strong>（各房间内手动开启）</span>
     <span>数据：<strong>仅本机</strong>，刷新即清</span>
   </div>
@@ -53,3 +54,12 @@ const rooms: Room[] = [
     ))}
   </ul>
 </JingLayout>
+
+<script>
+  /* 晨钟暮鼓：按到访时段换一句时辰问候，纯本地 */
+  const g = document.getElementById('hall-hour-greeting');
+  if (g) {
+    const h = new Date().getHours();
+    g.textContent = h < 6 ? '夜静' : h < 11 ? '晨钟' : h < 17 ? '日闲' : h < 19 ? '暮鼓' : '夜静';
+  }
+</script>

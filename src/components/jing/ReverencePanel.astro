@@ -76,6 +76,13 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
             <circle cy="-13" r="3.2" fill="var(--jing-accent)" />
             <circle cy="13" r="3.2" fill="var(--jing-bg-card)" />
           </g>
+          <!-- 太极水面倒影 -->
+          <g class="jing-taiji-echo" transform="translate(0 128.8) scale(1 -0.4)" opacity="0.13">
+            <g transform="translate(56 52)">
+              <circle r="26" fill="none" stroke="var(--jing-accent)" stroke-width="1.6" />
+              <path d="M0 -26 A 26 26 0 0 1 0 26 A 13 13 0 0 1 0 0 A 13 13 0 0 0 0 -26 Z" fill="var(--jing-accent)" />
+            </g>
+          </g>
           <!-- 烛火 -->
           <g class="jing-candle">
             <rect x="33" y="94" width="6" height="16" rx="1.5"
@@ -140,6 +147,10 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
         { enabled: boolean; volume: number; layer: string | null };
       soundOn = enabled;
       soundVol = volume;
+      /* 烛火随声：有声时火焰的摇曳幅度随音量，无声更静 */
+      scene.style.setProperty('--flame-amp', String(0.05 + (enabled ? volume * 0.12 : 0)));
+      /* 雨声氛围下，道房云气压低、走得更慢 */
+      if (tradition === 'taoist') scene.classList.toggle('is-rainy', enabled && layer === 'rain');
       if (enabled && ambience.length === 0) {
         ambience = AMBIENCE_BY_TRADITION[tradition].map((id) => {
           const audio = new Audio(AMBIENCE_SRC[id]);
@@ -228,9 +239,12 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
       nextBtn.hidden = true;
       circle.classList.add('is-animated');
       scene.classList.add('is-animated');
+      /* 三礼呼吸渐缓：收心 4.5s · 致敬 6s · 安住 8s */
+      const breathDurations = ['4.5s', '6s', '8s'];
       phases.forEach((text, i) => {
         timers.push(setTimeout(() => {
           phaseText.textContent = text;
+          circle.style.animationDuration = breathDurations[i];
           spawnRipple();
           playPhaseChime();
         }, i * 6000));
@@ -329,16 +343,30 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     to { transform: rotate(360deg); }
   }
 
-  /* 烛火：双焰错频摇曳 */
+  /* 烛火：双焰错频摇曳，幅度由 --flame-amp 随声音状态调节 */
   .jing-flame { transform-box: fill-box; transform-origin: 50% 100%; opacity: 0.85; }
   .jing-scene.is-animated .jing-flame.f1 { animation: jing-flame-flicker 1.7s ease-in-out infinite alternate; }
   .jing-scene.is-animated .jing-flame.f2 { animation: jing-flame-flicker 1.3s ease-in-out 0.4s infinite alternate; }
   @keyframes jing-flame-flicker {
     0% { transform: scaleY(1) skewX(0deg); opacity: 0.9; }
-    40% { transform: scaleY(1.12) skewX(-4deg); opacity: 1; }
-    70% { transform: scaleY(0.92) skewX(3deg); opacity: 0.75; }
-    100% { transform: scaleY(1.05) skewX(-2deg); opacity: 0.95; }
+    40% { transform: scaleY(calc(1 + var(--flame-amp, 0.1))) skewX(calc(var(--flame-amp, 0.1) * -35deg)); opacity: 1; }
+    70% { transform: scaleY(calc(1 - var(--flame-amp, 0.1) * 0.7)) skewX(calc(var(--flame-amp, 0.1) * 26deg)); opacity: 0.78; }
+    100% { transform: scaleY(calc(1 + var(--flame-amp, 0.1) * 0.5)) skewX(calc(var(--flame-amp, 0.1) * -18deg)); opacity: 0.95; }
   }
+
+  /* 暗色下香头一点暖晕 */
+  html.dark .jing-ember { filter: drop-shadow(0 0 3px rgba(192, 85, 62, 0.8)); }
+
+  /* 太极倒影的缓慢水波 */
+  .jing-scene.is-animated .jing-taiji-echo { animation: jing-echo-wave 9s ease-in-out infinite alternate; }
+  @keyframes jing-echo-wave {
+    from { transform: translate(0, 128.8px) scale(1, -0.4) translateX(-2px); }
+    to { transform: translate(0, 128.8px) scale(1, -0.4) translateX(2px); }
+  }
+
+  /* 雨声里的云：压低、放慢 */
+  .jing-scene.is-rainy .jing-cloud { transform: translateY(7px); opacity: 0.5; }
+  .jing-scene.is-rainy.is-animated .jing-cloud { animation-duration: 42s; }
 
   /* 道房云气漂移 */
   .jing-cloud { opacity: 0.35; }
@@ -363,12 +391,18 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     to { transform: scale(6.5); opacity: 0; }
   }
 
-  /* 三礼收场：缓缓亮起 */
-  .jing-reverence-done.is-settled { animation: jing-settle 2s ease both; }
+  /* 三礼收场：亮起后在最亮处多停一拍，再缓缓回落 */
+  .jing-reverence-done.is-settled { animation: jing-settle 2.6s ease both; }
   @keyframes jing-settle {
-    from { opacity: 0; filter: brightness(1.5); }
-    to { opacity: 1; filter: none; }
+    0% { opacity: 0; filter: brightness(1.5); }
+    35% { opacity: 1; filter: brightness(1.5); }
+    62% { opacity: 1; filter: brightness(1.5); }
+    100% { opacity: 1; filter: none; }
   }
+
+  /* 「再礼一次」姗姗来迟，不催人 */
+  .jing-reverence-again { opacity: 0; animation: jing-again-in 2.2s ease 1.4s forwards; }
+  @keyframes jing-again-in { to { opacity: 1; } }
 
   @media (prefers-reduced-motion: reduce) {
     .jing-scene.is-animated .jing-smoke-wisp,
@@ -380,5 +414,6 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     .jing-ripple,
     .jing-reverence-done.is-settled { animation: none; }
     .jing-ripple { opacity: 0; }
+    .jing-reverence-again { animation: none; opacity: 1; }
   }
 </style>

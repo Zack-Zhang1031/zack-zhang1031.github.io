@@ -108,6 +108,35 @@ const currentPath = Astro.url.pathname;
         window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
       });
       updateTop();
+
+      /* 入定：静置四分钟后全堂微暗，任何输入即回神 */
+      var zenTimer = null;
+      function wake() {
+        document.body.classList.remove('is-zen');
+        if (zenTimer) clearTimeout(zenTimer);
+        zenTimer = setTimeout(function () {
+          document.body.classList.add('is-zen');
+        }, 4 * 60 * 1000);
+      }
+      ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+        window.addEventListener(ev, wake, { passive: true });
+      });
+      wake();
+
+      /* 翻页纸声：房间之间切换时一记极轻纸声（需任一房间开过声音） */
+      document.addEventListener('click', function (e) {
+        var link = e.target && e.target.closest ? e.target.closest('a[href^="/jing/"]') : null;
+        if (!link) return;
+        if (sessionStorage.getItem('jing.sound-on') !== '1') return;
+        try {
+          var vol = 0.5;
+          var raw = localStorage.getItem('jing.settings.v1');
+          if (raw) vol = JSON.parse(raw).volume || 0.5;
+          var audio = new Audio('/jing/audio/paper-unfurl.mp3');
+          audio.volume = Math.min(0.5, vol * 0.5);
+          audio.play().catch(function () {});
+        } catch (err) { /* 声音只是点缀，失败即静默 */ }
+      }, true);
     })();
   </script>
 </body>

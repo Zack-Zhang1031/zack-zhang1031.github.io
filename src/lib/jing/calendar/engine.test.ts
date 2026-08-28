@@ -160,4 +160,11 @@ describe('todayCalendar greeting info', () => {
   it('returns null jieqi on a non-jieqi day', () => {
     expect(todayCalendar(new Date(2026, 7, 28)).jieqi).toBeNull();
   });
+
+  it('exposes the lunar day for shuo/wang detection', () => {
+    const info = todayCalendar(new Date(2026, 7, 28));
+    expect(Number.isInteger(info.lunarDay)).toBe(true);
+    expect(info.lunarDay).toBeGreaterThanOrEqual(1);
+    expect(info.lunarDay).toBeLessThanOrEqual(30);
+  });
 });

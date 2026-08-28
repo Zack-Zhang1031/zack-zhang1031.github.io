@@ -16,6 +16,8 @@
   --jing-tint-shu: #4a5f8a;
   /* 宣纸纹理（本地 SVG turbulence，无外部请求） */
   --jing-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.45 0 0 0 0 0.35 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23p)'/%3E%3C/svg%3E");
+  /* 木纹：低频横向纹理，用于签筒等木器 */
+  --jing-wood: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.14' numOctaves='3'/%3E%3CfeColorMatrix values='0 0 0 0 0.42 0 0 0 0 0.3 0 0 0 0 0.16 0 0 0 0.06 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23w)'/%3E%3C/svg%3E");
 
   margin: 0;
   min-height: 100vh;
@@ -274,6 +276,25 @@ a.jing-room:focus-visible { outline: 2px solid var(--jing-accent); outline-offse
   opacity: 0.85;
   transform: rotate(-2deg);
   user-select: none;
+}
+
+/* 入定：长闲后全堂微暗缓息，输入即醒 */
+.jing-body { transition: filter 2.5s ease; }
+.jing-body.is-zen { filter: brightness(0.88) saturate(0.82); }
+
+/* 节气雪意：冬季节气日问候条带极淡飘雪 */
+.jing-notes-today.is-snow {
+  background-image:
+    radial-gradient(2px 2px at 12% 30%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.6px 1.6px at 45% 70%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(2.2px 2.2px at 78% 20%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1.4px 1.4px at 90% 60%, rgba(255, 255, 255, 0.35), transparent),
+    var(--jing-paper);
+  animation: jing-snow-drift 9s linear infinite;
+}
+@keyframes jing-snow-drift {
+  from { background-position: 0 -12px, 0 -8px, 0 -16px, 0 -6px, 0 0; }
+  to { background-position: 6px 12px, -4px 10px, 4px 14px, -6px 8px, 0 0; }
 }
 
 /* 复制成功后的笔记房链接 */
