@@ -29,3 +29,10 @@ Further command, test, source, privacy, integrity, deployment, and live-smoke ev
 - `playwright test`：57 测试全部通过（含新增 `jing-routes.spec.ts` 12 项：十条路由私密外壳、无公共导航/评论/账号/追踪元素、无外部请求、reduced-motion 等价内容、首页九房间链接）。
 - dist 检查：十条 /jing/ 路由全部生成；`sitemap-0.xml` 无 /jing/ 条目；jing 页面 `noindex,nofollow`；无外部字体/追踪 URL（仅维基共享资源署名链接）；音频均为 opt-in 懒加载（木鱼 8KB，环境音 624-712KB 只在显式开启后请求）；圣像 232-356KB webp。
 - 残余风险（非阻塞）：吕祖签底本为现代站点互校转录而非刻本影像，若日后取得道光二十六年刻本扫描件可再校；关帝签 50 签存在单字级版本异文，已在台账记录。
+
+## Deployment evidence (2026-08-28)
+
+- 合并 `d590377 [jing] merge: complete jingxin hall into main`：7 个冲突文件全部解决（astro.config.mjs 保留 main 新域名 `zk.lz1031.workers.dev` + 并入 /jing/ sitemap 过滤；BaseLayout/global.css 保留双方改动；文档取 main 新版，INDEX 并集）。合并树重跑：177 单测 + 57 E2E + astro check 0 errors + 103 页面构建。
+- 推送 `8e9b1eb..d590377 merge/jingxin -> main`；Cloudflare Workers Git 集成自动构建。
+- 线上只读冒烟：`/jing/` 及九个房间全部 200；页面含 `noindex,nofollow`；首页页脚恰好一个 `静` 印章入口；线上 sitemap 无 /jing/ 条目。
+- 注意：主站域名已于 main 更名为 `https://zk.lz1031.workers.dev`（计划中 `z.zz1031.workers.dev` 为旧地址，未改动该设置）。
