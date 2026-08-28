@@ -41,6 +41,16 @@ test.describe('Jingxin woodfish room', () => {
     await context.close();
   });
 
+  test('offers a sit countdown with a cancel path', async ({ page }) => {
+    await page.goto('/jing/muyu/');
+    await page.locator('#muyu-sit-min').fill('1');
+    await page.locator('#muyu-sit-start').click();
+    await expect(page.locator('#muyu-sit-status')).toContainText('余');
+    await expect(page.locator('#muyu-sit-start')).toHaveText('结束安坐');
+    await page.locator('#muyu-sit-start').click();
+    await expect(page.locator('#muyu-sit-status')).toContainText('已作罢');
+  });
+
   test('contains no merit/rank/reward language', async ({ page }) => {
     await page.goto('/jing/muyu/');
     const body = await page.textContent('body');

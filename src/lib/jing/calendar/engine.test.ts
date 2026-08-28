@@ -5,6 +5,7 @@ import {
   computePillars,
   hourPillarFrom,
   normalizeInput,
+  todayCalendar,
 } from './engine';
 import { equationOfTimeMinutes, longitudeShiftMinutes, toTrueSolar } from './true-solar-time';
 import { CalendarRangeError, type CalendarInput } from './types';
@@ -141,5 +142,22 @@ describe('range and boundary handling', () => {
 
   it('stays quiet for an ordinary midday', () => {
     expect(boundaryWarnings(normalizeInput(at(2024, 6, 15, 12, 0)))).toEqual([]);
+  });
+});
+
+describe('todayCalendar greeting info', () => {
+  it('reports the winter solstice on 2024-12-21', () => {
+    expect(todayCalendar(new Date(2024, 11, 21)).jieqi).toBe('冬至');
+  });
+
+  it('returns ganzhi day and lunar text for an ordinary day', () => {
+    const info = todayCalendar(new Date(2026, 7, 28));
+    expect(info.dayGanzhi).toMatch(/^[甲乙丙丁戊己庚辛壬癸][子丑寅卯辰巳午未申酉戌亥]$/);
+    expect(info.lunarText).toContain('年');
+    expect(info.lunarText).toContain('月');
+  });
+
+  it('returns null jieqi on a non-jieqi day', () => {
+    expect(todayCalendar(new Date(2026, 7, 28)).jieqi).toBeNull();
   });
 });

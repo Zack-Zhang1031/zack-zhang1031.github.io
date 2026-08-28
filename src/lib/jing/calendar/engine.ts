@@ -233,3 +233,22 @@ export function computePillars(normalized: NormalizedTime, lateZi: LateZiMode): 
     warnings: boundaryWarnings(normalized),
   };
 }
+
+/** 「今日」问候条信息：日干支、农历日期、当日节气（若有）。 */
+export interface TodayInfo {
+  dayGanzhi: string;
+  lunarText: string;
+  jieqi: string | null;
+}
+
+export function todayCalendar(now = new Date()): TodayInfo {
+  const lunar = Solar.fromYmdHms(
+    now.getFullYear(), now.getMonth() + 1, now.getDate(), 12, 0, 0,
+  ).getLunar();
+  const jieqi = lunar.getJieQi();
+  return {
+    dayGanzhi: lunar.getDayInGanZhi(),
+    lunarText: `${lunar.getYearInGanZhi()}年 ${lunar.getMonthInChinese()}月${lunar.getDayInChinese()}`,
+    jieqi: jieqi ? jieqi : null,
+  };
+}

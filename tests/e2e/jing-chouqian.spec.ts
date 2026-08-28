@@ -29,6 +29,7 @@ test.describe('Jingxin lot room', () => {
     await expect(page.locator('#lot-stamp')).toContainText('签');
     await expect(page.locator('#lot-allusion')).not.toBeEmpty();
     await expect(page.locator('#lot-topics-list li')).toHaveCount(3);
+    await expect(page.locator('#lot-bookmark')).toBeEnabled();
 
     // 关帝套带干支
     await page.locator('#lot-tab-guandi').click();

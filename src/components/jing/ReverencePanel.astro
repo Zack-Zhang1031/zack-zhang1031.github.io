@@ -22,7 +22,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
   <div class="jing-reverence-start" data-stage="start">
     <p class="jing-reverence-guide">请先静静阅读上方介绍，再决定是否礼敬。</p>
     <button type="button" class="jing-btn jing-reverence-begin">{label}</button>
-    <SoundControl />
+    <SoundControl layers={['rain', 'insects', 'tea']} />
   </div>
 
   <div class="jing-reverence-phases" data-stage="phases" hidden>
@@ -112,6 +112,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
 <script>
   import { AMBIENCE_BY_TRADITION, AMBIENCE_SRC } from '../../data/jing/figures';
   import { loadSettings } from '../../lib/jing/settings';
+  import { LAYER_SRC, registerAmbience } from '../../lib/jing/sound-fx';
 
   document.querySelectorAll<HTMLElement>('.jing-reverence').forEach((root) => {
     const tradition = root.dataset.tradition as 'buddhist' | 'taoist';
@@ -131,15 +132,19 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     let ambience: HTMLAudioElement[] = [];
     let soundOn = false;
     let soundVol = 0.6;
+    let layerAudio: HTMLAudioElement | null = null;
+    let layerId: string | null = null;
     const soundControl = root.querySelector('[data-sound-control]');
     soundControl?.addEventListener('jing:sound', (e) => {
-      const { enabled, volume } = (e as CustomEvent).detail as { enabled: boolean; volume: number };
+      const { enabled, volume, layer } = (e as CustomEvent).detail as
+        { enabled: boolean; volume: number; layer: string | null };
       soundOn = enabled;
       soundVol = volume;
       if (enabled && ambience.length === 0) {
         ambience = AMBIENCE_BY_TRADITION[tradition].map((id) => {
           const audio = new Audio(AMBIENCE_SRC[id]);
           audio.loop = true;
+          registerAmbience(audio);
           return audio;
         });
       }
@@ -147,6 +152,20 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
         audio.volume = volume * 0.45;
         if (enabled) void audio.play().catch(() => {});
         else audio.pause();
+      }
+      /* 可选第二氛围层：雨 / 虫 / 茶 */
+      if (!enabled || !layer) {
+        layerAudio?.pause();
+      } else {
+        if (!layerAudio || layerId !== layer) {
+          layerAudio?.pause();
+          layerAudio = new Audio(LAYER_SRC[layer]);
+          layerAudio.loop = true;
+          layerId = layer;
+          registerAmbience(layerAudio);
+        }
+        layerAudio.volume = volume * 0.35;
+        void layerAudio.play().catch(() => {});
       }
     });
 

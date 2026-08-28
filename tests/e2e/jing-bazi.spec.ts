@@ -107,7 +107,8 @@ test.describe('Jingxin bazi room', () => {
     await fillBirth(page, GOLDEN);
     await page.locator('button[type="submit"]').click();
     await page.locator('#bazi-copy').click();
-    await expect(page.locator('#bazi-copy-state')).toHaveText('已复制。');
+    await expect(page.locator('#bazi-copy-state')).toContainText('已复制');
+    await expect(page.locator('#bazi-copy-state .jing-note-link')).toHaveAttribute('href', '/jing/notes/');
 
     const clip = await page.evaluate(() => navigator.clipboard.readText());
     expect(clip).toContain('丙寅 / 癸巳 / 癸酉 / 壬子');

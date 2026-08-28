@@ -5,7 +5,16 @@
  * It never creates Audio objects by itself. Room controllers listen for the
  * `jing:sound` CustomEvent on this root element and only then create or
  * start audio. Volume and enabled state persist via jing settings.
+ * Rooms may pass `layers` (extra atmosphere ids) to offer an optional
+ * second ambience layer; the chosen layer id rides on the same event.
  */
+import { LAYER_LABEL } from '../../lib/jing/sound-fx';
+
+interface Props {
+  layers?: string[];
+}
+
+const { layers = [] } = Astro.props;
 ---
 
 <div class="jing-sound" data-sound-control>
@@ -22,6 +31,15 @@
     音量
     <input type="range" class="jing-sound-volume" min="0" max="100" value="60" aria-label="音量" />
   </label>
+  {layers.length > 0 && (
+    <label class="jing-sound-layer-wrap" hidden>
+      氛围
+      <select class="jing-sound-layer" aria-label="氛围音">
+        <option value="">无</option>
+        {layers.map((id) => <option value={id}>{LAYER_LABEL[id] ?? id}</option>)}
+      </select>
+    </label>
+  )}
 </div>
 
 <script>
@@ -32,6 +50,8 @@
     const toggleLabel = toggle?.querySelector('span');
     const volumeWrap = root.querySelector<HTMLElement>('.jing-sound-volume-wrap');
     const volume = root.querySelector<HTMLInputElement>('.jing-sound-volume');
+    const layerWrap = root.querySelector<HTMLElement>('.jing-sound-layer-wrap');
+    const layer = root.querySelector<HTMLSelectElement>('.jing-sound-layer');
     if (!toggle || !volume || !volumeWrap || !toggleLabel) return;
 
     const loaded = loadSettings(localStorage);
@@ -40,7 +60,7 @@
 
     const emit = () => {
       root.dispatchEvent(new CustomEvent('jing:sound', {
-        detail: { enabled, volume: Number(volume.value) / 100 },
+        detail: { enabled, volume: Number(volume.value) / 100, layer: layer?.value || null },
         bubbles: false,
       }));
     };
@@ -51,7 +71,12 @@
       toggle.setAttribute('aria-label', enabled ? '关闭环境音' : '开启环境音');
       toggleLabel.textContent = enabled ? '有声' : '静音';
       volumeWrap.hidden = !enabled;
+      if (layerWrap) layerWrap.hidden = !enabled;
       emit();
+    });
+
+    layer?.addEventListener('change', () => {
+      if (enabled) emit();
     });
 
     volume.addEventListener('input', () => {
@@ -77,4 +102,10 @@
   .jing-sound-toggle span { font-size: 0.72rem; letter-spacing: 0.1em; }
   .jing-sound-volume-wrap { display: flex; align-items: center; gap: 0.4rem; }
   .jing-sound-volume { accent-color: var(--jing-accent); }
+  .jing-sound-layer-wrap { display: flex; align-items: center; gap: 0.4rem; }
+  .jing-sound-layer {
+    font-family: inherit; font-size: 0.75rem; color: var(--jing-text-dim);
+    background: var(--jing-bg-raised); border: 1px solid var(--jing-border);
+    border-radius: 6px; padding: 0.15rem 0.3rem;
+  }
 </style>

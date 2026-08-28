@@ -47,6 +47,10 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
   ))}
 
   <p class="jing-qm-hint">盘面仅作三派规则对照研习，不作吉凶断言。结果不保存，刷新即清。</p>
+  <div class="jing-qm-actions">
+    <button type="button" id="qm-note-copy" class="jing-btn">复制对照摘要（可粘贴到笔记）</button>
+    <span id="qm-note-state" class="jing-qm-note-state" role="status"></span>
+  </div>
 </section>
 
 <script>
@@ -116,6 +120,27 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     form.addEventListener('reset', () => {
       errorEl.hidden = true;
       result.hidden = true;
+    });
+
+    /* ---- 对照摘要复制：粘贴到笔记房 ---- */
+    $('qm-note-copy').addEventListener('click', async () => {
+      const state = $('qm-note-state');
+      const lines = [
+        $('qm-context').textContent ?? '',
+        $('qm-agree').textContent ?? '',
+      ];
+      for (const school of ['chai-bu', 'zhi-run', 'mao-shan']) {
+        const summary = document.querySelector(`#qm-school-${school} > summary`)?.textContent?.trim() ?? school;
+        const meta = $(`qm-meta-${school}`).textContent ?? '';
+        lines.push(`${summary}｜${meta}`);
+      }
+      lines.push('—— 静心堂 · 奇门三派对照研习，不作吉凶断言');
+      try {
+        await navigator.clipboard.writeText(lines.join('\n'));
+        state.innerHTML = '已复制。<a class="jing-note-link" href="/jing/notes/">去笔记房粘贴 →</a>';
+      } catch {
+        state.textContent = '复制失败，请手动选择文本复制。';
+      }
     });
 
     window.addEventListener('pageshow', () => {
@@ -189,6 +214,8 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
   .jing-qm-cell-name { font-family: var(--jing-font-ui); font-size: 0.62rem; color: var(--jing-text-dim); }
 
   .jing-qm-meta { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0.4rem 0; }
+  .jing-qm-actions { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+  .jing-qm-note-state { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); }
   .jing-qm-derivation { margin: 0; padding-left: 1.4rem; font-size: 0.8rem; color: var(--jing-text-dim); }
 
   @media (max-width: 560px) {

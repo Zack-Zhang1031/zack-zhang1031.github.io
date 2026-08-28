@@ -14,16 +14,13 @@ import LocalNotebook from '../../components/jing/LocalNotebook.astro';
 </JingLayout>
 
 <script>
-  /* 今日干支问候条：以 1900-01-01 甲戌日为锚点推算，纯本地、零依赖 */
+  /* 今日问候条：日干支 + 农历 + 节气（若有），走历法引擎，纯本地 */
+  import { todayCalendar } from '../../lib/jing/calendar/engine';
+
   const el = document.getElementById('notes-today');
   if (el) {
-    const GAN = '甲乙丙丁戊己庚辛壬癸';
-    const ZHI = '子丑寅卯辰巳午未申酉戌亥';
-    const anchor = Date.UTC(1900, 0, 1); // 甲戌日
-    const now = new Date();
-    const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
-    const n = Math.round((today - anchor) / 86_400_000);
-    const day = GAN[((n % 10) + 10) % 10] + ZHI[((10 + n) % 12 + 12) % 12];
-    el.textContent = `今日 ${day} 日 · 记一笔，或只是坐一会儿`;
+    const today = todayCalendar();
+    const jieqi = today.jieqi ? ` · 时值${today.jieqi}` : '';
+    el.textContent = `今日 ${today.dayGanzhi} 日 · ${today.lunarText}${jieqi} · 记一笔，或只是坐一会儿`;
   }
 </script>

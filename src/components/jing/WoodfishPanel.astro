@@ -33,13 +33,22 @@ import SoundControl from './SoundControl.astro';
   <div class="jing-muyu-controls">
     <button type="button" id="muyu-pause" class="jing-btn" aria-pressed="false">暂停</button>
     <button type="button" id="muyu-reset" class="jing-btn">归零</button>
-    <SoundControl />
+    <SoundControl layers={['rain', 'insects', 'tea']} />
   </div>
-  <p class="jing-muyu-hint">点击、轻触或按空格键敲击。声音默认关闭，需手动开启。</p>
+  <div class="jing-muyu-sit">
+    <label class="jing-muyu-sit-label">安坐
+      <input id="muyu-sit-min" type="number" min="1" max="120" step="1" value="10" aria-label="安坐分钟数" />
+      分钟
+    </label>
+    <button type="button" id="muyu-sit-start" class="jing-btn">开始安坐</button>
+    <span id="muyu-sit-status" class="jing-muyu-sit-status" role="status"></span>
+  </div>
+  <p class="jing-muyu-hint">点击、轻触或按空格键敲击。声音默认关闭，需手动开启。安坐只是倒计时，到时一记引磬，别无他物。</p>
 </div>
 
 <script>
   import { AMBIENCE_SRC, WOODFISH_SOUND_SRC } from '../../data/jing/figures';
+  import { LAYER_SRC, playFx, registerAmbience } from '../../lib/jing/sound-fx';
 
   const app = document.getElementById('jing-muyu-app');
   if (app) {
@@ -60,21 +69,43 @@ import SoundControl from './SoundControl.astro';
     /* audio is created only after explicit opt-in via SoundControl */
     let strikeAudio: HTMLAudioElement | null = null;
     let waterAudio: HTMLAudioElement | null = null;
+    let layerAudio: HTMLAudioElement | null = null;
+    let layerId: string | null = null;
+    let soundOn = false;
+    let soundVol = 0.6;
 
     const soundControl = app.querySelector('[data-sound-control]');
     soundControl?.addEventListener('jing:sound', (e) => {
-      const { enabled, volume } = (e as CustomEvent).detail as { enabled: boolean; volume: number };
+      const { enabled, volume, layer } = (e as CustomEvent).detail as
+        { enabled: boolean; volume: number; layer: string | null };
+      soundOn = enabled;
+      soundVol = volume;
       if (enabled && !strikeAudio) {
         strikeAudio = new Audio(WOODFISH_SOUND_SRC);
         strikeAudio.preload = 'auto';
         waterAudio = new Audio(AMBIENCE_SRC.water);
         waterAudio.loop = true;
+        registerAmbience(waterAudio);
       }
       if (strikeAudio) strikeAudio.volume = volume;
       if (waterAudio) {
         waterAudio.volume = volume * 0.5;
         if (enabled) void waterAudio.play().catch(() => {});
         else waterAudio.pause();
+      }
+      /* 可选第二氛围层：雨 / 虫 / 茶 */
+      if (!enabled || !layer) {
+        layerAudio?.pause();
+      } else {
+        if (!layerAudio || layerId !== layer) {
+          layerAudio?.pause();
+          layerAudio = new Audio(LAYER_SRC[layer]);
+          layerAudio.loop = true;
+          layerId = layer;
+          registerAmbience(layerAudio);
+        }
+        layerAudio.volume = volume * 0.35;
+        void layerAudio.play().catch(() => {});
       }
     });
 
@@ -157,6 +188,42 @@ import SoundControl from './SoundControl.astro';
       render();
     });
 
+    /* ---- 安坐计时：纯倒计时，到时一记引磬 ---- */
+    const sitMin = document.getElementById('muyu-sit-min') as HTMLInputElement;
+    const sitStartBtn = document.getElementById('muyu-sit-start') as HTMLButtonElement;
+    const sitStatus = document.getElementById('muyu-sit-status')!;
+    let sitRemaining = 0;
+    let sitTimer: ReturnType<typeof setInterval> | null = null;
+
+    const stopSit = (completed: boolean) => {
+      if (sitTimer) { clearInterval(sitTimer); sitTimer = null; }
+      sitStartBtn.textContent = '开始安坐';
+      sitMin.disabled = false;
+      if (completed) {
+        sitStatus.textContent = '安坐已满。';
+        if (soundOn) playFx(AMBIENCE_SRC.chime, soundVol * 0.8);
+      }
+    };
+
+    sitStartBtn.addEventListener('click', () => {
+      if (sitTimer) {
+        stopSit(false);
+        sitStatus.textContent = '已作罢。';
+        return;
+      }
+      const minutes = Math.min(120, Math.max(1, Math.round(Number(sitMin.value) || 10)));
+      sitMin.value = String(minutes);
+      sitRemaining = minutes * 60;
+      sitStartBtn.textContent = '结束安坐';
+      sitMin.disabled = true;
+      sitStatus.textContent = `余 ${fmt(sitRemaining)}`;
+      sitTimer = setInterval(() => {
+        sitRemaining -= 1;
+        if (sitRemaining <= 0) stopSit(true);
+        else sitStatus.textContent = `余 ${fmt(sitRemaining)}`;
+      }, 1000);
+    });
+
     render();
   }
 </script>
@@ -226,5 +293,21 @@ import SoundControl from './SoundControl.astro';
   }
 
   .jing-muyu-controls { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
-  .jing-muyu-hint { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0; }
+
+  .jing-muyu-sit { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
+  .jing-muyu-sit-label {
+    font-family: var(--jing-font-ui); font-size: 0.78rem; color: var(--jing-text-dim);
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .jing-muyu-sit-label input {
+    width: 3.4rem; text-align: center; font-family: inherit; font-size: 0.85rem;
+    background: var(--jing-bg-raised); color: var(--jing-text);
+    border: 1px solid var(--jing-border); border-radius: 6px; padding: 0.2rem 0.3rem;
+  }
+  .jing-muyu-sit-status {
+    font-family: var(--jing-font-ui); font-size: 0.78rem; color: var(--jing-accent);
+    font-variant-numeric: tabular-nums; min-width: 5em;
+  }
+
+  .jing-muyu-hint { font-family: var(--jing-font-ui); font-size: 0.75rem; color: var(--jing-text-dim); margin: 0; max-width: 34em; text-align: center; }
 </style>

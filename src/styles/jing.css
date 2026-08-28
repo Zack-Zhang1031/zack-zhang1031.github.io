@@ -24,20 +24,25 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* Dark (default): 夜室 · 暖灯 · 暗金 */
+/* Dark (default): 夜室 · 暖灯 · 暗金——整体往烛光暖色调校 */
 html.dark .jing-body {
   --jing-bg: #14110d;
-  --jing-bg-raised: #1d1915;
-  --jing-bg-card: #221d17;
-  --jing-text: #d9cdb4;
-  --jing-text-dim: #9a8d74;
-  --jing-accent: #b8934a;
-  --jing-accent-soft: rgba(184, 147, 74, 0.16);
-  --jing-border: #38311f;
+  --jing-bg-raised: #1f1a14;
+  --jing-bg-card: #241e16;
+  --jing-text: #ddd1b6;
+  --jing-text-dim: #9f9276;
+  --jing-accent: #bf9950;
+  --jing-accent-soft: rgba(191, 153, 80, 0.16);
+  --jing-border: #3a3220;
   --jing-vermilion: #c0553e;
+  --jing-tint-fo: #c69d55;
+  --jing-tint-dao: #5a8a7d;
+  --jing-tint-shu: #5d7099;
 
+  /* 顶部一层烛光晕，如灯下夜读 */
   background:
-    radial-gradient(120% 90% at 50% 0%, #1b1712 0%, var(--jing-bg) 60%);
+    radial-gradient(75% 46% at 50% -12%, rgba(226, 166, 62, 0.08) 0%, transparent 58%),
+    radial-gradient(120% 90% at 50% 0%, #1c1712 0%, var(--jing-bg) 60%);
   color: var(--jing-text);
 }
 
@@ -269,6 +274,14 @@ a.jing-room:focus-visible { outline: 2px solid var(--jing-accent); outline-offse
   opacity: 0.85;
   transform: rotate(-2deg);
   user-select: none;
+}
+
+/* 复制成功后的笔记房链接 */
+.jing-note-link {
+  color: var(--jing-accent);
+  margin-left: 0.5em;
+  text-decoration: none;
+  border-bottom: 1px dashed var(--jing-accent);
 }
 
 /* 笔记房历法问候条 */

@@ -3,6 +3,12 @@ import { expect, test } from '@playwright/test';
 const SECRET = '测试秘密内容-勿外传-7f3a9c';
 
 test.describe('Jingxin encrypted notes', () => {
+  test('shows a local ganzhi greeting bar', async ({ page }) => {
+    await page.goto('/jing/notes/');
+    await expect(page.locator('#notes-today')).toContainText('今日');
+    await expect(page.locator('#notes-today')).toContainText('日');
+  });
+
   test('create, save, lock, and unlock without persisting plaintext', async ({ page }) => {
     const requests: string[] = [];
     page.on('request', (req) => {

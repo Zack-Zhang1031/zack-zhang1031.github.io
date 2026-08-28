@@ -7,6 +7,7 @@
  * live only in memory and vanish on refresh. Modern notes are original
  * hedged writing; classical texts are public-domain transcriptions.
  */
+import SoundControl from './SoundControl.astro';
 ---
 
 <div class="jing-lots" id="jing-lots-app">
@@ -29,6 +30,8 @@
       <button type="button" id="lot-draw" class="jing-btn jing-btn-primary">抽签</button>
       <button type="button" id="lot-cups" class="jing-btn" disabled>掷筊三回</button>
       <button type="button" id="lot-copy" class="jing-btn" disabled>复制签文摘要</button>
+      <button type="button" id="lot-bookmark" class="jing-btn" disabled>存为书签图</button>
+      <SoundControl layers={['rain', 'insects', 'tea']} />
     </div>
     <p id="lot-redraw-warn" class="jing-lot-warn" role="status" hidden>
       方才的签还留着。求签宜诚宜缓，若一定要重抽，原来的签也不会被悄悄换掉。
@@ -102,6 +105,7 @@
   import { drawLot, throwCups } from '../../lib/jing/lots/draw';
   import { cryptoRandomSource } from '../../lib/jing/random';
   import { loadSettings } from '../../lib/jing/settings';
+  import { FX_SRC, LAYER_SRC, playFx, registerAmbience } from '../../lib/jing/sound-fx';
   import type { DrawResult, LotCollection } from '../../lib/jing/lots/types';
 
   const app = document.getElementById('jing-lots-app');
@@ -129,6 +133,40 @@
     const reducedMotion = () =>
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
       || loadSettings(localStorage).settings.motion === 'reduce';
+
+    /* ---- 声音：动作音效 + 可选氛围层（均需用户开启） ---- */
+    let soundOn = false;
+    let soundVol = 0.6;
+    let layerAudio: HTMLAudioElement | null = null;
+    let layerId: string | null = null;
+
+    const syncLayer = (enabled: boolean, volume: number, layer: string | null) => {
+      if (!enabled || !layer) {
+        layerAudio?.pause();
+        return;
+      }
+      if (!layerAudio || layerId !== layer) {
+        layerAudio?.pause();
+        layerAudio = new Audio(LAYER_SRC[layer]);
+        layerAudio.loop = true;
+        layerId = layer;
+        registerAmbience(layerAudio);
+      }
+      layerAudio.volume = volume * 0.4;
+      void layerAudio.play().catch(() => {});
+    };
+
+    app.querySelector('[data-sound-control]')?.addEventListener('jing:sound', (e) => {
+      const { enabled, volume, layer } = (e as CustomEvent).detail as
+        { enabled: boolean; volume: number; layer: string | null };
+      soundOn = enabled;
+      soundVol = volume;
+      syncLayer(enabled, volume, layer);
+    });
+
+    const fx = (src: string, scale = 1, delayMs = 0) => {
+      if (soundOn) playFx(src, soundVol * scale, delayMs);
+    };
 
     /* 签筒纹样随签种切换：观音莲 / 吕祖剑 / 关帝云龙 */
     const TUBE_DECO: Record<string, string> = {
@@ -192,6 +230,7 @@
       cupsThrown = false;
       ($('lot-cups') as HTMLButtonElement).disabled = false;
       ($('lot-copy') as HTMLButtonElement).disabled = false;
+      ($('lot-bookmark') as HTMLButtonElement).disabled = false;
       resultEl.hidden = false;
       /* 展卷：重触发 clip-path 展开动画 */
       resultEl.classList.remove('is-unfurl');
@@ -204,6 +243,7 @@
       lastDraw = drawLot(current, cryptoRandomSource);
       lastDrawAt = Date.now();
       renderDraw(lastDraw);
+      fx(FX_SRC.paperUnfurl, 0.55);
     };
 
     $('lot-draw').addEventListener('click', () => {
@@ -219,6 +259,7 @@
         return;
       }
       animating = true;
+      fx(FX_SRC.shakeSticks, 0.9);
       resultEl.hidden = true;
       stageEl.hidden = false;
       stageEl.classList.add('is-playing');
@@ -250,6 +291,7 @@
         .join('');
       $('lot-cups-result').textContent =
         `三回依次为：${throws.map((t) => label[t]).join('、')}`;
+      throws.forEach((_, i) => fx(FX_SRC.cupsDrop, 0.7, i * 400));
       $('lot-cups-area').hidden = false;
       ($('lot-cups') as HTMLButtonElement).disabled = true;
     });
@@ -271,6 +313,72 @@
       } catch {
         ($('lot-copy') as HTMLButtonElement).textContent = '复制失败';
       }
+    });
+
+    /* ---- 书签图：canvas 竖排绘制，纯本地下载 ---- */
+    $('lot-bookmark').addEventListener('click', () => {
+      if (!lastDraw) return;
+      const lot = lastDraw.lot;
+      const canvas = document.createElement('canvas');
+      canvas.width = 480;
+      canvas.height = 1080;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // 宣纸底 + 双线框
+      ctx.fillStyle = '#f6f1e4';
+      ctx.fillRect(0, 0, 480, 1080);
+      ctx.strokeStyle = '#b8934a';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(16, 16, 448, 1048);
+      ctx.lineWidth = 1;
+      ctx.strokeRect(26, 26, 428, 1028);
+
+      // 抬头：套名 · 等第
+      ctx.fillStyle = '#8a7a5f';
+      ctx.font = '22px "Songti SC", "SimSun", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${current.name} · ${lot.grade}`, 240, 74);
+
+      // 签题
+      ctx.fillStyle = '#3a3227';
+      ctx.font = '30px "Kaiti SC", "STKaiti", "KaiTi", serif';
+      ctx.fillText(`第 ${lot.number} 签 · ${lot.title}`, 240, 122);
+
+      // 竖排签诗：自右向左四列
+      ctx.font = '34px "Kaiti SC", "STKaiti", "KaiTi", serif';
+      ctx.fillStyle = '#3a3227';
+      ctx.textAlign = 'center';
+      lot.verse.forEach((line, col) => {
+        const x = 396 - col * 88;
+        [...line].forEach((ch, row) => {
+          ctx.fillText(ch, x, 236 + row * 62);
+        });
+      });
+
+      // 落款 + 朱印
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#8a7a5f';
+      ctx.font = '20px "Songti SC", "SimSun", serif';
+      ctx.fillText('静心堂 · 本地研习 · 签文只作文化参考', 48, 1006);
+      ctx.save();
+      ctx.translate(408, 950);
+      ctx.rotate(-0.035);
+      ctx.strokeStyle = '#a8433a';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(0, 0, 58, 58);
+      ctx.fillStyle = '#a8433a';
+      ctx.font = '30px "Kaiti SC", "STKaiti", "KaiTi", serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('静', 29, 41);
+      ctx.restore();
+
+      const a = document.createElement('a');
+      a.download = `jing-lot-${current.id}-${lot.number}.png`;
+      a.href = canvas.toDataURL('image/png');
+      a.click();
+      ($('lot-bookmark') as HTMLButtonElement).textContent = '已存图';
+      setTimeout(() => { ($('lot-bookmark') as HTMLButtonElement).textContent = '存为书签图'; }, 1600);
     });
 
     renderEdition();
