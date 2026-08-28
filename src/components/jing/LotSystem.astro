@@ -95,6 +95,7 @@ import SoundControl from './SoundControl.astro';
   </div>
 
   <section id="lot-result" class="jing-lot-result" hidden aria-live="polite">
+    <div class="jing-lot-mood" id="lot-mood" data-mood="guanyin" aria-hidden="true"></div>
     <header class="jing-lot-head">
       <p id="lot-title" class="jing-lot-title"></p>
       <p id="lot-grade" class="jing-lot-grade"></p>
@@ -200,6 +201,9 @@ import SoundControl from './SoundControl.astro';
       if (soundOn) playFx(src, soundVol * scale, delayMs);
     };
 
+    /* 当前签种的意境底图（书签合成用，结果渲染时预热） */
+    let moodImg: HTMLImageElement | null = null;
+
     /* 签筒纹样随签种切换：观音莲 / 吕祖剑 / 关帝云龙 */
     const TUBE_DECO: Record<string, string> = {
       guanyin:
@@ -241,6 +245,10 @@ import SoundControl from './SoundControl.astro';
     /* ---- rendering ---- */
     const renderDraw = (draw: DrawResult) => {
       const lot = draw.lot;
+      $('lot-mood').setAttribute('data-mood', current.id);
+      /* 预热意境底图，供书签合成复用 */
+      moodImg = new Image();
+      moodImg.src = `/jing/img/lot-${current.id}.webp`;
       $('lot-title').textContent = `第 ${lot.number} 签 · ${lot.title}`;
       const ganzhi = lot.ganzhi ? ` · ${lot.ganzhi}` : '';
       $('lot-grade').textContent = `${current.name} · ${lot.grade}${ganzhi}`;
@@ -423,8 +431,8 @@ import SoundControl from './SoundControl.astro';
       }, lines.length * 1100 + 400);
     });
 
-    /* ---- 书签图：canvas 竖排绘制，先预览再存 ---- */
-    const buildBookmark = (): HTMLCanvasElement | null => {
+    /* ---- 书签图：水墨底衬 + canvas 竖排，先预览再存 ---- */
+    const buildBookmark = async (): Promise<HTMLCanvasElement | null> => {
       if (!lastDraw) return null;
       const lot = lastDraw.lot;
       const canvas = document.createElement('canvas');
@@ -433,9 +441,31 @@ import SoundControl from './SoundControl.astro';
       const ctx = canvas.getContext('2d');
       if (!ctx) return null;
 
-      // 宣纸底 + 双线框
+      // 宣纸底
       ctx.fillStyle = '#f6f1e4';
       ctx.fillRect(0, 0, 480, 1080);
+
+      // 意境底衬：顶部水墨，向下渐隐入纸
+      if (moodImg) {
+        try {
+          await moodImg.decode();
+          const scale = Math.max(480 / moodImg.width, 500 / moodImg.height);
+          const w = moodImg.width * scale;
+          const h = moodImg.height * scale;
+          const x = (480 - w) / 2;
+          ctx.globalAlpha = 0.5;
+          ctx.drawImage(moodImg, x, 0, w, h);
+          ctx.globalAlpha = 1;
+          const fade = ctx.createLinearGradient(0, 0, 0, 560);
+          fade.addColorStop(0, 'rgba(246, 241, 228, 0.25)');
+          fade.addColorStop(0.7, 'rgba(246, 241, 228, 0.85)');
+          fade.addColorStop(1, 'rgba(246, 241, 228, 1)');
+          ctx.fillStyle = fade;
+          ctx.fillRect(0, 0, 480, 560);
+        } catch { /* 底图未就绪则纯纸底 */ }
+      }
+
+      // 双线框
       ctx.strokeStyle = '#b8934a';
       ctx.lineWidth = 3;
       ctx.strokeRect(16, 16, 448, 1048);
@@ -443,7 +473,7 @@ import SoundControl from './SoundControl.astro';
       ctx.strokeRect(26, 26, 428, 1028);
 
       // 抬头：套名 · 等第
-      ctx.fillStyle = '#8a7a5f';
+      ctx.fillStyle = '#6f6148';
       ctx.font = '22px "Songti SC", "SimSun", serif';
       ctx.textAlign = 'center';
       ctx.fillText(`${current.name} · ${lot.grade}`, 240, 74);
@@ -453,14 +483,14 @@ import SoundControl from './SoundControl.astro';
       ctx.font = '30px "Kaiti SC", "STKaiti", "KaiTi", serif';
       ctx.fillText(`第 ${lot.number} 签 · ${lot.title}`, 240, 122);
 
-      // 竖排签诗：自右向左四列
+      // 竖排签诗：自右向左四列（下移到纸区）
       ctx.font = '34px "Kaiti SC", "STKaiti", "KaiTi", serif';
       ctx.fillStyle = '#3a3227';
       ctx.textAlign = 'center';
       lot.verse.forEach((line, col) => {
         const x = 396 - col * 88;
         [...line].forEach((ch, row) => {
-          ctx.fillText(ch, x, 236 + row * 62);
+          ctx.fillText(ch, x, 620 + row * 62);
         });
       });
 
@@ -484,8 +514,8 @@ import SoundControl from './SoundControl.astro';
       return canvas;
     };
 
-    $('lot-bookmark').addEventListener('click', () => {
-      const canvas = buildBookmark();
+    $('lot-bookmark').addEventListener('click', async () => {
+      const canvas = await buildBookmark();
       if (!canvas) return;
       ($('lot-bookmark-img') as HTMLImageElement).src = canvas.toDataURL('image/png');
       $('lot-bookmark-preview').hidden = false;
@@ -553,8 +583,31 @@ import SoundControl from './SoundControl.astro';
   .jing-lot-result {
     border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
     background: var(--jing-bg-raised); padding: 1.1rem;
+    position: relative; overflow: hidden;
   }
   .jing-lot-result[hidden] { display: none; }
+
+  /* 意境底图：随签种切换，墨洇入场 + 极慢漂移，边缘溶入纸色 */
+  .jing-lot-mood {
+    position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background-size: cover; background-position: center 30%;
+    opacity: 0; transition: opacity 1.4s ease;
+    mask-image: radial-gradient(120% 105% at 50% 32%, black 52%, transparent 96%);
+    -webkit-mask-image: radial-gradient(120% 105% at 50% 32%, black 52%, transparent 96%);
+  }
+  .jing-lot-mood[data-mood="guanyin"] { background-image: url('/jing/img/lot-guanyin.webp'); }
+  .jing-lot-mood[data-mood="luzu"] { background-image: url('/jing/img/lot-luzu.webp'); }
+  .jing-lot-mood[data-mood="guandi"] { background-image: url('/jing/img/lot-guandi.webp'); }
+  .jing-lot-result.is-unfurl .jing-lot-mood {
+    opacity: 0.16;
+    animation: jing-mood-drift 44s ease-in-out infinite alternate;
+  }
+  html.dark .jing-lot-result.is-unfurl .jing-lot-mood { opacity: 0.11; }
+  @keyframes jing-mood-drift {
+    from { transform: scale(1.03) translateX(-7px); }
+    to { transform: scale(1.07) translateX(7px); }
+  }
+  .jing-lot-result > *:not(.jing-lot-mood) { position: relative; z-index: 1; }
 
   .jing-lot-head { margin-bottom: 0.7rem; }
   .jing-lot-title { margin: 0; font-size: 1.15rem; letter-spacing: 0.1em; }
@@ -639,14 +692,24 @@ import SoundControl from './SoundControl.astro';
     font-size: 0.85rem; color: var(--jing-text-dim); letter-spacing: 0.1em;
   }
 
-  /* 净手屏 */
+  /* 净手屏：水面底图低透明度铺底，边缘溶入纸色 */
   .jing-lot-cleanse {
     border: 1px dashed var(--jing-border); border-radius: var(--jing-radius);
     background: var(--jing-bg-raised); background-image: var(--jing-paper);
     padding: 1.4rem 1rem; display: flex; flex-direction: column; align-items: center;
     gap: 0.5rem; cursor: pointer; text-align: center;
     animation: jing-enter 0.4s ease both;
+    position: relative; overflow: hidden;
   }
+  .jing-lot-cleanse::before {
+    content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+    background: url('/jing/img/water-basin.webp') center 42% / cover no-repeat;
+    opacity: 0.14;
+    mask-image: radial-gradient(115% 100% at 50% 45%, black 55%, transparent 97%);
+    -webkit-mask-image: radial-gradient(115% 100% at 50% 45%, black 55%, transparent 97%);
+  }
+  html.dark .jing-lot-cleanse::before { opacity: 0.09; }
+  .jing-lot-cleanse > * { position: relative; z-index: 1; }
   .jing-lot-cleanse[hidden] { display: none; }
   .jing-lot-cleanse:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
   .jing-cleanse-basin { width: 170px; height: auto; }

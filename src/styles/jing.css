@@ -182,8 +182,32 @@ html.light .jing-body {
   text-align: center;
   color: var(--jing-text-dim);
   font-size: 0.85rem;
-  margin: 0 0 2rem;
+  margin: 0 0 1.2rem;
   font-family: var(--jing-font-ui);
+}
+
+/* 堂前横幅：空山水墨，底缘雾化溶入纸色，极慢呼吸 */
+.jing-hall-banner {
+  margin: 0 0 2rem;
+  border-radius: var(--jing-radius);
+  overflow: hidden;
+  border: 1px solid var(--jing-border);
+  aspect-ratio: 21 / 7;
+  mask-image: linear-gradient(to bottom, black 72%, transparent 99%);
+  -webkit-mask-image: linear-gradient(to bottom, black 72%, transparent 99%);
+}
+.jing-hall-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  display: block;
+  animation: jing-banner-breathe 60s ease-in-out infinite alternate;
+}
+html.dark .jing-hall-banner img { filter: brightness(0.82) saturate(0.92); }
+@keyframes jing-banner-breathe {
+  from { transform: scale(1) translateY(0); }
+  to { transform: scale(1.05) translateY(-6px); }
 }
 
 .jing-intro {
