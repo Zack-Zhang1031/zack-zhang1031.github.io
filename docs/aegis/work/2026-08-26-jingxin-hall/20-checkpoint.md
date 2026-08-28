@@ -24,3 +24,9 @@ Resume in `E:\Github\.codex-worktrees\zack-site-jingxin-hall`; read `10-intent.m
 - New owner/fallback: only required work-record owner added; no runtime fallback.
 - Test/review gates: baseline build complete; source gate active.
 - Decision: continue.
+
+## Final checkpoint (2026-08-28)
+
+- Status: all nine plan tasks complete; full suite green (177 unit + 57 E2E + astro check 0 errors + build 62 pages).
+- Branch: `feature/jingxin-hall`, latest commit `[jing] add: complete lot interaction`.
+- Remaining: final docs commit, then merge/push decision pending owner confirmation (main checkout is dirty; review footer/index conflicts before merge).
