@@ -157,7 +157,7 @@ import SoundControl from './SoundControl.astro';
       const rel = e.clientX
         ? (e.clientX - (fishRect.left + fishRect.width / 2)) / (fishRect.width / 2)
         : 0;
-      fish.style.setProperty('--hit-tilt', `${(rel * 2).toFixed(2)}deg`);
+      fish.style.setProperty('--hit-tilt', `${(rel * 1.2).toFixed(2)}deg`);
       fish.classList.remove('is-hit');
       void fish.offsetWidth;
       fish.classList.add('is-hit');
@@ -265,12 +265,15 @@ import SoundControl from './SoundControl.astro';
   .fish-mouth { fill: none; stroke: #2d1d0e; stroke-width: 3; stroke-linecap: round; }
   .fish-belly { fill: none; stroke: rgba(45, 29, 14, 0.55); stroke-width: 2.5; stroke-linecap: round; }
 
-  .jing-muyu-fish.is-hit svg { animation: muyu-hit 0.2s ease; }
+  /* 敲击反馈：压扁而非缩小——木鱼被敲是形变，不是体积变化 */
+  .jing-muyu-fish.is-hit svg { animation: muyu-hit 0.16s ease; }
   @keyframes muyu-hit {
-    0% { transform: scale(1) rotate(0deg); }
-    40% { transform: scale(0.94) rotate(var(--hit-tilt, 0deg)); }
-    100% { transform: scale(1) rotate(0deg); }
+    0% { transform: scale(1) scaleY(1) rotate(0deg); }
+    45% { transform: scale(0.99) scaleY(0.93) rotate(var(--hit-tilt, 0deg)); }
+    100% { transform: scale(1) scaleY(1) rotate(0deg); }
   }
+  /* 稳定辉光与敲击反馈同存时叠加（transform 与 filter 互不干扰） */
+  .jing-muyu-fish.is-hit.is-steady svg { animation: muyu-hit 0.16s ease, muyu-steady 4.5s ease-in-out infinite; }
 
   /* 敲击涟漪：动画禁用时保持不可见 */
   .jing-muyu-stage { position: relative; display: flex; justify-content: center; }
@@ -289,15 +292,16 @@ import SoundControl from './SoundControl.astro';
     to { opacity: 0; transform: translate(-50%, -50%) scale(1.35); }
   }
 
-  /* 节奏稳定时的呼吸微光 */
+  /* 节奏稳定时的呼吸微光（收着点，别让光晕读作体积膨胀） */
   .jing-muyu-fish.is-steady svg { animation: muyu-steady 4.5s ease-in-out infinite; }
   @keyframes muyu-steady {
-    0%, 100% { filter: drop-shadow(0 0 4px rgba(184, 147, 74, 0.25)); }
-    50% { filter: drop-shadow(0 0 14px rgba(184, 147, 74, 0.5)); }
+    0%, 100% { filter: drop-shadow(0 0 3px rgba(184, 147, 74, 0.22)); }
+    50% { filter: drop-shadow(0 0 9px rgba(184, 147, 74, 0.38)); }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .jing-muyu-fish.is-hit svg,
+    .jing-muyu-fish.is-hit.is-steady svg,
     .jing-muyu-ripple,
     .jing-muyu-fish.is-steady svg { animation: none; }
     .jing-muyu-ripple { opacity: 0; }

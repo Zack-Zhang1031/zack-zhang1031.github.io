@@ -300,6 +300,8 @@ import SoundControl from './SoundControl.astro';
       resultEl.hidden = true;
       stageEl.hidden = false;
       stageEl.classList.add('is-playing');
+      /* 舞台在面板下方，摇签时带进视野中央 */
+      stageEl.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
       setTimeout(() => fx(FX_SRC.cupsDrop, 0.4), LAND_TICK_MS); // 落签一声轻「嗒」
       setTimeout(() => {
         stageEl.classList.remove('is-playing');
@@ -327,6 +329,8 @@ import SoundControl from './SoundControl.astro';
     const startCleanse = () => {
       cleanseEl.hidden = false;
       cleanseReady.hidden = true;
+      /* 净手屏在面板下方，先把它带进视野，否则用户看不到反馈 */
+      cleanseEl.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
       cleanseTimer = setTimeout(() => { cleanseReady.hidden = false; }, 2600);
     };
 
@@ -602,7 +606,8 @@ import SoundControl from './SoundControl.astro';
     opacity: 0.16;
     animation: jing-mood-drift 44s ease-in-out infinite alternate;
   }
-  html.dark .jing-lot-result.is-unfurl .jing-lot-mood { opacity: 0.11; }
+  /* 暗色下水墨本身深，提亮并稍加透明让纹理可辨 */
+  html.dark .jing-lot-result.is-unfurl .jing-lot-mood { opacity: 0.2; filter: brightness(1.5); }
   @keyframes jing-mood-drift {
     from { transform: scale(1.03) translateX(-7px); }
     to { transform: scale(1.07) translateX(7px); }
@@ -808,7 +813,7 @@ import SoundControl from './SoundControl.astro';
     display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
   }
   .jing-lot-stage[hidden] { display: none; }
-  .jing-lot-svg { width: 110px; height: auto; }
+  .jing-lot-svg { width: 160px; height: auto; }
   .jing-lot-tube-char {
     fill: var(--jing-text-dim); font-size: 20px;
     font-family: "Songti SC", "SimSun", serif;
@@ -817,23 +822,33 @@ import SoundControl from './SoundControl.astro';
     margin: 0; font-family: var(--jing-font-ui);
     font-size: 0.75rem; color: var(--jing-text-dim); letter-spacing: 0.3em;
   }
-  .jing-lot-stage.is-playing .jing-lot-svg { animation: jing-lot-shake 0.55s ease-in-out 2; transform-origin: 60px 150px; }
+  .jing-lot-stage.is-playing .jing-lot-svg { animation: jing-lot-shake 0.5s ease-in-out 2; transform-origin: 60px 150px; }
+  /* 筒摇时签束反向攒动 */
+  .jing-lot-sticks { transform-box: fill-box; transform-origin: 50% 100%; }
+  .jing-lot-stage.is-playing .jing-lot-sticks { animation: jing-lot-sticks-sway 0.5s ease-in-out 2; }
   .jing-lot-rising { opacity: 0; }
-  .jing-lot-stage.is-playing .jing-lot-rising { animation: jing-lot-rise 0.78s ease-out 1.08s forwards; }
+  .jing-lot-stage.is-playing .jing-lot-rising { animation: jing-lot-rise 0.85s ease-out 1.02s forwards; }
   @keyframes jing-lot-shake {
     0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-5deg); }
-    75% { transform: rotate(5deg); }
+    22% { transform: rotate(-10deg); }
+    72% { transform: rotate(9deg); }
   }
-  /* 起签后在筒口一顿，再落定 */
+  @keyframes jing-lot-sticks-sway {
+    0%, 100% { transform: rotate(0deg) translateX(0); }
+    22% { transform: rotate(4deg) translateX(1.5px); }
+    72% { transform: rotate(-4deg) translateX(-1.5px); }
+  }
+  /* 起签后高高挑出筒口，一顿，再落定回弹 */
   @keyframes jing-lot-rise {
     0% { opacity: 0; transform: translateY(14px); }
-    55% { opacity: 1; transform: translateY(-20px); }
-    76% { opacity: 1; transform: translateY(-20px); }
-    100% { opacity: 1; transform: translateY(-15px); }
+    45% { opacity: 1; transform: translateY(-38px); }
+    68% { opacity: 1; transform: translateY(-38px); }
+    84% { opacity: 1; transform: translateY(-28px); }
+    100% { opacity: 1; transform: translateY(-31px); }
   }
   @media (prefers-reduced-motion: reduce) {
     .jing-lot-stage.is-playing .jing-lot-svg,
+    .jing-lot-stage.is-playing .jing-lot-sticks,
     .jing-lot-stage.is-playing .jing-lot-rising { animation: none; }
     .jing-lot-rising { opacity: 1; }
   }
