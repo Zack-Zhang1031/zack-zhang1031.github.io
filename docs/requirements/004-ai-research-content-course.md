@@ -1,5 +1,7 @@
 # AI research content course
 
+**Status: Completed (2026-08-28).** All 27 posts published under `src/content/posts/` (series counts 4/5/5/6/4/3 verified; `npm run build` passed; pushed in commit `5a032ba`).
+
 ## Overview
 
 Add a 27-part, six-series Blog curriculum for job seekers who need systematic AI review and a coherent portfolio narrative. The lessons share one case study, an AI research content intelligence and management platform built around public artificial-intelligence and computer-science metadata. Existing comprehensive Python, NumPy, deep-learning, framework, and OpenCV posts remain prerequisites instead of being rewritten.
