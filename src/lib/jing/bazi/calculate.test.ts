@@ -42,6 +42,10 @@ describe('calculateBazi golden chart', () => {
     expect(envelope.output.tenGods).toEqual({
       year: '正财', month: '比肩', day: '日主', hour: '劫财',
     });
+    expect(envelope.output.pillarDetails.year).toMatchObject({
+      stem: '丙', branch: '寅', naYin: '炉中火',
+    });
+    expect(envelope.output.pillarDetails.year.hiddenStems.map((item) => item.stem)).toEqual(['甲', '丙', '戊']);
   });
 
   it('returns an auditable envelope with derivation and version', () => {

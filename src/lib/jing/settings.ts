@@ -13,6 +13,8 @@ export interface StorageLike {
 }
 
 export interface JingSettings {
+  /** Master room-audio preference. New visitors start with sound enabled. */
+  soundEnabled: boolean;
   /** 0..1 playback volume for opt-in audio. */
   volume: number;
   /** Enabled ambience ids (e.g. 'water', 'pine-wind'). */
@@ -28,6 +30,7 @@ export interface JingSettings {
 export const SETTINGS_KEY = 'jing.settings.v1';
 
 export const DEFAULT_SETTINGS: Readonly<JingSettings> = Object.freeze({
+  soundEnabled: true,
   volume: 0.6,
   ambience: [],
   motion: 'auto',
@@ -58,6 +61,7 @@ function sanitize(raw: unknown): JingSettings {
     : DEFAULT_SETTINGS.lockTimeoutMinutes;
   const lockTimeoutMinutes = Math.min(MAX_LOCK_MINUTES, Math.max(MIN_LOCK_MINUTES, lockRaw));
   return {
+    soundEnabled: input.soundEnabled !== false,
     volume,
     ambience,
     motion,

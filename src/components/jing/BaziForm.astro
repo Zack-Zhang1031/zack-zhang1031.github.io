@@ -15,22 +15,22 @@ import { CITIES } from '../../data/jing/cities';
     <legend>出生时刻</legend>
     <div class="jing-bazi-grid">
       <label>年
-        <input id="bazi-year" name="year" type="number" min="1900" max="2100" step="1" placeholder="1986" required />
+        <input id="bazi-year" name="year" type="number" min="1900" max="2100" step="1" placeholder="年" required />
       </label>
       <label>月
-        <input id="bazi-month" name="month" type="number" min="1" max="12" step="1" placeholder="5" required />
+        <input id="bazi-month" name="month" type="number" min="1" max="12" step="1" placeholder="月" required />
       </label>
       <label>日
-        <input id="bazi-day" name="day" type="number" min="1" max="31" step="1" placeholder="29" required />
+        <input id="bazi-day" name="day" type="number" min="1" max="31" step="1" placeholder="日" required />
       </label>
       <label>时
-        <input id="bazi-hour" name="hour" type="number" min="0" max="23" step="1" placeholder="0" required />
+        <input id="bazi-hour" name="hour" type="number" min="0" max="23" step="1" placeholder="时" required />
       </label>
       <label>分
-        <input id="bazi-minute" name="minute" type="number" min="0" max="59" step="1" placeholder="0" required />
+        <input id="bazi-minute" name="minute" type="number" min="0" max="59" step="1" placeholder="分" required />
       </label>
     </div>
-    <p class="jing-bazi-hint">公历（阳历）时刻，支持 1900—2100 年。</p>
+    <p class="jing-bazi-hint">公历（阳历）时刻，支持 1900—2100 年。示例：1986 年 5 月 29 日 00:00（示例不会自动填入）。</p>
   </fieldset>
 
   <fieldset class="jing-fieldset">
@@ -60,14 +60,20 @@ import { CITIES } from '../../data/jing/cities';
   </fieldset>
 
   <div class="jing-bazi-actions">
-    <button type="submit" class="jing-btn jing-btn-primary">排盘</button>
+    <button type="submit" id="bazi-submit" class="jing-btn jing-btn-primary">排盘</button>
+    <button type="button" id="bazi-now" class="jing-btn">填入此刻</button>
     <button type="reset" class="jing-btn">清空</button>
+    <span id="bazi-status" class="jing-calc-status" role="status" aria-live="polite">填写公历时刻后排盘</span>
   </div>
 
   <p id="bazi-error" class="jing-bazi-error" role="alert" hidden></p>
 </form>
 
-<section id="bazi-result" class="jing-bazi-result" hidden aria-live="polite">
+<section id="bazi-result" class="jing-bazi-result" hidden aria-live="polite" tabindex="-1">
+  <header class="jing-study-result-head">
+    <div><p class="jing-eyebrow">本地推演 · bazi-1.0.0</p><h2 class="jing-calc-result-title">八字排盘结果</h2></div>
+    <button type="button" id="bazi-edit" class="jing-btn">重新编辑</button>
+  </header>
   <details id="bazi-sec-summary" open>
     <summary>输入摘要</summary>
     <p id="bazi-summary-text"></p>
@@ -79,6 +85,12 @@ import { CITIES } from '../../data/jing/cities';
     <summary>盘面</summary>
     <div id="bazi-pillars" class="jing-bazi-pillars"></div>
     <p id="bazi-elements" class="jing-bazi-elements"></p>
+    <div id="bazi-element-bars" class="jing-bazi-element-bars" aria-label="五行分布比例"></div>
+    <div class="jing-bazi-year-index">
+      <h3>近年流年索引</h3>
+      <p>按立春换年惯例列干支索引；此处不推算大运起运，以免在缺少性别与起运规则时给出伪精确结果。</p>
+      <div id="bazi-year-timeline" class="jing-bazi-year-timeline"></div>
+    </div>
   </details>
 
   <details id="bazi-sec-derivation">
@@ -106,18 +118,24 @@ import { CITIES } from '../../data/jing/cities';
     const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
     const result = $('bazi-result');
     const errorEl = $('bazi-error');
+    const statusEl = $('bazi-status');
+    const submitBtn = $('bazi-submit') as HTMLButtonElement;
     const place = $('bazi-place');
     const city = $('bazi-city') as HTMLSelectElement;
     const longitude = $('bazi-longitude') as HTMLInputElement;
+    const timeFieldIds = ['bazi-year', 'bazi-month', 'bazi-day', 'bazi-hour', 'bazi-minute'] as const;
 
     const showError = (message: string) => {
       errorEl.textContent = message;
       errorEl.hidden = false;
       result.hidden = true;
+      statusEl.textContent = '排盘未完成，请检查输入。';
+      statusEl.classList.add('is-error');
     };
     const clearError = () => {
       errorEl.textContent = '';
       errorEl.hidden = true;
+      statusEl.classList.remove('is-error');
     };
 
     form.addEventListener('change', (event) => {
@@ -133,12 +151,28 @@ import { CITIES } from '../../data/jing/cities';
       city.value = 'manual';
     });
 
+    $('bazi-now').addEventListener('click', () => {
+      const now = new Date();
+      const values = [now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes()];
+      timeFieldIds.forEach((id, index) => { ($<HTMLInputElement>(id)).value = String(values[index]); });
+      clearError();
+      statusEl.textContent = '已填入本机此刻 · 可按需要调整后排盘';
+    });
+
     const PILLAR_NAMES: Record<string, string> = { year: '年柱', month: '月柱', day: '日柱', hour: '时柱' };
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       clearError();
+      submitBtn.disabled = true;
+      submitBtn.textContent = '排盘中…';
+      statusEl.textContent = '正在按所选时间规则推演四柱…';
       try {
+        const missing = timeFieldIds.find((id) => !$<HTMLInputElement>(id).value.trim());
+        if (missing) {
+          $<HTMLInputElement>(missing).focus();
+          throw new Error('请完整填写年、月、日、时、分后再排盘。');
+        }
         const timeMode = (form.querySelector('input[name="timeMode"]:checked') as HTMLInputElement).value as 'legal' | 'true-solar';
         const lateZi = (form.querySelector('input[name="lateZi"]:checked') as HTMLInputElement).value as 'same-day' | 'next-day';
         const input = {
@@ -166,11 +200,31 @@ import { CITIES } from '../../data/jing/cities';
 
         $('bazi-pillars').innerHTML = (['year', 'month', 'day', 'hour'] as const).map((key, i) => {
           const god = key === 'day' ? '日主' : envelope.output.tenGods[key];
-          return `<div class="jing-bazi-pillar" style="animation-delay:${i * 120}ms"><span class="jing-bazi-pillar-name">${PILLAR_NAMES[key]}</span>`
-            + `<strong>${pillars[key]}</strong><span class="jing-bazi-pillar-god">${god}</span></div>`;
+          const detail = envelope.output.pillarDetails[key];
+          const hidden = detail.hiddenStems.map((item) => `${item.stem}<small>${item.tenGod}</small>`).join('');
+          return `<article class="jing-bazi-pillar" style="animation-delay:${i * 90}ms">`
+            + `<header><span class="jing-bazi-pillar-name">${PILLAR_NAMES[key]}</span><span class="jing-bazi-pillar-god">${god}</span></header>`
+            + `<div class="jing-bazi-ganzhi"><strong>${detail.stem}</strong><strong>${detail.branch}</strong></div>`
+            + `<dl><div><dt>藏干</dt><dd>${hidden}</dd></div><div><dt>纳音</dt><dd>${detail.naYin}</dd></div></dl></article>`;
         }).join('');
         $('bazi-elements').textContent = '五行分布：'
           + Object.entries(envelope.output.elements).map(([k, v]) => `${k}${v}`).join('　');
+        const maxElement = Math.max(...Object.values(envelope.output.elements), 1);
+        $('bazi-element-bars').innerHTML = Object.entries(envelope.output.elements)
+          .map(([name, value], index) => `<div class="jing-bazi-element-bar" style="--bar-delay:${index * 90}ms">`
+            + `<span>${name}</span><i><b style="--bar-size:${(value / maxElement) * 100}%"></b></i><em>${value}</em></div>`)
+          .join('');
+
+        const stems = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+        const branches = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+        const currentYear = new Date().getFullYear();
+        const yearGanzhi = (year: number) => {
+          const offset = ((year - 1984) % 60 + 60) % 60;
+          return `${stems[offset % 10]}${branches[offset % 12]}`;
+        };
+        $('bazi-year-timeline').innerHTML = Array.from({ length: 9 }, (_, index) => currentYear - 4 + index)
+          .map((year) => `<span${year === currentYear ? ' class="is-current"' : ''}><b>${yearGanzhi(year)}</b><i>${year}</i></span>`)
+          .join('');
 
         $('bazi-derivation').innerHTML = envelope.derivation
           .map((step) => `<li><strong>${step.label}</strong><span>${step.rule}</span><em>${step.value}</em></li>`)
@@ -186,9 +240,17 @@ import { CITIES } from '../../data/jing/cities';
 
         $('bazi-copy-state').textContent = '';
         result.hidden = false;
-        result.scrollIntoView({ block: 'nearest' });
+        statusEl.textContent = `排盘完成 · ${pillars.year}、${pillars.month}、${pillars.day}、${pillars.hour}`;
+        result.focus({ preventScroll: true });
+        result.scrollIntoView({
+          block: 'start',
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        });
       } catch (error) {
         showError(error instanceof Error ? error.message : '输入无法解析，请检查后重试。');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '重新排盘';
       }
     });
 
@@ -198,6 +260,9 @@ import { CITIES } from '../../data/jing/cities';
       place.hidden = true;
       city.selectedIndex = 0;
       longitude.value = city.value;
+      submitBtn.textContent = '排盘';
+      statusEl.textContent = '填写公历时刻后排盘';
+      statusEl.classList.remove('is-error');
     });
 
     $('bazi-copy').addEventListener('click', async () => {
@@ -216,6 +281,13 @@ import { CITIES } from '../../data/jing/cities';
       form.reset();
       clearError();
       result.hidden = true;
+      submitBtn.textContent = '排盘';
+      statusEl.textContent = '填写公历时刻后排盘';
+    });
+
+    $('bazi-edit').addEventListener('click', () => {
+      form.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      ($('bazi-year') as HTMLInputElement).focus({ preventScroll: true });
     });
   }
 </script>
@@ -262,7 +334,12 @@ import { CITIES } from '../../data/jing/cities';
   .jing-bazi-place { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-top: 0.8rem; }
   .jing-bazi-place[hidden], .jing-bazi-result[hidden] { display: none; }
 
-  .jing-bazi-actions { display: flex; gap: 0.8rem; }
+  .jing-bazi-actions { display: flex; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
+  .jing-calc-status { font-family: var(--jing-font-ui); font-size: 0.74rem; color: var(--jing-accent); }
+  .jing-calc-status.is-error { color: var(--jing-vermilion); }
+  .jing-calc-result-title { margin: 0; color: var(--jing-accent); font-size: 1rem; font-weight: 500; letter-spacing: 0.18em; }
+  .jing-study-result-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .jing-study-result-head .jing-eyebrow { margin-bottom: 0.35rem; }
   .jing-btn-primary { border-color: var(--jing-accent); color: var(--jing-accent); }
 
   .jing-bazi-error {
@@ -284,7 +361,7 @@ import { CITIES } from '../../data/jing/cities';
 
   .jing-bazi-pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin: 0.5rem 0; }
   .jing-bazi-pillar {
-    display: flex; flex-direction: column; align-items: center; gap: 0.15rem;
+    display: flex; flex-direction: column; align-items: stretch; gap: 0.55rem;
     border: 1px solid var(--jing-border); border-radius: 8px; padding: 0.7rem 0.3rem;
     background: var(--jing-bg-card);
     animation: jing-pillar-in 0.55s ease both;
@@ -293,7 +370,14 @@ import { CITIES } from '../../data/jing/cities';
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: none; }
   }
-  .jing-bazi-pillar strong { font-size: 1.4rem; letter-spacing: 0.15em; color: var(--jing-text); }
+  .jing-bazi-pillar header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .jing-bazi-ganzhi { display: grid; gap: 0.2rem; place-items: center; padding: 0.35rem 0; }
+  .jing-bazi-pillar strong { font-size: 1.55rem; letter-spacing: 0.15em; color: var(--jing-text); }
+  .jing-bazi-pillar dl { margin: 0; display: grid; gap: 0.35rem; }
+  .jing-bazi-pillar dl div { display: grid; grid-template-columns: 2.4rem 1fr; gap: 0.35rem; align-items: baseline; }
+  .jing-bazi-pillar dt { font-family: var(--jing-font-ui); font-size: 0.64rem; color: var(--jing-text-dim); }
+  .jing-bazi-pillar dd { margin: 0; font-size: 0.78rem; color: var(--jing-text); }
+  .jing-bazi-pillar dd small { margin: 0 0.5em 0 0.15em; color: var(--jing-vermilion); font-family: var(--jing-font-ui); font-size: 0.58rem; }
   .jing-bazi-pillar-name, .jing-bazi-pillar-god {
     font-family: var(--jing-font-ui); font-size: 0.7rem; color: var(--jing-text-dim);
   }

@@ -1,14 +1,17 @@
 ---
 import JingLayout from '../../layouts/JingLayout.astro';
 import QimenForm from '../../components/jing/QimenForm.astro';
+import StudyTabs from '../../components/jing/StudyTabs.astro';
 ---
 
 <JingLayout title="奇门" description="静心堂 · 三派奇门遁甲对照">
-  <h1>奇门</h1>
-  <p class="jing-page-desc">
-    时家奇门三派对照：拆补法按符头定元、置闰法守超神接气、茅山法纯以交节换元。
-    三盘并排独立推演，互不折中；输入不会保存或上传。
-  </p>
-
-  <QimenForm />
+  <StudyTabs current="qimen" />
+  <section class="jing-study-page jing-qimen-page">
+    <header class="jing-study-page-heading">
+      <p class="jing-eyebrow">九宫起局 · 三派对照</p>
+      <h1>奇门</h1>
+      <p>拆补、置闰、茅山三派独立推演。九宫、天地盘、八门、九星、八神依次显现，盘面只作规则研习。</p>
+    </header>
+    <QimenForm />
+  </section>
 </JingLayout>

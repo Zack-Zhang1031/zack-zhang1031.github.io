@@ -2,10 +2,10 @@
 /**
  * ReverencePanel — guided, non-gamified reverence flow for one tradition.
  *
- * Flow: read the introductions above -> 合掌礼敬 -> three slow phases ->
- * neutral completion copy. Sacred images live outside this panel and are
- * never controls. With reduced motion, phases advance through explicit
- * static steps instead of timed animation.
+ * Flow: select a single gesture or complete three-bow sequence -> start ->
+ * typed ritual steps -> neutral completion copy. Sacred images live outside
+ * this panel and are never controls. With reduced motion, poses advance
+ * through explicit static steps instead of timed frame changes.
  */
 import SoundControl from './SoundControl.astro';
 import type { Tradition } from '../../data/jing/figures';
@@ -15,12 +15,45 @@ interface Props {
 }
 
 const { tradition } = Astro.props;
-const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
+const label = tradition === 'buddhist' ? '开始完整三拜' : '开始完整拱手礼';
+const gestures = tradition === 'buddhist'
+  ? [
+      { id: 'complete', name: '完整三拜', desc: '合掌、跪拜、起身，礼敬三次' },
+      { id: 'palms', name: '合掌', desc: '双手合掌，收摄身心' },
+      { id: 'bow', name: '低头', desc: '低首致敬，片刻安住' },
+      { id: 'kneel', name: '跪拜', desc: '缓身俯礼，量力而行' },
+      { id: 'return', name: '回礼', desc: '起身合掌，回到当下' },
+    ]
+  : [
+      { id: 'complete', name: '完整拱手礼', desc: '正身、拱手、躬身、礼敬、复位' },
+      { id: 'hands', name: '拱手', desc: '双手相抱，端身正立' },
+      { id: 'bow', name: '躬身', desc: '俯身致敬，动作徐缓' },
+      { id: 'respect', name: '礼敬', desc: '三息一礼，复归自然' },
+      { id: 'return', name: '回礼', desc: '缓缓起身，双手复位' },
+    ];
 ---
 
-<div class="jing-reverence" id={`reverence-${tradition}`} data-tradition={tradition}>
+<div
+  class="jing-reverence"
+  id={`reverence-${tradition}`}
+  data-tradition={tradition}
+  data-action={gestures[0].id}
+>
   <div class="jing-reverence-start" data-stage="start">
-    <p class="jing-reverence-guide">请先静静阅读上方介绍，再决定是否礼敬。</p>
+    <p class="jing-reverence-guide">选择一种礼仪，动作以舒适、安稳为度。</p>
+    <div class="jing-gesture-options" role="list" aria-label="礼敬动作">
+      {gestures.map((gesture, index) => (
+        <button
+          type="button"
+          class:list={['jing-gesture-option', index === 0 && 'is-selected']}
+          data-gesture={gesture.id}
+          data-label={gesture.name}
+          aria-pressed={index === 0 ? 'true' : 'false'}
+        >
+          <b>{gesture.name}</b><small>{gesture.desc}</small>
+        </button>
+      ))}
+    </div>
     <button type="button" class="jing-btn jing-reverence-begin">{label}</button>
     <SoundControl layers={['rain', 'insects', 'tea']} />
   </div>
@@ -109,7 +142,21 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     <div class="jing-breath-circle" aria-hidden="true"></div>
     <div class="jing-ripples" aria-hidden="true"></div>
     <p class="jing-phase-text" role="status" aria-live="polite"></p>
-    <button type="button" class="jing-btn jing-phase-next" hidden>继续</button>
+    <div
+      class="jing-ritual-progress"
+      role="progressbar"
+      aria-label="礼敬进度"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+    >
+      <span aria-hidden="true"><i></i></span>
+      <output>准备开始</output>
+    </div>
+    <div class="jing-reverence-phase-actions">
+      <button type="button" class="jing-btn jing-phase-next" hidden>继续</button>
+      <button type="button" class="jing-btn jing-reverence-stop">停止礼敬</button>
+    </div>
   </div>
 
   <div class="jing-reverence-done" data-stage="done" hidden>
@@ -121,7 +168,21 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
 <script>
   import { AMBIENCE_BY_TRADITION, AMBIENCE_SRC } from '../../data/jing/figures';
   import { loadSettings } from '../../lib/jing/settings';
-  import { LAYER_SRC, registerAmbience } from '../../lib/jing/sound-fx';
+  import {
+    createBuddhistRitualState,
+    getBuddhistReducedSteps,
+    getBuddhistRitualSequence,
+    transitionBuddhistRitual,
+    createTaoistRitualState,
+    getTaoistReducedSteps,
+    getTaoistRitualSequence,
+    transitionTaoistRitual,
+    type BuddhistRitualAction,
+    type BuddhistRitualStep,
+    type TaoistRitualAction,
+    type TaoistRitualStep,
+  } from '../../lib/jing/ritual-machine';
+  import { LAYER_SRC, playFx, registerAmbience, setAmbienceVolume } from '../../lib/jing/sound-fx';
 
   document.querySelectorAll<HTMLElement>('.jing-reverence').forEach((root) => {
     const tradition = root.dataset.tradition as 'buddhist' | 'taoist';
@@ -134,10 +195,45 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     const nextBtn = root.querySelector<HTMLButtonElement>('.jing-phase-next')!;
     const circle = root.querySelector<HTMLElement>('.jing-breath-circle')!;
     const scene = root.querySelector<HTMLElement>('.jing-scene')!;
+    const beginBtn = root.querySelector<HTMLButtonElement>('.jing-reverence-begin')!;
+    const stopBtn = root.querySelector<HTMLButtonElement>('.jing-reverence-stop')!;
+    const progressBar = root.querySelector<HTMLElement>('.jing-ritual-progress i')!;
+    const progressText = root.querySelector<HTMLOutputElement>('.jing-ritual-progress output')!;
+    const progressRoot = root.querySelector<HTMLElement>('.jing-ritual-progress')!;
+    const gestureButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('.jing-gesture-option'));
+    let buddhistMachine = createBuddhistRitualState();
+    let taoistMachine = createTaoistRitualState();
 
-    const phases = ['一礼 · 静心', '二礼 · 致敬', '三礼 · 安住'];
+    gestureButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        gestureButtons.forEach((item) => {
+          const selected = item === button;
+          item.classList.toggle('is-selected', selected);
+          item.setAttribute('aria-pressed', String(selected));
+        });
+        root.dataset.action = button.dataset.gesture || '';
+        if (tradition === 'buddhist') {
+          buddhistMachine = transitionBuddhistRitual(buddhistMachine, {
+            type: 'SELECT',
+            action: button.dataset.gesture as BuddhistRitualAction,
+          });
+          beginBtn.textContent = `开始${button.dataset.label || '礼佛'}`;
+        } else {
+          taoistMachine = transitionTaoistRitual(taoistMachine, {
+            type: 'SELECT',
+            action: button.dataset.gesture as TaoistRitualAction,
+          });
+          beginBtn.textContent = `开始${button.dataset.label || '敬道'}`;
+        }
+        root.dispatchEvent(new CustomEvent('jing:gesture', {
+          bubbles: true,
+          detail: { gesture: button.dataset.gesture, label: button.dataset.label },
+        }));
+      });
+    });
 
-    /* ambience created only after explicit opt-in */
+    /* New visitors default to sound on; Audio.play() still respects each
+       browser's autoplay policy and resumes from a trusted interaction. */
     let ambience: HTMLAudioElement[] = [];
     let soundOn = false;
     let soundVol = 0.6;
@@ -162,7 +258,7 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
         });
       }
       for (const audio of ambience) {
-        audio.volume = volume * 0.45;
+        setAmbienceVolume(audio, volume * 0.45);
         if (enabled) void audio.play().catch(() => {});
         else audio.pause();
       }
@@ -177,23 +273,19 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
           layerId = layer;
           registerAmbience(layerAudio);
         }
-        layerAudio.volume = volume * 0.35;
+        setAmbienceVolume(layerAudio, volume * 0.35);
         void layerAudio.play().catch(() => {});
       }
     });
 
-    /* 每一礼过渡：磬声一记（声音需用户先行开启）+ 涟漪一圈 */
+    /* 每一礼过渡：有声状态下磬声一记 + 涟漪一圈。 */
     const PHASE_CHIME: Record<string, string> = {
       buddhist: AMBIENCE_SRC.chime,
       taoist: AMBIENCE_SRC['windchime'],
     };
-    let chimeAudio: HTMLAudioElement | null = null;
     const playPhaseChime = () => {
       if (!soundOn) return;
-      if (!chimeAudio) chimeAudio = new Audio(PHASE_CHIME[tradition]);
-      chimeAudio.volume = Math.min(1, soundVol * 0.7);
-      chimeAudio.currentTime = 0;
-      void chimeAudio.play().catch(() => {});
+      playFx(PHASE_CHIME[tradition], soundVol * 0.7);
     };
 
     const ripples = root.querySelector<HTMLElement>('.jing-ripples')!;
@@ -217,60 +309,152 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
       || loadSettings(localStorage).settings.motion === 'reduce';
 
-    const runStatic = (index: number) => {
-      circle.classList.remove('is-animated');
-      scene.classList.remove('is-animated');
-      if (index >= phases.length) {
-        showStage('done');
-        settle();
-        return;
-      }
-      phaseText.textContent = phases[index];
-      playPhaseChime();
-      nextBtn.hidden = false;
-      nextBtn.onclick = () => runStatic(index + 1);
-    };
-
     const settle = () => {
       stages.done.classList.remove('is-settled');
       void stages.done.offsetWidth;
       stages.done.classList.add('is-settled');
     };
 
-    const runAnimated = () => {
+    const finishRitual = () => {
+      clearTimers();
+      circle.classList.remove('is-animated');
+      scene.classList.remove('is-animated');
       nextBtn.hidden = true;
-      circle.classList.add('is-animated');
-      scene.classList.add('is-animated');
-      /* 三礼呼吸渐缓：收心 4.5s · 致敬 6s · 安住 8s */
-      const breathDurations = ['4.5s', '6s', '8s'];
-      phases.forEach((text, i) => {
-        timers.push(setTimeout(() => {
-          phaseText.textContent = text;
-          circle.style.animationDuration = breathDurations[i];
-          spawnRipple();
-          playPhaseChime();
-        }, i * 6000));
-      });
+      progressBar.style.width = '100%';
+      progressRoot.setAttribute('aria-valuenow', '100');
+      progressRoot.setAttribute('aria-valuetext', '礼敬完成');
+      progressText.value = '礼敬完成';
+      if (tradition === 'buddhist') {
+        buddhistMachine = transitionBuddhistRitual(buddhistMachine, { type: 'COMPLETE' });
+      } else {
+        taoistMachine = transitionTaoistRitual(taoistMachine, { type: 'COMPLETE' });
+      }
+      showStage('done');
+      settle();
+      root.dispatchEvent(new CustomEvent('jing:ritual-done', { bubbles: true }));
+    };
+
+    type RitualStep = BuddhistRitualStep | TaoistRitualStep;
+
+    const dispatchPose = (step: RitualStep, index: number, total: number) => {
+      phaseText.textContent = step.label;
+      const progress = total > 0 ? Math.round(((index + 1) / total) * 100) : 0;
+      progressBar.style.width = `${progress}%`;
+      progressRoot.setAttribute('aria-valuenow', String(progress));
+      progressRoot.setAttribute('aria-valuetext', `第 ${index + 1} / ${total} 步`);
+      progressText.value = `第 ${index + 1} / ${total} 步`;
+      root.dispatchEvent(new CustomEvent('jing:ritual-pose', {
+        bubbles: true,
+        detail: { pose: step.pose, label: step.label, index, total, progress },
+      }));
+      if (step.mark === 'chime') playPhaseChime();
+      if (step.mark === 'ripple' || step.mark === 'chime') spawnRipple();
+    };
+
+    const runStatic = (steps: readonly RitualStep[], index: number) => {
+      circle.classList.remove('is-animated');
+      scene.classList.remove('is-animated');
+      if (index >= steps.length) {
+        finishRitual();
+        return;
+      }
+      const step = steps[index];
+      if (!step) return;
+      dispatchPose(step, index, steps.length);
+      nextBtn.hidden = false;
+      nextBtn.onclick = () => runStatic(steps, index + 1);
+    };
+
+    const runAnimated = (steps: readonly RitualStep[], index: number) => {
+      const running = tradition === 'buddhist'
+        ? buddhistMachine.status === 'running'
+        : taoistMachine.status === 'running';
+      if (!running) return;
+      if (index >= steps.length) {
+        finishRitual();
+        return;
+      }
+
+      const step = steps[index];
+      if (!step) return;
+      dispatchPose(step, index, steps.length);
+      if (tradition === 'buddhist') buddhistMachine = { ...buddhistMachine, stepIndex: index };
+      else taoistMachine = { ...taoistMachine, stepIndex: index };
       timers.push(setTimeout(() => {
-        circle.classList.remove('is-animated');
-        scene.classList.remove('is-animated');
-        showStage('done');
-        settle();
-      }, phases.length * 6000));
+        if (tradition === 'buddhist') {
+          buddhistMachine = transitionBuddhistRitual(buddhistMachine, { type: 'ADVANCE' });
+        } else {
+          taoistMachine = transitionTaoistRitual(taoistMachine, { type: 'ADVANCE' });
+        }
+        runAnimated(steps, index + 1);
+      }, step.duration));
     };
 
     root.querySelector('.jing-reverence-begin')?.addEventListener('click', () => {
+      clearTimers();
+      progressBar.style.width = '0%';
+      progressRoot.setAttribute('aria-valuenow', '0');
+      progressRoot.setAttribute('aria-valuetext', '礼敬开始');
+      progressText.value = '礼敬开始';
+      root.dispatchEvent(new CustomEvent('jing:ritual-start', { bubbles: true }));
       showStage('phases');
       /* 阶段舞台从按钮处向下生长，带进视野中央免得引导文字落在屏外 */
       stages.phases.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
-      if (reducedMotion()) runStatic(0);
-      else runAnimated();
+      if (tradition === 'buddhist') {
+        buddhistMachine = transitionBuddhistRitual(buddhistMachine, { type: 'START' });
+        const action = buddhistMachine.action;
+        if (reducedMotion()) {
+          runStatic(getBuddhistReducedSteps(action), 0);
+        } else {
+          nextBtn.hidden = true;
+          circle.classList.add('is-animated');
+          scene.classList.add('is-animated');
+          runAnimated(getBuddhistRitualSequence(action), 0);
+        }
+      } else {
+        taoistMachine = transitionTaoistRitual(taoistMachine, { type: 'START' });
+        const action = taoistMachine.action;
+        if (reducedMotion()) {
+          runStatic(getTaoistReducedSteps(action), 0);
+        } else {
+          nextBtn.hidden = true;
+          circle.classList.add('is-animated');
+          scene.classList.add('is-animated');
+          runAnimated(getTaoistRitualSequence(action), 0);
+        }
+      }
+    });
+
+    stopBtn.addEventListener('click', () => {
+      clearTimers();
+      nextBtn.hidden = true;
+      circle.classList.remove('is-animated');
+      scene.classList.remove('is-animated');
+      buddhistMachine = transitionBuddhistRitual(buddhistMachine, { type: 'STOP' });
+      taoistMachine = transitionTaoistRitual(taoistMachine, { type: 'STOP' });
+      phaseText.textContent = '';
+      progressBar.style.width = '0%';
+      progressRoot.setAttribute('aria-valuenow', '0');
+      progressRoot.setAttribute('aria-valuetext', '已停止');
+      progressText.value = '已停止';
+      showStage('start');
+      root.dispatchEvent(new CustomEvent('jing:ritual-cancel', { bubbles: true }));
     });
 
     root.querySelector('.jing-reverence-again')?.addEventListener('click', () => {
       clearTimers();
+      buddhistMachine = transitionBuddhistRitual(buddhistMachine, { type: 'RESET' });
+      taoistMachine = transitionTaoistRitual(taoistMachine, { type: 'RESET' });
       phaseText.textContent = '';
+      progressBar.style.width = '0%';
+      progressRoot.setAttribute('aria-valuenow', '0');
+      progressRoot.setAttribute('aria-valuetext', '准备开始');
+      progressText.value = '准备开始';
       showStage('start');
+      root.dispatchEvent(new CustomEvent('jing:ritual-pose', {
+        bubbles: true,
+        detail: { pose: 'ready', label: '双手安放，呼吸自然；准备好后再开始。' },
+      }));
     });
   });
 </script>
@@ -307,6 +491,17 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     50% { transform: scale(1); opacity: 1; }
   }
   .jing-phase-text { font-size: 1.05rem; letter-spacing: 0.25em; margin: 0; min-height: 1.6em; }
+  .jing-ritual-progress { width: min(220px, 86%); display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.55rem; }
+  .jing-ritual-progress > span { height: 2px; overflow: hidden; background: rgba(184, 147, 74, 0.18); }
+  .jing-ritual-progress i { display: block; width: 0; height: 100%; background: var(--jing-accent); transition: width 260ms ease; }
+  .jing-ritual-progress output { color: var(--jing-text-dim); font-family: var(--jing-font-ui); font-size: 0.62rem; font-variant-numeric: tabular-nums; }
+  .jing-reverence-phase-actions { display: flex; justify-content: center; gap: 0.55rem; }
+  .jing-reverence-stop {
+    min-height: 38px;
+    border-color: rgba(158, 123, 70, 0.28);
+    color: var(--jing-text-dim);
+    background: rgba(18, 14, 11, 0.72);
+  }
 
   .jing-reverence-end { color: var(--jing-text-dim); letter-spacing: 0.1em; }
   .jing-reverence-done { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
@@ -421,7 +616,14 @@ const label = tradition === 'buddhist' ? '合掌礼敬' : '拱手礼敬';
     .jing-scene.is-animated .jing-cloud,
     .jing-ripple,
     .jing-reverence-done.is-settled { animation: none; }
+    .jing-ritual-progress i { transition: none; }
     .jing-ripple { opacity: 0; }
     .jing-reverence-again { animation: none; opacity: 1; }
+  }
+
+  @media (max-width: 560px) {
+    .jing-ritual-progress { width: 100%; }
+    .jing-reverence-phase-actions { width: 100%; flex-wrap: wrap; }
+    .jing-reverence-phase-actions .jing-btn { flex: 1 1 8rem; }
   }
 </style>

@@ -1,0 +1,174 @@
+---
+import ReverencePanel from './ReverencePanel.astro';
+import type { SacredFigure, Tradition } from '../../data/jing/figures';
+
+interface Props {
+  tradition: Tradition;
+  figures: readonly SacredFigure[];
+}
+
+const { tradition, figures } = Astro.props;
+const isBuddhist = tradition === 'buddhist';
+const roomTitle = isBuddhist ? '礼佛' : '敬道';
+const roomNote = isBuddhist
+  ? '合掌、低头、跪拜、回礼，皆以安稳恭敬为度。'
+  : '拱手、躬身、礼敬，皆以从容自然为度。';
+const first = figures[0];
+const buddhistPoses = ['ready', 'palms', 'bow', 'kneel', 'prostrate', 'rise', 'return'] as const;
+const taoistPoses = ['ready', 'hands', 'bow', 'respect', 'return'] as const;
+const actorPoses = isBuddhist ? buddhistPoses : taoistPoses;
+const actorFolder = isBuddhist ? 'buddhist-worshipper' : 'taoist-worshipper';
+---
+
+<section class="jing-reverence-room" data-room-tradition={tradition} data-gesture={isBuddhist ? 'palms' : 'hands'}>
+  <header class="jing-reverence-room-heading">
+    <p class="jing-eyebrow">正身 · 收心 · 致敬</p>
+    <h1>{roomTitle}</h1>
+    <p>{roomNote}</p>
+  </header>
+
+  <aside class="jing-reverence-selector jing-scene-panel" aria-label={`${roomTitle}对象`}>
+    <h2>{roomTitle}</h2>
+    <div class="jing-figure-tabs" role="list">
+      {figures.map((figure, index) => (
+        <button
+          type="button"
+          class:list={['jing-figure-tab', index === 0 && 'is-selected']}
+          data-figure-src={figure.image.src}
+          data-figure-alt={figure.image.alt}
+          data-figure-name={figure.name}
+          aria-pressed={index === 0 ? 'true' : 'false'}
+        >
+          <b>{figure.name}</b><small>{figure.title}</small>
+        </button>
+      ))}
+    </div>
+
+    <details class="jing-figure-sources">
+      <summary>圣像介绍与来源</summary>
+      <div class="jing-figures">
+        {figures.map((figure) => (
+          <figure class="jing-figure">
+            <img src={figure.image.src} alt={figure.image.alt} loading="lazy" decoding="async" />
+            <figcaption>
+              <h2>{figure.name}<span class="jing-figure-title">{figure.title}</span></h2>
+              <p>{figure.intro}</p>
+              <p class="jing-figure-credit">
+                {figure.image.attribution} · {figure.image.license} ·
+                <a href={figure.image.sourceUrl} target="_blank" rel="noopener">来源</a>
+              </p>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </details>
+  </aside>
+
+  <div class="jing-reverence-altar" aria-live="polite">
+    <div class="jing-altar-aureole" aria-hidden="true"></div>
+    <img class="jing-altar-figure" src={first.image.src} alt={first.image.alt} />
+    <div class="jing-ritual-actor" data-pose="ready" aria-hidden="true">
+      {actorPoses.map((pose) => (
+        <img
+          class:list={['jing-ritual-frame', pose === 'ready' && 'is-active']}
+          data-ritual-pose={pose}
+          src={`/jing/ritual/${actorFolder}/${pose}.png`}
+          alt=""
+          decoding="async"
+        />
+      ))}
+    </div>
+    <p class="jing-altar-name">{first.name}</p>
+  </div>
+
+  <aside class="jing-reverence-guide-panel jing-scene-panel">
+    <h2>{roomTitle} · 礼仪</h2>
+    <ReverencePanel tradition={tradition} />
+  </aside>
+
+  <p class="jing-ritual-state" role="status">双手安放，呼吸自然；准备好后再开始。</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('.jing-reverence-room').forEach((room) => {
+    const image = room.querySelector<HTMLImageElement>('.jing-altar-figure');
+    const name = room.querySelector<HTMLElement>('.jing-altar-name');
+    const state = room.querySelector<HTMLElement>('.jing-ritual-state');
+    const tabs = Array.from(room.querySelectorAll<HTMLButtonElement>('.jing-figure-tab'));
+    const actor = room.querySelector<HTMLElement>('.jing-ritual-actor');
+    const frames = Array.from(room.querySelectorAll<HTMLElement>('[data-ritual-pose]'));
+    let transitionTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const setPose = (pose: string) => {
+      if (!actor) return;
+      const next = frames.find((frame) => frame.dataset.ritualPose === pose);
+      const current = frames.find((frame) => frame.classList.contains('is-active'));
+      if (!next || current === next) return;
+      if (transitionTimer) clearTimeout(transitionTimer);
+      frames.forEach((frame) => frame.classList.remove('is-leaving'));
+      if (current) {
+        current.classList.remove('is-active');
+        current.classList.add('is-leaving');
+      }
+      next.classList.add('is-active');
+      actor.dataset.pose = pose;
+      actor.classList.add('is-transitioning');
+      transitionTimer = setTimeout(() => {
+        current?.classList.remove('is-leaving');
+        actor.classList.remove('is-transitioning');
+        transitionTimer = null;
+      }, 260);
+    };
+
+    const setFigureSelectionDisabled = (disabled: boolean) => {
+      tabs.forEach((tab) => { tab.disabled = disabled; });
+    };
+
+    tabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        tabs.forEach((item) => {
+          const selected = item === tab;
+          item.classList.toggle('is-selected', selected);
+          item.setAttribute('aria-pressed', String(selected));
+        });
+        if (image) {
+          image.classList.add('is-changing');
+          window.setTimeout(() => {
+            image.src = tab.dataset.figureSrc || image.src;
+            image.alt = tab.dataset.figureAlt || '';
+            image.classList.remove('is-changing');
+          }, 140);
+        }
+        if (name) name.textContent = tab.dataset.figureName || '';
+      });
+    });
+
+    room.addEventListener('jing:gesture', ((event: CustomEvent) => {
+      room.dataset.gesture = event.detail.gesture || '';
+      if (state) state.textContent = `已选择${event.detail.label || ''}，动作以舒适、安稳为度。`;
+    }) as EventListener);
+    room.addEventListener('jing:ritual-start', () => {
+      room.classList.add('is-performing');
+      setFigureSelectionDisabled(true);
+      if (state) state.textContent = '礼敬进行中 · 呼吸自然，动作徐缓。';
+    });
+    room.addEventListener('jing:ritual-pose', ((event: CustomEvent) => {
+      setPose(event.detail.pose || 'ready');
+      const progress = Math.max(0, Math.min(100, Number(event.detail.progress || 0)));
+      actor?.style.setProperty('--ritual-glow', String(0.28 + progress * 0.0032));
+      if (state && event.detail.label) state.textContent = event.detail.label;
+    }) as EventListener);
+    room.addEventListener('jing:ritual-done', () => {
+      room.classList.remove('is-performing');
+      setFigureSelectionDisabled(false);
+      if (state) state.textContent = '礼敬已毕 · 稍作停留，再回到日常。';
+    });
+    room.addEventListener('jing:ritual-cancel', () => {
+      room.classList.remove('is-performing');
+      setFigureSelectionDisabled(false);
+      setPose('ready');
+      actor?.style.setProperty('--ritual-glow', '0.28');
+      if (state) state.textContent = '礼敬已停止 · 双手安放，呼吸自然。';
+    });
+  });
+</script>

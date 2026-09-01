@@ -1,7 +1,7 @@
 ---
 /**
  * LotSystem — three independent 100-lot collections (观音 / 吕祖 / 关帝),
- * optional divination cups, repeat-draw calm warning.
+ * optional divination cups, and immediate repeat draws.
  *
  * Everything computes in-browser with injected crypto randomness; results
  * live only in memory and vanish on refresh. Modern notes are original
@@ -33,43 +33,28 @@ import SoundControl from './SoundControl.astro';
     <div class="jing-lot-actions">
       <button type="button" id="lot-draw" class="jing-btn jing-btn-primary">抽签</button>
       <button type="button" id="lot-cups" class="jing-btn" disabled>掷筊三回</button>
-      <button type="button" id="lot-copy" class="jing-btn" disabled>复制签文摘要</button>
+      <button type="button" id="lot-copy" class="jing-btn" disabled>复制 / 分享签文</button>
       <button type="button" id="lot-bookmark" class="jing-btn" disabled>存为书签图</button>
-      <button type="button" id="lot-chant" class="jing-btn" disabled>诵一遍</button>
       <SoundControl layers={['rain', 'insects', 'tea']} />
     </div>
-    <p id="lot-redraw-warn" class="jing-lot-warn" role="status" hidden>
-      方才的签还留着。求签宜诚宜缓，若一定要重抽，原来的签也不会被悄悄换掉。
-    </p>
   </section>
 
-  <div class="jing-lot-stage" id="lot-stage" hidden aria-hidden="true">
-    <svg class="jing-lot-svg" viewBox="0 0 120 170" role="img" aria-label="签筒摇签动画">
-      <!-- 签束 -->
-      <g class="jing-lot-sticks" stroke="var(--jing-accent)" stroke-width="2" stroke-linecap="round">
-        <line x1="42" y1="52" x2="40" y2="86" />
-        <line x1="50" y1="48" x2="49" y2="86" />
-        <line x1="58" y1="44" x2="58" y2="86" />
-        <line x1="66" y1="47" x2="67" y2="86" />
-        <line x1="74" y1="51" x2="76" y2="86" />
-      </g>
-      <!-- 升起的签 -->
-      <g class="jing-lot-rising">
-        <line x1="60" y1="66" x2="60" y2="86" stroke="var(--jing-vermilion)" stroke-width="2.6" stroke-linecap="round" />
-        <circle cx="60" cy="63" r="2.4" fill="var(--jing-vermilion)" />
-      </g>
-      <!-- 筒身 -->
-      <path class="jing-lot-tube"
-        d="M34 86 h52 v58 a26 12 0 0 1 -52 0 z"
-        fill="var(--jing-bg-card)" stroke="var(--jing-accent)" stroke-width="1.6" />
-      <path class="jing-lot-tube-grain"
-        d="M34 86 h52 v58 a26 12 0 0 1 -52 0 z"
-        fill="var(--jing-wood)" stroke="none" opacity="0.35" />
-      <ellipse cx="60" cy="86" rx="26" ry="6" fill="none" stroke="var(--jing-accent)" stroke-width="1.4" />
-      <g class="jing-lot-deco" id="lot-tube-deco" stroke="var(--jing-accent)" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.55"></g>
-      <text x="60" y="126" text-anchor="middle" class="jing-lot-tube-char">签</text>
-    </svg>
-    <p class="jing-lot-stage-text">静心摇签中……</p>
+  <div class="jing-lot-stage" id="lot-stage" data-phase="idle" aria-live="polite">
+    <div class="jing-lot-visual" id="lot-visual" data-frame="0" data-collection="guanyin" role="img" aria-label="观音灵签签筒摇签动画">
+      <div class="jing-lot-contact-shadow" aria-hidden="true"></div>
+      <img id="lot-tube-image" class="jing-lot-frame-image" src="/jing/generated/lot/frames-v3/guanyin/frame-0.png" alt="" />
+      <canvas id="lot-animation-canvas" class="jing-lot-animation-canvas" width="768" height="1152" hidden aria-hidden="true"></canvas>
+      <div id="lot-falling-stick" class="jing-lot-falling-stick" hidden aria-hidden="true">
+        <img id="lot-falling-stick-image" src="/jing/generated/lot/selected-sticks/guanyin.png" alt="" />
+        <output id="lot-rising-number" class="jing-lot-rising-number"></output>
+      </div>
+    </div>
+    <ol class="jing-lot-progress" aria-label="抽签进度">
+      <li data-lot-step="shaking">摇筒</li>
+      <li data-lot-step="emerging">签出</li>
+      <li data-lot-step="unfurling">展卷</li>
+    </ol>
+    <p class="jing-lot-stage-text" id="lot-stage-text" role="status">静心默念所问 · 点击下方抽签</p>
   </div>
 
   <div class="jing-lot-cleanse" id="lot-cleanse" hidden role="button" tabindex="0"
@@ -94,7 +79,7 @@ import SoundControl from './SoundControl.astro';
     </div>
   </div>
 
-  <section id="lot-result" class="jing-lot-result" hidden aria-live="polite">
+  <section id="lot-result" class="jing-lot-result" hidden aria-live="polite" tabindex="-1">
     <div class="jing-lot-mood" id="lot-mood" data-mood="guanyin" aria-hidden="true"></div>
     <header class="jing-lot-head">
       <p id="lot-title" class="jing-lot-title"></p>
@@ -129,6 +114,11 @@ import SoundControl from './SoundControl.astro';
 
     <p class="jing-freshness">不保存 · 不联网 · 刷新即清</p>
   </section>
+
+  <section id="lot-session-history" class="jing-lot-session-history" hidden aria-labelledby="lot-session-title">
+    <header><h2 id="lot-session-title">本次签录</h2><span>只留当前页面 · 刷新即清</span></header>
+    <ol id="lot-session-list"></ol>
+  </section>
 </div>
 
 <script>
@@ -136,9 +126,10 @@ import SoundControl from './SoundControl.astro';
   import { LUZU_COLLECTION } from '../../data/jing/lots/luzu';
   import { GUANDI_COLLECTION } from '../../data/jing/lots/guandi';
   import { drawLot, throwCups } from '../../lib/jing/lots/draw';
+  import { frameBlendAt, LOT_MOTION_PROFILES, phaseAt, type LotMotionCollectionId, type LotMotionPhase } from '../../lib/jing/lot-motion';
   import { cryptoRandomSource } from '../../lib/jing/random';
   import { loadSettings } from '../../lib/jing/settings';
-  import { FX_SRC, LAYER_SRC, playFx, registerAmbience } from '../../lib/jing/sound-fx';
+  import { FX_SRC, LAYER_SRC, playFx, registerAmbience, setAmbienceVolume } from '../../lib/jing/sound-fx';
   import type { DrawResult, LotCollection } from '../../lib/jing/lots/types';
 
   const app = document.getElementById('jing-lots-app');
@@ -150,18 +141,28 @@ import SoundControl from './SoundControl.astro';
       luzu: LUZU_COLLECTION,
       guandi: GUANDI_COLLECTION,
     };
-    const REDRAW_COOLDOWN_MS = 30_000;
-
     let current: LotCollection = GUANYIN_COLLECTION;
     let lastDraw: DrawResult | null = null;
-    let lastDrawAt = 0;
+    let pendingDraw: DrawResult | null = null;
     let cupsThrown = false;
+    type SessionDraw = { draw: DrawResult; question: string; drawnAt: Date };
+    const sessionDraws: SessionDraw[] = [];
 
     const resultEl = $('lot-result');
-    const warnEl = $('lot-redraw-warn');
     const stageEl = $('lot-stage');
-    const DRAW_ANIMATION_MS = 1900; // 摇 1.1s + 起签一顿 + 落签
+    const stageText = $('lot-stage-text');
+    const drawBtn = $('lot-draw') as HTMLButtonElement;
     let animating = false;
+    const lotVisual = $('lot-visual');
+    const lotTubeImage = $('lot-tube-image') as HTMLImageElement;
+    const lotCanvas = $('lot-animation-canvas') as HTMLCanvasElement;
+    const lotCanvasContext = lotCanvas.getContext('2d', { alpha: true });
+    const fallingStick = $('lot-falling-stick');
+    const fallingStickImage = $('lot-falling-stick-image') as HTMLImageElement;
+    let lotAnimationFrame = 0;
+    let activeStageMotion: Animation | null = null;
+    let activeStickMotion: Animation | null = null;
+    let lotRunId = 0;
 
     const reducedMotion = () =>
       window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -185,7 +186,7 @@ import SoundControl from './SoundControl.astro';
         layerId = layer;
         registerAmbience(layerAudio);
       }
-      layerAudio.volume = volume * 0.4;
+      setAmbienceVolume(layerAudio, volume * 0.4);
       void layerAudio.play().catch(() => {});
     };
 
@@ -201,59 +202,204 @@ import SoundControl from './SoundControl.astro';
       if (soundOn) playFx(src, soundVol * scale, delayMs);
     };
 
-    /* 当前签种的意境底图（书签合成用，结果渲染时预热） */
-    let moodImg: HTMLImageElement | null = null;
+    const hasIntegratedStickSequence = (collectionId: string) =>
+      collectionId === 'guanyin' || collectionId === 'luzu' || collectionId === 'guandi';
+    const frameSrc = (collectionId: string, frame: number) =>
+      `/jing/generated/lot/frames-v3/${collectionId}/frame-${frame}.png`;
+    const frameCache = new Map<string, Promise<HTMLImageElement[]>>();
+    const decodeImage = async (image: HTMLImageElement) => {
+      try {
+        await image.decode();
+      } catch {
+        if (!image.complete) {
+          await new Promise<void>((resolve, reject) => {
+            image.addEventListener('load', () => resolve(), { once: true });
+            image.addEventListener('error', () => reject(new Error(`无法载入抽签帧：${image.src}`)), { once: true });
+          });
+        }
+      }
+      if (!image.naturalWidth) throw new Error(`抽签帧为空：${image.src}`);
+    };
+    const preloadFrames = (collectionId: string) => {
+      const cached = frameCache.get(collectionId);
+      if (cached) return cached;
+      const profile = LOT_MOTION_PROFILES[collectionId as LotMotionCollectionId];
+      const frameCount = profile.cues.at(-1)!.frame + 1;
+      const loading = Promise.all(Array.from({ length: frameCount }, async (_, frame) => {
+        const image = new Image();
+        image.decoding = 'async';
+        image.src = frameSrc(collectionId, frame);
+        await decodeImage(image);
+        return image;
+      }));
+      frameCache.set(collectionId, loading);
+      return loading;
+    };
+    const setVisualFrame = (frame: number) => {
+      lotVisual.dataset.frame = String(frame);
+      lotTubeImage.src = frameSrc(current.id, frame);
+    };
 
-    /* 签筒纹样随签种切换：观音莲 / 吕祖剑 / 关帝云龙 */
-    const TUBE_DECO: Record<string, string> = {
-      guanyin:
-        '<path d="M48 106 Q54 96 60 104 Q66 96 72 106" />' +
-        '<path d="M54 106 Q60 99 66 106" />' +
-        '<path d="M60 104 Q60 96 60 94" />',
-      luzu:
-        '<path d="M60 94 V110" />' +
-        '<path d="M53 100 H67" />' +
-        '<path d="M57 110 Q60 113 63 110" />',
-      guandi:
-        '<path d="M46 103 Q52 95 58 101 T70 99" />' +
-        '<path d="M64 99 q4 -4 8 0 q-2 4 -6 3" />' +
-        '<path d="M50 108 q4 -3 8 0" />',
+    const stopVisualTimeline = (preserveLandedStick = false) => {
+      cancelAnimationFrame(lotAnimationFrame);
+      lotAnimationFrame = 0;
+      activeStageMotion?.cancel();
+      activeStageMotion = null;
+      activeStickMotion?.cancel();
+      activeStickMotion = null;
+      if (!preserveLandedStick) {
+        fallingStick.hidden = true;
+        fallingStick.dataset.landed = 'false';
+        fallingStick.style.removeProperty('--lot-land-x');
+        fallingStick.style.removeProperty('--lot-land-y');
+      }
+      lotVisual.dataset.canvasReady = 'false';
+      lotCanvas.hidden = true;
+      lotCanvasContext?.clearRect(0, 0, lotCanvas.width, lotCanvas.height);
+    };
+
+    const renderCanvasBlend = (frames: HTMLImageElement[], elapsed: number, collectionId: LotMotionCollectionId) => {
+      if (!lotCanvasContext) return;
+      const blend = frameBlendAt(LOT_MOTION_PROFILES[collectionId], elapsed);
+      const visibleFrame = blend.mix >= 0.5 ? blend.nextFrame : blend.frame;
+      lotCanvasContext.clearRect(0, 0, lotCanvas.width, lotCanvas.height);
+      // Each generated frame already contains the complete vessel and selected
+      // stick. Cross-fading adjacent frames would briefly show two sticks, so
+      // switch once near the end of the cue instead of dissolving the images.
+      lotCanvasContext.globalAlpha = 1;
+      lotCanvasContext.drawImage(frames[visibleFrame], 0, 0, lotCanvas.width, lotCanvas.height);
+      if (lotVisual.dataset.frame !== String(visibleFrame)) setVisualFrame(visibleFrame);
+    };
+
+    const phaseCopy: Record<LotMotionPhase, string> = {
+      shaking: '签筒徐摇 · 竹签相击',
+      emerging: '一签自筒心徐出 · 签号已定',
+      landing: '签离筒口 · 落向案前',
+      unfurling: '签条已安放 · 即将展卷',
+    };
+
+    const playFallingStick = (collectionId: LotMotionCollectionId, duration: number) => {
+      const rect = lotVisual.getBoundingClientRect();
+      const landX = rect.width * 0.16;
+      const landY = rect.height * 0.74;
+      fallingStickImage.src = `/jing/generated/lot/selected-sticks/${collectionId}.png`;
+      fallingStick.style.setProperty('--lot-land-x', `${landX}px`);
+      fallingStick.style.setProperty('--lot-land-y', `${landY}px`);
+      fallingStick.dataset.landed = 'false';
+      fallingStick.hidden = false;
+      activeStickMotion?.cancel();
+      activeStickMotion = fallingStick.animate([
+        { offset: 0, transform: 'translate(-50%, 0) rotate(1deg)' },
+        { offset: 0.14, transform: 'translate(calc(-50% + 18px), -10px) rotate(8deg)', easing: 'cubic-bezier(.2,.7,.3,1)' },
+        { offset: 0.72, transform: `translate(calc(-50% + ${landX}px), ${landY - 12}px) rotate(77deg)`, easing: 'cubic-bezier(.42,0,.92,.45)' },
+        { offset: 0.83, transform: `translate(calc(-50% + ${landX}px), ${landY}px) rotate(83deg)`, easing: 'cubic-bezier(.15,.75,.3,1)' },
+        { offset: 0.91, transform: `translate(calc(-50% + ${landX - 3}px), ${landY - 8}px) rotate(79deg)`, easing: 'ease-out' },
+        { offset: 1, transform: `translate(calc(-50% + ${landX}px), ${landY}px) rotate(82deg)` },
+      ], { duration, easing: 'linear', fill: 'forwards' });
+    };
+
+    const playVisualTimeline = async (collectionId: LotMotionCollectionId, runId: number) => {
+      const profile = LOT_MOTION_PROFILES[collectionId];
+      const frames = await preloadFrames(collectionId);
+      if (runId !== lotRunId) return false;
+      if (!lotCanvasContext) throw new Error('浏览器不支持抽签画布');
+
+      lotCanvas.hidden = false;
+      lotVisual.dataset.canvasReady = 'true';
+      renderCanvasBlend(frames, 0, collectionId);
+      activeStageMotion = lotVisual.animate([...profile.keyframes], {
+        duration: profile.duration,
+        easing: 'linear',
+      });
+
+      return new Promise<boolean>((resolve) => {
+        let startedAt: number | null = null;
+        let currentPhase: LotMotionPhase = 'shaking';
+        let fallStarted = false;
+        let landed = false;
+
+        const tick = (now: number) => {
+          if (runId !== lotRunId) {
+            resolve(false);
+            return;
+          }
+          startedAt ??= now;
+          const elapsed = Math.min(profile.duration, now - startedAt);
+          renderCanvasBlend(frames, elapsed, collectionId);
+
+          const nextPhase = phaseAt(profile, elapsed);
+          if (nextPhase !== currentPhase) {
+            currentPhase = nextPhase;
+            stageEl.dataset.phase = nextPhase;
+            stageText.textContent = phaseCopy[nextPhase];
+          }
+          if (!hasIntegratedStickSequence(collectionId) && !fallStarted && elapsed >= profile.fallAt) {
+            fallStarted = true;
+            playFallingStick(collectionId, profile.landAt - profile.fallAt);
+          }
+          if (!landed && elapsed >= profile.landAt) {
+            landed = true;
+            fallingStick.dataset.landed = 'true';
+            fx(FX_SRC.cupsDrop, 0.4);
+          }
+          if (elapsed >= profile.duration) {
+            resolve(true);
+            return;
+          }
+          lotAnimationFrame = requestAnimationFrame(tick);
+        };
+        lotAnimationFrame = requestAnimationFrame(tick);
+      });
     };
 
     const editionText = () =>
       `${current.name} · ${current.edition} · 数据修订 ${current.revision}`;
 
     const renderEdition = () => {
+      stopVisualTimeline();
       $('lot-edition').textContent = editionText();
       $('lot-panel').setAttribute('aria-labelledby', `lot-tab-${current.id}`);
-      const deco = document.getElementById('lot-tube-deco');
-      if (deco) deco.innerHTML = TUBE_DECO[current.id] ?? '';
+      setVisualFrame(0);
+      void preloadFrames(current.id).catch(() => {});
+      lotVisual.dataset.collection = current.id;
+      fallingStickImage.src = `/jing/generated/lot/selected-sticks/${current.id}.png`;
+      lotVisual.setAttribute('aria-label', `${current.name}签筒摇签动画`);
     };
 
     /* ---- tabs ---- */
     const tabs = Array.from(app.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const setTabsDisabled = (disabled: boolean) => tabs.forEach((tab) => { tab.disabled = disabled; });
     for (const tab of tabs) {
       tab.addEventListener('click', () => {
         for (const t of tabs) t.setAttribute('aria-selected', String(t === tab));
         current = COLLECTIONS[tab.id.replace('lot-tab-', '')];
-        lastDrawAt = 0; // 换套即重新起问，不受冷静期限制；原签仍保留展示
-        warnEl.hidden = true;
         renderEdition();
       });
     }
 
     /* ---- rendering ---- */
-    const renderDraw = (draw: DrawResult) => {
+    const renderSessionHistory = () => {
+      const history = $('lot-session-history');
+      const list = $('lot-session-list');
+      history.hidden = sessionDraws.length === 0;
+      list.innerHTML = sessionDraws.map((entry, index) => {
+        const collection = COLLECTIONS[entry.draw.collectionId];
+        const time = entry.drawnAt.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+        return `<li><button type="button" data-lot-history="${index}">`
+          + `<b>${collection.name} · 第 ${entry.draw.lot.number} 签</b>`
+          + `<span>${entry.draw.lot.title} · ${time}</span></button></li>`;
+      }).join('');
+    };
+
+    const renderDraw = (draw: DrawResult, askedQuestion?: string) => {
       const lot = draw.lot;
-      $('lot-mood').setAttribute('data-mood', current.id);
-      /* 预热意境底图，供书签合成复用 */
-      moodImg = new Image();
-      moodImg.src = `/jing/img/lot-${current.id}.webp`;
+      const drawCollection = COLLECTIONS[draw.collectionId];
+      $('lot-mood').setAttribute('data-mood', drawCollection.id);
       $('lot-title').textContent = `第 ${lot.number} 签 · ${lot.title}`;
       const ganzhi = lot.ganzhi ? ` · ${lot.ganzhi}` : '';
-      $('lot-grade').textContent = `${current.name} · ${lot.grade}${ganzhi}`;
+      $('lot-grade').textContent = `${drawCollection.name} · ${lot.grade}${ganzhi}`;
       $('lot-stamp').textContent = `第${lot.number}签`;
-      const question = ($('lot-question') as HTMLInputElement).value.trim();
+      const question = askedQuestion ?? ($('lot-question') as HTMLInputElement).value.trim();
       const echo = $('lot-question-echo');
       echo.textContent = question ? `为「${question}」问` : '';
       echo.hidden = !question;
@@ -275,40 +421,74 @@ import SoundControl from './SoundControl.astro';
       ($('lot-cups') as HTMLButtonElement).disabled = false;
       ($('lot-copy') as HTMLButtonElement).disabled = false;
       ($('lot-bookmark') as HTMLButtonElement).disabled = false;
-      ($('lot-chant') as HTMLButtonElement).disabled = false;
       resultEl.hidden = false;
       /* 展卷：重触发 clip-path 展开动画 */
       resultEl.classList.remove('is-unfurl');
       void resultEl.offsetWidth;
       resultEl.classList.add('is-unfurl');
-      resultEl.scrollIntoView({ block: 'nearest' });
+      resultEl.focus({ preventScroll: true });
+      resultEl.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' });
     };
 
     const doDraw = () => {
-      lastDraw = drawLot(current, cryptoRandomSource);
-      lastDrawAt = Date.now();
-      renderDraw(lastDraw);
+      lastDraw = pendingDraw ?? drawLot(current, cryptoRandomSource);
+      pendingDraw = null;
+      const question = ($('lot-question') as HTMLInputElement).value.trim();
+      sessionDraws.unshift({ draw: lastDraw, question, drawnAt: new Date() });
+      if (sessionDraws.length > 8) sessionDraws.length = 8;
+      renderSessionHistory();
+      renderDraw(lastDraw, question);
       fx(FX_SRC.paperUnfurl, 0.55);
+      drawBtn.disabled = false;
+      drawBtn.textContent = '重新抽签';
+      setTabsDisabled(false);
+      app.classList.remove('is-ritual-active');
     };
 
-    /* 摇 1.1s → 起签 → 落签一顿，再展卷 */
-    const LAND_TICK_MS = 1520;
+    const settleStage = (hasResult: boolean) => {
+      stopVisualTimeline(hasResult && fallingStick.dataset.landed === 'true');
+      stageEl.hidden = false;
+      stageEl.classList.remove('is-playing');
+      stageEl.dataset.phase = hasResult ? 'settled' : 'idle';
+      const settledFrame = LOT_MOTION_PROFILES[current.id as LotMotionCollectionId].cues.at(-1)!.frame;
+      setVisualFrame(hasResult && hasIntegratedStickSequence(current.id) ? settledFrame : 0);
+      stageText.textContent = hasResult
+        ? '签筒已归位 · 签文展于右侧'
+        : '静心默念所问 · 点击下方抽签';
+    };
 
-    const runShake = () => {
+    const runShake = async () => {
       animating = true;
+      const runId = ++lotRunId;
+      const collectionId = current.id as LotMotionCollectionId;
+      stopVisualTimeline();
+      pendingDraw = drawLot(current, cryptoRandomSource);
+      $('lot-rising-number').textContent = `第${pendingDraw.lot.number}签`;
+      drawBtn.disabled = true;
+      drawBtn.textContent = '摇签中…';
+      setTabsDisabled(true);
+      app.classList.add('is-ritual-active');
       fx(FX_SRC.shakeSticks, 0.9);
       resultEl.hidden = true;
       stageEl.hidden = false;
+      stageEl.dataset.phase = 'shaking';
+      setVisualFrame(0);
+      stageText.textContent = '签筒徐摇 · 竹签相击';
       stageEl.classList.add('is-playing');
       /* 舞台在面板下方，摇签时带进视野中央 */
       stageEl.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
-      setTimeout(() => fx(FX_SRC.cupsDrop, 0.4), LAND_TICK_MS); // 落签一声轻「嗒」
-      setTimeout(() => {
-        stageEl.classList.remove('is-playing');
-        stageEl.hidden = true;
-        animating = false;
-        doDraw();
-      }, DRAW_ANIMATION_MS);
+      try {
+        const completed = await playVisualTimeline(collectionId, runId);
+        if (!completed || runId !== lotRunId) return;
+      } catch (error) {
+        // The traditional data draw must remain usable if a local decorative
+        // frame is damaged or Canvas is unavailable.
+        console.warn('抽签动画已降级为静态结果', error);
+      }
+      if (runId !== lotRunId) return;
+      animating = false;
+      doDraw();
+      settleStage(true);
     };
 
     /* ---- 净手：每次到访的第一次抽签，先净手静心 ---- */
@@ -327,11 +507,12 @@ import SoundControl from './SoundControl.astro';
     };
 
     const startCleanse = () => {
+      app.classList.add('is-ritual-active');
       cleanseEl.hidden = false;
       cleanseReady.hidden = true;
-      /* 净手屏在面板下方，先把它带进视野，否则用户看不到反馈 */
+      /* 单击抽签即开始：净手作为短前奏自动衔接摇筒，不再要求第二次点击。 */
       cleanseEl.scrollIntoView({ block: 'center', behavior: reducedMotion() ? 'auto' : 'smooth' });
-      cleanseTimer = setTimeout(() => { cleanseReady.hidden = false; }, 2600);
+      cleanseTimer = setTimeout(finishCleanse, 520);
     };
 
     cleanseEl.addEventListener('click', finishCleanse);
@@ -356,14 +537,11 @@ import SoundControl from './SoundControl.astro';
 
     $('lot-draw').addEventListener('click', () => {
       if (animating) return;
-      const now = Date.now();
-      if (lastDraw && now - lastDrawAt < REDRAW_COOLDOWN_MS) {
-        warnEl.hidden = false;
-        return; // 保留原签，不覆盖
-      }
-      warnEl.hidden = true;
       if (reducedMotion()) {
+        app.classList.add('is-ritual-active');
+        pendingDraw = drawLot(current, cryptoRandomSource);
         doDraw();
+        settleStage(true);
         return;
       }
       if (!cleansed) {
@@ -398,11 +576,25 @@ import SoundControl from './SoundControl.astro';
       ($('lot-cups') as HTMLButtonElement).disabled = true;
     });
 
+    $('lot-session-list').addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-lot-history]');
+      if (!button) return;
+      const entry = sessionDraws[Number(button.dataset.lotHistory)];
+      if (!entry) return;
+      lastDraw = entry.draw;
+      current = COLLECTIONS[entry.draw.collectionId];
+      ($('lot-question') as HTMLInputElement).value = entry.question;
+      tabs.forEach((tab) => tab.setAttribute('aria-selected', String(tab.id === `lot-tab-${current.id}`)));
+      renderEdition();
+      renderDraw(entry.draw, entry.question);
+    });
+
     $('lot-copy').addEventListener('click', async () => {
       if (!lastDraw) return;
       const lot = lastDraw.lot;
+      const drawCollection = COLLECTIONS[lastDraw.collectionId];
       const summary = [
-        `${current.name} 第 ${lot.number} 签（${lot.grade}）${lot.title}`,
+        `${drawCollection.name} 第 ${lot.number} 签（${lot.grade}）${lot.title}`,
         ...lot.verse,
         `典故：${lot.allusion}`,
         ...lot.topics.map((t) => `${t.theme}：${t.text}`),
@@ -417,28 +609,11 @@ import SoundControl from './SoundControl.astro';
       }
     });
 
-    /* ---- 诵一遍：逐列高亮，不朗读，节奏交给默念 ---- */
-    let chanting = false;
-    $('lot-chant').addEventListener('click', () => {
-      if (chanting || resultEl.hidden) return;
-      const lines = Array.from($('lot-verse').querySelectorAll('p'));
-      if (lines.length === 0) return;
-      chanting = true;
-      ($('lot-chant') as HTMLButtonElement).disabled = true;
-      lines.forEach((p, i) => {
-        setTimeout(() => p.classList.add('is-chanting'), i * 1100);
-        setTimeout(() => p.classList.remove('is-chanting'), i * 1100 + 1100);
-      });
-      setTimeout(() => {
-        chanting = false;
-        ($('lot-chant') as HTMLButtonElement).disabled = false;
-      }, lines.length * 1100 + 400);
-    });
-
     /* ---- 书签图：水墨底衬 + canvas 竖排，先预览再存 ---- */
     const buildBookmark = async (): Promise<HTMLCanvasElement | null> => {
       if (!lastDraw) return null;
       const lot = lastDraw.lot;
+      const drawCollection = COLLECTIONS[lastDraw.collectionId];
       const canvas = document.createElement('canvas');
       canvas.width = 480;
       canvas.height = 1080;
@@ -449,25 +624,31 @@ import SoundControl from './SoundControl.astro';
       ctx.fillStyle = '#f6f1e4';
       ctx.fillRect(0, 0, 480, 1080);
 
-      // 意境底衬：顶部水墨，向下渐隐入纸
-      if (moodImg) {
-        try {
-          await moodImg.decode();
-          const scale = Math.max(480 / moodImg.width, 500 / moodImg.height);
-          const w = moodImg.width * scale;
-          const h = moodImg.height * scale;
-          const x = (480 - w) / 2;
-          ctx.globalAlpha = 0.5;
-          ctx.drawImage(moodImg, x, 0, w, h);
-          ctx.globalAlpha = 1;
-          const fade = ctx.createLinearGradient(0, 0, 0, 560);
-          fade.addColorStop(0, 'rgba(246, 241, 228, 0.25)');
-          fade.addColorStop(0.7, 'rgba(246, 241, 228, 0.85)');
-          fade.addColorStop(1, 'rgba(246, 241, 228, 1)');
-          ctx.fillStyle = fade;
-          ctx.fillRect(0, 0, 480, 560);
-        } catch { /* 底图未就绪则纯纸底 */ }
-      }
+      // 纯 Canvas 意境底衬：墨晕、远山与向下渐隐，不读取背景图片。
+      const ink = ctx.createRadialGradient(240, 130, 12, 240, 160, 330);
+      ink.addColorStop(0, 'rgba(72, 57, 38, 0.2)');
+      ink.addColorStop(0.58, 'rgba(91, 73, 48, 0.08)');
+      ink.addColorStop(1, 'rgba(246, 241, 228, 0)');
+      ctx.fillStyle = ink;
+      ctx.fillRect(0, 0, 480, 520);
+      ctx.save();
+      ctx.globalAlpha = 0.13;
+      ctx.fillStyle = '#463b2d';
+      ctx.beginPath();
+      ctx.moveTo(0, 318);
+      ctx.bezierCurveTo(72, 238, 126, 284, 192, 218);
+      ctx.bezierCurveTo(255, 154, 319, 282, 388, 210);
+      ctx.bezierCurveTo(427, 174, 458, 232, 480, 196);
+      ctx.lineTo(480, 390);
+      ctx.lineTo(0, 390);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      const fade = ctx.createLinearGradient(0, 180, 0, 560);
+      fade.addColorStop(0, 'rgba(246, 241, 228, 0)');
+      fade.addColorStop(1, 'rgba(246, 241, 228, 1)');
+      ctx.fillStyle = fade;
+      ctx.fillRect(0, 180, 480, 380);
 
       // 双线框
       ctx.strokeStyle = '#b8934a';
@@ -480,7 +661,7 @@ import SoundControl from './SoundControl.astro';
       ctx.fillStyle = '#6f6148';
       ctx.font = '22px "Songti SC", "SimSun", serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`${current.name} · ${lot.grade}`, 240, 74);
+      ctx.fillText(`${drawCollection.name} · ${lot.grade}`, 240, 74);
 
       // 签题
       ctx.fillStyle = '#3a3227';
@@ -529,7 +710,7 @@ import SoundControl from './SoundControl.astro';
       const src = ($('lot-bookmark-img') as HTMLImageElement).src;
       if (!src || !lastDraw) return;
       const a = document.createElement('a');
-      a.download = `jing-lot-${current.id}-${lastDraw.lot.number}.png`;
+      a.download = `jing-lot-${lastDraw.collectionId}-${lastDraw.lot.number}.png`;
       a.href = src;
       a.click();
       $('lot-bookmark-preview').hidden = true;
@@ -538,6 +719,11 @@ import SoundControl from './SoundControl.astro';
     $('lot-bookmark-cancel').addEventListener('click', () => {
       $('lot-bookmark-preview').hidden = true;
     });
+
+    window.addEventListener('pagehide', () => {
+      lotRunId += 1;
+      stopVisualTimeline();
+    }, { once: true });
 
     renderEdition();
   }
@@ -556,6 +742,7 @@ import SoundControl from './SoundControl.astro';
   .jing-lot-tabs [role="tab"][aria-selected="true"] {
     border-color: var(--jing-accent); color: var(--jing-accent);
   }
+  .jing-lot-tabs [role="tab"]:disabled { opacity: 0.45; cursor: wait; }
 
   .jing-lots section[role="tabpanel"] {
     border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
@@ -591,17 +778,45 @@ import SoundControl from './SoundControl.astro';
   }
   .jing-lot-result[hidden] { display: none; }
 
-  /* 意境底图：随签种切换，墨洇入场 + 极慢漂移，边缘溶入纸色 */
+  .jing-lot-session-history {
+    border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
+    background: linear-gradient(180deg, var(--jing-bg-raised), var(--jing-bg-card)); padding: 0.85rem 1rem;
+  }
+  .jing-lot-session-history[hidden] { display: none; }
+  .jing-lot-session-history header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+  .jing-lot-session-history h2 { margin: 0; color: var(--jing-accent); font-size: 0.92rem; letter-spacing: 0.18em; }
+  .jing-lot-session-history header span { color: var(--jing-text-dim); font-family: var(--jing-font-ui); font-size: 0.66rem; }
+  .jing-lot-session-history ol {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.45rem;
+    margin: 0.75rem 0 0; padding: 0; list-style: none;
+  }
+  .jing-lot-session-history button {
+    width: 100%; padding: 0.55rem 0.65rem; text-align: left; cursor: pointer;
+    border: 1px solid var(--jing-border); border-radius: 4px; color: var(--jing-text);
+    background: rgba(255,255,255,0.025); font-family: inherit;
+  }
+  .jing-lot-session-history button:hover,
+  .jing-lot-session-history button:focus-visible { border-color: var(--jing-accent); outline: none; }
+  .jing-lot-session-history button b,
+  .jing-lot-session-history button span { display: block; }
+  .jing-lot-session-history button b { color: var(--jing-accent); font-size: 0.76rem; font-weight: 500; }
+  .jing-lot-session-history button span { margin-top: 0.2rem; color: var(--jing-text-dim); font-family: var(--jing-font-ui); font-size: 0.66rem; }
+
+  /* 纯 CSS 墨晕：随签种换一层克制色温，不读取背景图。 */
   .jing-lot-mood {
     position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background-size: cover; background-position: center 30%;
+    --lot-ink: 74, 62, 43;
+    background:
+      radial-gradient(ellipse at 48% 20%, rgba(var(--lot-ink), 0.3), transparent 42%),
+      radial-gradient(ellipse at 18% 36%, rgba(var(--lot-ink), 0.14), transparent 34%),
+      linear-gradient(164deg, transparent 0 36%, rgba(var(--lot-ink), 0.12) 37% 42%, transparent 43%);
     opacity: 0; transition: opacity 1.4s ease;
     mask-image: radial-gradient(120% 105% at 50% 32%, black 52%, transparent 96%);
     -webkit-mask-image: radial-gradient(120% 105% at 50% 32%, black 52%, transparent 96%);
   }
-  .jing-lot-mood[data-mood="guanyin"] { background-image: url('/jing/img/lot-guanyin.webp'); }
-  .jing-lot-mood[data-mood="luzu"] { background-image: url('/jing/img/lot-luzu.webp'); }
-  .jing-lot-mood[data-mood="guandi"] { background-image: url('/jing/img/lot-guandi.webp'); }
+  .jing-lot-mood[data-mood="guanyin"] { --lot-ink: 62, 79, 70; }
+  .jing-lot-mood[data-mood="luzu"] { --lot-ink: 73, 71, 49; }
+  .jing-lot-mood[data-mood="guandi"] { --lot-ink: 103, 52, 37; }
   .jing-lot-result.is-unfurl .jing-lot-mood {
     opacity: 0.16;
     animation: jing-mood-drift 44s ease-in-out infinite alternate;
@@ -673,14 +888,6 @@ import SoundControl from './SoundControl.astro';
     to { transform: rotate(-2deg) scale(1); opacity: 0.85; }
   }
 
-  /* 诵：逐列高亮 */
-  .jing-lot-verse p.is-chanting {
-    color: var(--jing-accent);
-    background: var(--jing-accent-soft);
-    border-radius: 4px;
-    transition: color 0.3s ease, background 0.3s ease;
-  }
-
   /* 问事留白 */
   .jing-lot-ask {
     margin: 0 0 0.9rem; display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
@@ -708,12 +915,15 @@ import SoundControl from './SoundControl.astro';
   }
   .jing-lot-cleanse::before {
     content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
-    background: url('/jing/img/water-basin.webp') center 42% / cover no-repeat;
-    opacity: 0.14;
+    background:
+      radial-gradient(ellipse at 50% 45%, rgba(139, 164, 157, 0.22), transparent 22%),
+      repeating-radial-gradient(ellipse at 50% 45%, transparent 0 28px, rgba(119, 150, 144, 0.08) 29px 30px, transparent 31px 50px),
+      linear-gradient(180deg, rgba(215, 200, 165, 0.08), transparent 58%);
+    opacity: 0.72;
     mask-image: radial-gradient(115% 100% at 50% 45%, black 55%, transparent 97%);
     -webkit-mask-image: radial-gradient(115% 100% at 50% 45%, black 55%, transparent 97%);
   }
-  html.dark .jing-lot-cleanse::before { opacity: 0.09; }
+  html.dark .jing-lot-cleanse::before { opacity: 0.42; }
   .jing-lot-cleanse > * { position: relative; z-index: 1; }
   .jing-lot-cleanse[hidden] { display: none; }
   .jing-lot-cleanse:focus-visible { outline: 2px solid var(--jing-accent); outline-offset: 2px; }
@@ -813,44 +1023,72 @@ import SoundControl from './SoundControl.astro';
     display: flex; flex-direction: column; align-items: center; gap: 0.6rem;
   }
   .jing-lot-stage[hidden] { display: none; }
-  .jing-lot-svg { width: 160px; height: auto; }
-  .jing-lot-tube-char {
-    fill: var(--jing-text-dim); font-size: 20px;
-    font-family: "Songti SC", "SimSun", serif;
+  .jing-lot-visual {
+    position: relative; width: min(430px, 78vw); height: min(580px, 68vh);
+    isolation: isolate; filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.58));
+    transform-origin: 50% 70%;
+  }
+  .jing-lot-stage.is-playing .jing-lot-visual { will-change: transform; }
+  .jing-lot-visual img { position: absolute; object-fit: contain; pointer-events: none; user-select: none; }
+  .jing-lot-frame-image { z-index: 2; inset: 0; width: 100%; height: 100%; opacity: 1; }
+  .jing-lot-animation-canvas {
+    position: absolute; z-index: 2; inset: 0; width: 100%; height: 100%;
+    object-fit: contain; pointer-events: none; user-select: none; contain: strict;
+  }
+  .jing-lot-animation-canvas[hidden] { display: none; }
+  .jing-lot-visual[data-canvas-ready='true'] .jing-lot-frame-image { opacity: 0; }
+  .jing-lot-visual[data-canvas-ready='true'] .jing-lot-animation-canvas { opacity: 1; }
+  .jing-lot-contact-shadow {
+    position: absolute; z-index: 1; left: 50%; bottom: 6.5%; width: 38%; height: 3.5%;
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0) 72%);
+    filter: blur(5px);
+    opacity: 0;
+    transform: translateX(-50%) scaleX(0.72);
+    transition: opacity 220ms ease, transform 300ms ease;
+  }
+  .jing-lot-stage[data-phase='landing'] .jing-lot-contact-shadow,
+  .jing-lot-stage[data-phase='unfurling'] .jing-lot-contact-shadow,
+  .jing-lot-stage[data-phase='settled'] .jing-lot-contact-shadow {
+    opacity: 0.62;
+    transform: translateX(-50%) scaleX(1);
+  }
+  .jing-lot-falling-stick {
+    position: absolute; z-index: 4; left: 50%; top: 3%;
+    width: clamp(34px, 9%, 42px); aspect-ratio: 110 / 580;
+    transform: translate(-50%, 0) rotate(1deg); transform-origin: 50% 50%;
+    filter: drop-shadow(3px 8px 6px rgba(0, 0, 0, 0.52));
+    pointer-events: none; will-change: transform;
+  }
+  .jing-lot-falling-stick[hidden] { display: none; }
+  .jing-lot-falling-stick[data-landed='true'] {
+    transform: translate(calc(-50% + var(--lot-land-x)), var(--lot-land-y)) rotate(82deg);
+    will-change: auto;
+  }
+  .jing-lot-falling-stick > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .jing-lot-rising-number {
+    position: absolute; z-index: 1; left: 50%; top: 38%;
+    color: #46200f; font-family: var(--jing-font-verse); font-size: clamp(0.48rem, 0.85vw, 0.64rem);
+    line-height: 1; text-align: center; writing-mode: vertical-rl;
+    text-shadow: 0 1px rgba(255, 231, 174, 0.7);
+    transform: translateX(-50%);
   }
   .jing-lot-stage-text {
     margin: 0; font-family: var(--jing-font-ui);
     font-size: 0.75rem; color: var(--jing-text-dim); letter-spacing: 0.3em;
   }
-  .jing-lot-stage.is-playing .jing-lot-svg { animation: jing-lot-shake 0.5s ease-in-out 2; transform-origin: 60px 150px; }
-  /* 筒摇时签束反向攒动 */
-  .jing-lot-sticks { transform-box: fill-box; transform-origin: 50% 100%; }
-  .jing-lot-stage.is-playing .jing-lot-sticks { animation: jing-lot-sticks-sway 0.5s ease-in-out 2; }
-  .jing-lot-rising { opacity: 0; }
-  .jing-lot-stage.is-playing .jing-lot-rising { animation: jing-lot-rise 0.85s ease-out 1.02s forwards; }
-  @keyframes jing-lot-shake {
-    0%, 100% { transform: rotate(0deg); }
-    22% { transform: rotate(-10deg); }
-    72% { transform: rotate(9deg); }
+  .jing-lot-progress {
+    display: flex; gap: 0; margin: -0.1rem 0 0.1rem; padding: 0;
+    list-style: none; color: var(--jing-text-dim); font-family: var(--jing-font-ui); font-size: 0.62rem;
   }
-  @keyframes jing-lot-sticks-sway {
-    0%, 100% { transform: rotate(0deg) translateX(0); }
-    22% { transform: rotate(4deg) translateX(1.5px); }
-    72% { transform: rotate(-4deg) translateX(-1.5px); }
-  }
-  /* 起签后高高挑出筒口，一顿，再落定回弹 */
-  @keyframes jing-lot-rise {
-    0% { opacity: 0; transform: translateY(14px); }
-    45% { opacity: 1; transform: translateY(-38px); }
-    68% { opacity: 1; transform: translateY(-38px); }
-    84% { opacity: 1; transform: translateY(-28px); }
-    100% { opacity: 1; transform: translateY(-31px); }
-  }
+  .jing-lot-progress li { display: flex; align-items: center; opacity: 0.38; }
+  .jing-lot-progress li + li::before { content: '—'; margin: 0 0.55rem; color: var(--jing-border); }
+  .jing-lot-stage[data-phase='shaking'] [data-lot-step='shaking'],
+  .jing-lot-stage[data-phase='emerging'] [data-lot-step='emerging'],
+  .jing-lot-stage[data-phase='landing'] [data-lot-step='emerging'],
+  .jing-lot-stage[data-phase='unfurling'] [data-lot-step='unfurling'] { color: var(--jing-accent); opacity: 1; }
   @media (prefers-reduced-motion: reduce) {
-    .jing-lot-stage.is-playing .jing-lot-svg,
-    .jing-lot-stage.is-playing .jing-lot-sticks,
-    .jing-lot-stage.is-playing .jing-lot-rising { animation: none; }
-    .jing-lot-rising { opacity: 1; }
+    .jing-lot-visual { transition: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {

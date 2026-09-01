@@ -35,6 +35,7 @@ describe('settings', () => {
   it('round-trips valid settings', () => {
     const storage = memoryStorage();
     const ok = saveSettings(storage, {
+      soundEnabled: false,
       volume: 0.25,
       ambience: ['water'],
       motion: 'reduce',
@@ -45,6 +46,7 @@ describe('settings', () => {
     const { settings, persisted } = loadSettings(storage);
     expect(persisted).toBe(true);
     expect(settings.volume).toBe(0.25);
+    expect(settings.soundEnabled).toBe(false);
     expect(settings.ambience).toEqual(['water']);
     expect(settings.motion).toBe('reduce');
     expect(settings.lockTimeoutMinutes).toBe(30);
@@ -69,6 +71,7 @@ describe('settings', () => {
     }));
     const { settings } = loadSettings(storage);
     expect(settings.volume).toBe(1);
+    expect(settings.soundEnabled).toBe(true);
     expect(settings.ambience).toEqual(['water']);
     expect(settings.motion).toBe('auto');
     expect(settings.lockTimeoutMinutes).toBe(1);
@@ -84,5 +87,6 @@ describe('settings', () => {
 
   it('keeps the 15 minute default lock timeout', () => {
     expect(DEFAULT_SETTINGS.lockTimeoutMinutes).toBe(15);
+    expect(DEFAULT_SETTINGS.soundEnabled).toBe(true);
   });
 });

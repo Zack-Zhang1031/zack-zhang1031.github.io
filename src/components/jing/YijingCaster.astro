@@ -18,12 +18,29 @@ import SoundControl from './SoundControl.astro';
     </div>
     <SoundControl layers={['rain', 'insects', 'tea']} />
   </div>
+  <p id="yj-method-status" class="jing-yj-method-status" role="status" aria-live="polite">铜钱法 · 连掷六次，自初爻至上爻。</p>
 
   <section id="yj-panel-coins" role="tabpanel" aria-labelledby="yj-tab-coins">
     <p class="jing-yj-hint">三枚铜钱一掷：字三背二，合计得六、七、八、九。连掷六次，自初爻至上爻。</p>
     <div class="jing-yj-actions">
       <button type="button" id="yj-coins-throw" class="jing-btn jing-btn-primary">掷一次（第 <span id="yj-coins-next">1</span> 掷）</button>
       <button type="button" id="yj-coins-reset" class="jing-btn">重来</button>
+    </div>
+    <div class="jing-yj-casting-workbench">
+      <div class="jing-yj-coins" id="yj-coins-stage" role="img" aria-label="三枚铜钱，尚未投掷">
+        {[0, 1, 2].map((index) => (
+          <span class="jing-yj-coin" data-face="front" aria-label={`第 ${index + 1} 枚，字面`}>
+            <span class="jing-yj-coin-inner">
+              <i class="jing-yj-coin-face jing-yj-coin-front"><b>字</b><u aria-hidden="true"></u><small>字面</small></i>
+              <i class="jing-yj-coin-face jing-yj-coin-back"><b>背</b><u aria-hidden="true"></u><small>背面</small></i>
+            </span>
+          </span>
+        ))}
+      </div>
+      <aside class="jing-yj-progress-card" aria-label="六爻生成进度">
+        <p>六爻渐成 <span id="yj-coins-count">0 / 6</span></p>
+        <div id="yj-coins-progress" class="jing-yj-progress-lines"></div>
+      </aside>
     </div>
     <ol id="yj-coins-log" class="jing-yj-log" aria-live="polite"></ol>
   </section>
@@ -60,6 +77,7 @@ import SoundControl from './SoundControl.astro';
     </div>
     <div class="jing-yj-actions">
       <button type="button" id="yj-time-cast" class="jing-btn jing-btn-primary">起卦</button>
+      <button type="button" id="yj-time-now" class="jing-btn">填入此刻</button>
     </div>
     <p id="yj-time-formula" class="jing-yj-formula" aria-live="polite"></p>
   </section>
@@ -80,21 +98,31 @@ import SoundControl from './SoundControl.astro';
     </div>
   </section>
 
-  <section id="yj-result" class="jing-yj-result" hidden aria-live="polite">
-    <div class="jing-yj-reading">
-      <div id="yj-diagram" class="jing-yj-diagram" aria-label="卦画（自上而下）"></div>
-      <div class="jing-yj-names">
+  <section id="yj-result" class="jing-yj-result" hidden aria-live="polite" tabindex="-1">
+    <div class="jing-yj-hexagram-compare">
+      <article>
+        <span class="jing-yj-compare-label">本卦</span>
         <p id="yj-primary" class="jing-yj-primary"></p>
+        <div id="yj-diagram" class="jing-yj-diagram" aria-label="本卦卦画（自上而下）"></div>
+      </article>
+      <span class="jing-yj-change-arrow" aria-hidden="true">→</span>
+      <article>
+        <span class="jing-yj-compare-label">之卦</span>
+        <p id="yj-changed" class="jing-yj-primary">—</p>
+        <div id="yj-changed-diagram" class="jing-yj-diagram jing-yj-changed-diagram" aria-label="之卦卦画（自上而下）"></div>
+      </article>
+    </div>
+    <div class="jing-yj-reading">
+      <div class="jing-yj-names">
         <p id="yj-moving" class="jing-yj-moving"></p>
         <dl class="jing-yj-derived">
-          <div><dt>之卦</dt><dd id="yj-changed">—</dd></div>
           <div><dt>互卦</dt><dd id="yj-mutual">—</dd></div>
           <div><dt>错卦</dt><dd id="yj-opposite">—</dd></div>
           <div><dt>综卦</dt><dd id="yj-reversed">—</dd></div>
         </dl>
       </div>
     </div>
-    <p class="jing-yj-hint">卦象只列名相与结构，不作吉凶断言。结果不保存，刷新即清。</p>
+    <p class="jing-yj-hint">卦象只列名相与结构，不作吉凶断言。结果不保存，刷新即清。卦序核对：<a href="https://ctext.org/book-of-changes/zh" target="_blank" rel="noreferrer">《周易》原典</a>；本站暂不转录卦爻辞。</p>
     <div class="jing-yj-note-actions">
       <button type="button" id="yj-note-copy" class="jing-btn">复制卦录（可粘贴到笔记）</button>
       <span id="yj-note-state" class="jing-yj-note-state" role="status"></span>
@@ -104,15 +132,24 @@ import SoundControl from './SoundControl.astro';
 
 <script>
   import { castManual, castNumbers, castTime, castYarrow, throwCoins } from '../../lib/jing/yijing/cast';
-  import { deriveAll } from '../../lib/jing/yijing/derive';
+  import { changedLines, deriveAll } from '../../lib/jing/yijing/derive';
   import { YAO_LABEL, isMoving, isYang, type YaoValue } from '../../lib/jing/yijing/lines';
   import { cryptoRandomSource } from '../../lib/jing/random';
-  import { FX_SRC, LAYER_SRC, playFx, registerAmbience } from '../../lib/jing/sound-fx';
+  import { loadSettings } from '../../lib/jing/settings';
+  import { FX_SRC, LAYER_SRC, playFx, registerAmbience, setAmbienceVolume } from '../../lib/jing/sound-fx';
 
   const app = document.getElementById('jing-yijing-app');
   if (app) {
     const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
     const result = $('yj-result');
+    const methodStatus = $('yj-method-status');
+    const reducedMotion = () =>
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || loadSettings(localStorage).settings.motion === 'reduce';
+    const setMethodStatus = (message: string, error = false) => {
+      methodStatus.textContent = message;
+      methodStatus.classList.toggle('is-error', error);
+    };
 
     /* ---- 声音：铜钱动作音 + 可选氛围层（需用户开启） ---- */
     let soundOn = false;
@@ -136,7 +173,7 @@ import SoundControl from './SoundControl.astro';
         layerId = layer;
         registerAmbience(layerAudio);
       }
-      layerAudio.volume = volume * 0.4;
+      setAmbienceVolume(layerAudio, volume * 0.4);
       void layerAudio.play().catch(() => {});
     });
 
@@ -146,6 +183,13 @@ import SoundControl from './SoundControl.astro';
 
     /* ---- tabs ---- */
     const tabs = Array.from(app.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+    const TAB_GUIDE: Record<string, string> = {
+      'yj-tab-coins': '铜钱法 · 连掷六次，自初爻至上爻。',
+      'yj-tab-yarrow': '蓍草法 · 代码完整演算每爻三变，并列出归奇过程。',
+      'yj-tab-numbers': '数字法 · 输入三个整数，显示取余公式后成卦。',
+      'yj-tab-time': '时间法 · 可手填时刻，也可一键填入此刻。',
+      'yj-tab-manual': '手动法 · 依次填写 6、7、8、9，自初爻至上爻。',
+    };
     for (const tab of tabs) {
       tab.addEventListener('click', () => {
         for (const t of tabs) {
@@ -154,52 +198,95 @@ import SoundControl from './SoundControl.astro';
           const panel = document.getElementById(t.getAttribute('aria-controls')!);
           if (panel) (panel as HTMLElement).hidden = !selected;
         }
+        setMethodStatus(TAB_GUIDE[tab.id] ?? '选择一种起卦方式。');
       });
     }
 
     /* ---- shared rendering ---- */
     const renderResult = (values: YaoValue[]) => {
       const views = deriveAll(values);
-      $('yj-diagram').innerHTML = [...values].reverse().map((value, i) => {
+      const renderDiagram = (diagramValues: YaoValue[], lineClass: string) => [...diagramValues].reverse().map((value, i) => {
         const pos = 6 - i;
         const yang = isYang(value);
         const mark = isMoving(value) ? `<span class="jing-yj-mark">${value === 9 ? '○' : '×'}</span>` : '<span class="jing-yj-mark"></span>';
-        return `<div class="jing-yj-line" data-pos="${pos}" style="animation-delay:${(pos - 1) * 90}ms">`
+        return `<div class="${lineClass}" data-pos="${pos}" style="animation-delay:${(pos - 1) * 90}ms">`
           + `<span class="jing-yj-bar ${yang ? 'is-yang' : 'is-yin'}">${yang ? '' : '<i></i><i></i>'}</span>`
           + mark
           + `<span class="jing-yj-line-label">${YAO_LABEL[value]}</span></div>`;
       }).join('');
-      $('yj-primary').textContent = `本卦：${views.primary.name}（第 ${views.primary.seq} 卦）`;
+      $('yj-diagram').innerHTML = renderDiagram(values, 'jing-yj-line');
+      $('yj-changed-diagram').innerHTML = renderDiagram(changedLines(values), 'jing-yj-change-line');
+      $('yj-primary').textContent = `${views.primary.name}（第 ${views.primary.seq} 卦）`;
       $('yj-moving').textContent = views.moving.length > 0
         ? `动爻：${views.moving.join('、')} 爻`
         : '六爻安静，无动爻';
-      $('yj-changed').textContent = views.changed ? `${views.changed.name}（第 ${views.changed.seq} 卦）` : '—';
+      $('yj-changed').textContent = views.changed ? `${views.changed.name}（第 ${views.changed.seq} 卦）` : '无变卦';
       $('yj-mutual').textContent = `${views.mutual.name}（第 ${views.mutual.seq} 卦）`;
       $('yj-opposite').textContent = `${views.opposite.name}（第 ${views.opposite.seq} 卦）`;
       $('yj-reversed').textContent = `${views.reversed.name}（第 ${views.reversed.seq} 卦）`;
       result.hidden = false;
-      result.scrollIntoView({ block: 'nearest' });
+      setMethodStatus(`成卦完成 · ${views.primary.name}${views.moving.length ? `，动爻 ${views.moving.join('、')}` : '，六爻安静'}`);
+      result.focus({ preventScroll: true });
+      result.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' });
     };
 
     /* ---- coins ---- */
     let coinValues: YaoValue[] = [];
+    let coinTossing = false;
+    let coinTimer: ReturnType<typeof setTimeout> | null = null;
     const coinsLog = $('yj-coins-log');
     const renderCoins = () => {
       $('yj-coins-next').textContent = String(Math.min(coinValues.length + 1, 6));
-      ($('yj-coins-throw') as HTMLButtonElement).disabled = coinValues.length >= 6;
+      ($('yj-coins-throw') as HTMLButtonElement).disabled = coinValues.length >= 6 || coinTossing;
       coinsLog.innerHTML = coinValues.map((value, i) =>
         `<li>第 ${i + 1} 掷得 ${YAO_LABEL[value]}（${value}）</li>`).join('');
+      $('yj-coins-count').textContent = `${coinValues.length} / 6`;
+      $('yj-coins-progress').innerHTML = Array.from({ length: 6 }, (_, row) => {
+        const index = 5 - row;
+        const value = coinValues[index];
+        if (value === undefined) return `<div class="jing-yj-progress-line is-empty"><span>${index + 1}</span><i></i></div>`;
+        const yang = isYang(value);
+        return `<div class="jing-yj-progress-line is-filled"><span>${index + 1}</span>`
+          + `<i class="${yang ? 'is-yang' : 'is-yin'}">${yang ? '' : '<b></b><b></b>'}</i><em>${YAO_LABEL[value]}</em></div>`;
+      }).join('');
       if (coinValues.length === 6) renderResult(coinValues);
     };
     $('yj-coins-throw').addEventListener('click', () => {
-      if (coinValues.length >= 6) return;
-      coinValues.push(throwCoins(cryptoRandomSource).value);
+      if (coinValues.length >= 6 || coinTossing) return;
+      const cast = throwCoins(cryptoRandomSource);
+      const stage = $('yj-coins-stage');
+      const coins = Array.from(stage.querySelectorAll<HTMLElement>('.jing-yj-coin'));
+      const throwIndex = coinValues.length + 1;
+      coinTossing = true;
+      setMethodStatus(`第 ${throwIndex} 掷 · 铜钱翻转中…`);
+      stage.classList.remove('is-tossing');
+      void stage.offsetWidth;
+      if (!reducedMotion()) stage.classList.add('is-tossing');
+      coins.forEach((coin, index) => {
+        const front = Boolean(cast.faces[index]);
+        coin.dataset.face = front ? 'front' : 'back';
+        coin.setAttribute('aria-label', `第 ${index + 1} 枚，${front ? '字面' : '背面'}`);
+      });
+      stage.setAttribute('aria-label', cast.faces.map((front) => front ? '字面' : '背面').join('、'));
       fx(FX_SRC.coinsToss, 0.85);
+      const finish = () => {
+        coinValues.push(cast.value);
+        coinTossing = false;
+        stage.classList.remove('is-tossing');
+        setMethodStatus(`第 ${throwIndex} 掷 · ${cast.faces.map((front) => front ? '字' : '背').join('、')} → ${YAO_LABEL[cast.value]}（${cast.value}）`);
+        renderCoins();
+      };
+      if (reducedMotion()) finish();
+      else coinTimer = setTimeout(finish, 720);
       renderCoins();
     });
     $('yj-coins-reset').addEventListener('click', () => {
+      if (coinTimer) clearTimeout(coinTimer);
+      coinTimer = null;
+      coinTossing = false;
       coinValues = [];
       result.hidden = true;
+      setMethodStatus('铜钱法 · 已重置，请从初爻开始。');
       renderCoins();
     });
 
@@ -209,19 +296,23 @@ import SoundControl from './SoundControl.astro';
       $('yj-yarrow-log').innerHTML = lines.map((line, i) =>
         `<li>第 ${i + 1} 爻：三变各归奇 ${line.changes.map((c) => c.removed).join('、')}，余 ${line.changes[2].remaining} 策 → ${YAO_LABEL[line.value]}（${line.value}）</li>`
       ).join('');
+      setMethodStatus('蓍草演卦完成 · 六爻已按三变过程列出。');
       renderResult(values);
     });
     $('yj-yarrow-reset').addEventListener('click', () => {
       $('yj-yarrow-log').innerHTML = '';
       result.hidden = true;
+      setMethodStatus('蓍草法 · 已重置。');
     });
 
     /* ---- numbers ---- */
     $('yj-numbers-cast').addEventListener('click', () => {
-      const a = Number(($('yj-num-1') as HTMLInputElement).value);
-      const b = Number(($('yj-num-2') as HTMLInputElement).value);
-      const c = Number(($('yj-num-3') as HTMLInputElement).value);
-      if (![a, b, c].every((n) => Number.isFinite(n))) return;
+      const raw = [1, 2, 3].map((index) => ($(`yj-num-${index}`) as HTMLInputElement).value.trim());
+      const [a, b, c] = raw.map(Number);
+      if (raw.some((value) => value === '') || ![a, b, c].every((n) => Number.isFinite(n))) {
+        setMethodStatus('请先填写三个整数，再以数字起卦。', true);
+        return;
+      }
       const cast = castNumbers(a, b, c);
       $('yj-numbers-formula').textContent = cast.formula;
       renderResult(cast.values);
@@ -229,14 +320,27 @@ import SoundControl from './SoundControl.astro';
 
     /* ---- time ---- */
     $('yj-time-cast').addEventListener('click', () => {
-      const y = Number(($('yj-time-y') as HTMLInputElement).value);
-      const m = Number(($('yj-time-m') as HTMLInputElement).value);
-      const d = Number(($('yj-time-d') as HTMLInputElement).value);
-      const h = Number(($('yj-time-h') as HTMLInputElement).value);
-      if (![y, m, d, h].every((n) => Number.isFinite(n))) return;
-      const cast = castTime(y, m, d, h);
-      $('yj-time-formula').textContent = cast.formula;
-      renderResult(cast.values);
+      const raw = ['y', 'm', 'd', 'h'].map((key) => ($(`yj-time-${key}`) as HTMLInputElement).value.trim());
+      const [y, m, d, h] = raw.map(Number);
+      if (raw.some((value) => value === '') || ![y, m, d, h].every((n) => Number.isFinite(n))) {
+        setMethodStatus('请填写完整的年、月、日、时，或点击“填入此刻”。', true);
+        return;
+      }
+      try {
+        const cast = castTime(y, m, d, h);
+        $('yj-time-formula').textContent = cast.formula;
+        renderResult(cast.values);
+      } catch (error) {
+        setMethodStatus(error instanceof Error ? error.message : '时间无法解析。', true);
+      }
+    });
+    $('yj-time-now').addEventListener('click', () => {
+      const now = new Date();
+      ($('yj-time-y') as HTMLInputElement).value = String(now.getFullYear());
+      ($('yj-time-m') as HTMLInputElement).value = String(now.getMonth() + 1);
+      ($('yj-time-d') as HTMLInputElement).value = String(now.getDate());
+      ($('yj-time-h') as HTMLInputElement).value = String(now.getHours());
+      setMethodStatus(`已填入本机此刻 · ${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()} ${now.getHours()}时`);
     });
 
     /* ---- manual ---- */
@@ -251,6 +355,7 @@ import SoundControl from './SoundControl.astro';
         errorEl.textContent = error instanceof Error ? error.message : '录入有误';
         errorEl.hidden = false;
         result.hidden = true;
+        setMethodStatus(errorEl.textContent, true);
       }
     });
 
@@ -294,6 +399,11 @@ import SoundControl from './SoundControl.astro';
   .jing-yj-tabs [role="tab"][aria-selected="true"] {
     border-color: var(--jing-accent); color: var(--jing-accent);
   }
+  .jing-yj-method-status {
+    min-height: 1.6em; margin: -0.45rem 0 0;
+    color: var(--jing-accent); font-family: var(--jing-font-ui); font-size: 0.76rem;
+  }
+  .jing-yj-method-status.is-error { color: var(--jing-vermilion); }
 
   .jing-yijing section[role="tabpanel"] {
     border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
@@ -334,6 +444,25 @@ import SoundControl from './SoundControl.astro';
   }
   .jing-yj-result[hidden] { display: none; }
 
+  .jing-yj-casting-workbench { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 1rem; align-items: stretch; }
+  .jing-yj-progress-card { padding: 0.8rem 1rem; border: 1px solid var(--jing-border); background: rgba(5, 7, 6, 0.28); }
+  .jing-yj-progress-card > p { display: flex; justify-content: space-between; margin: 0 0 0.55rem; color: var(--jing-accent); font-family: var(--jing-font-ui); font-size: 0.7rem; }
+  .jing-yj-progress-lines { display: grid; gap: 0.3rem; }
+  .jing-yj-progress-line { min-height: 12px; display: grid; grid-template-columns: 16px 1fr 48px; gap: 0.35rem; align-items: center; color: var(--jing-text-dim); font: 0.58rem var(--jing-font-ui); }
+  .jing-yj-progress-line > i { height: 6px; display: flex; gap: 8px; opacity: 0.25; }
+  .jing-yj-progress-line > i::before, .jing-yj-progress-line > i::after { content: ''; flex: 1; border-top: 1px solid currentColor; }
+  .jing-yj-progress-line.is-filled > i { opacity: 1; animation: jing-yao-in 0.42s ease both; }
+  .jing-yj-progress-line.is-filled > i.is-yang { display: block; background: currentColor; }
+  .jing-yj-progress-line.is-filled > i.is-yang::before, .jing-yj-progress-line.is-filled > i.is-yang::after { display: none; }
+  .jing-yj-progress-line.is-filled > i.is-yin b { flex: 1; background: currentColor; }
+  .jing-yj-progress-line em { font-style: normal; white-space: nowrap; }
+
+  .jing-yj-hexagram-compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: clamp(18px, 4vw, 56px); align-items: center; }
+  .jing-yj-hexagram-compare article { min-width: 0; display: grid; justify-items: center; gap: 0.55rem; }
+  .jing-yj-compare-label { color: var(--jing-vermilion); font-family: var(--jing-font-ui); font-size: 0.68rem; letter-spacing: 0.2em; }
+  .jing-yj-change-arrow { color: var(--jing-accent); font-size: 1.4rem; }
+  .jing-yj-change-line { display: flex; align-items: center; gap: 0.6rem; transform-origin: left center; animation: jing-yao-in 0.5s ease both; }
+
   .jing-yj-reading { display: flex; gap: 1.6rem; align-items: flex-start; flex-wrap: wrap; }
 
   .jing-yj-diagram { display: flex; flex-direction: column; gap: 0.4rem; min-width: 150px; }
@@ -358,5 +487,9 @@ import SoundControl from './SoundControl.astro';
   @media (max-width: 560px) {
     .jing-yj-inputs, .jing-yj-inputs-4, .jing-yj-inputs-6 { grid-template-columns: repeat(2, 1fr); }
     .jing-yj-derived { grid-template-columns: 1fr; }
+    .jing-yj-casting-workbench { grid-template-columns: 1fr; }
+    .jing-yj-progress-card { order: -1; }
+    .jing-yj-hexagram-compare { gap: 8px; }
+    .jing-yj-change-arrow { font-size: 1rem; }
   }
 </style>

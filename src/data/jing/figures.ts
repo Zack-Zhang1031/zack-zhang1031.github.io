@@ -130,6 +130,40 @@ export const TAOIST_FIGURES: readonly SacredFigure[] = [
         'https://commons.wikimedia.org/wiki/File:%E7%A6%84%E4%B8%B0%E6%81%90%E9%BE%99%E5%8D%9A%E7%89%A9%E9%A6%86-%E6%98%8E-1967%E5%B9%B4%E7%90%85%E4%BA%95%E4%BF%9D%E6%8A%A4%E6%80%A7%E5%BE%81%E9%9B%86-%E9%81%93%E5%BE%B7%E5%A4%A9%E5%B0%8A%E9%80%A0%E5%83%8F.jpg',
     },
   },
+  {
+    id: 'luzu',
+    tradition: 'taoist',
+    name: '吕祖',
+    title: '纯阳祖师 · 吕洞宾',
+    intro:
+      '吕洞宾为八仙之一，道教全真道尊其为祖师之一。传统图像常以道者、佩剑形象出现，' +
+      '民间亦尊称吕祖、纯阳祖师。',
+    image: {
+      src: '/jing/images/luzu.webp',
+      alt: '佚名中国画《吕洞宾与莲花精》，大都会艺术博物馆藏',
+      attribution: '佚名，1368—1911；大都会艺术博物馆藏 13.220.112',
+      license: 'CC0 1.0 / 公有领域',
+      sourceUrl:
+        'https://commons.wikimedia.org/wiki/File:Anonymous_-_Lu_Dong_Bin_and_the_Spirit_of_the_Lotus_-_13.220.112_-_Metropolitan_Museum_of_Art.jpg',
+    },
+  },
+  {
+    id: 'guandi',
+    tradition: 'taoist',
+    name: '关帝',
+    title: '关圣帝君 · 忠义',
+    intro:
+      '关羽在后世信仰中被尊为关圣帝君，民间常以忠义、守信相称。本站只作传统文化礼敬对象介绍，' +
+      '不作现实功利许诺。',
+    image: {
+      src: '/jing/images/guandi.webp',
+      alt: '约一七〇〇年佚名关羽画像，大都会艺术博物馆藏',
+      attribution: '佚名，约 1700；大都会艺术博物馆藏 2001.442',
+      license: 'CC0 1.0 / 公有领域',
+      sourceUrl:
+        'https://commons.wikimedia.org/wiki/File:Anonymous_-_Guan_Yu_-_2001.442_-_Metropolitan_Museum_of_Art.jpg',
+    },
+  },
 ];
 
 /** Ambience groups by tradition; the two groups must stay disjoint. */
@@ -149,4 +183,4 @@ export const AMBIENCE_SRC: Record<string, string> = {
   water: '/jing/audio/water.ogg',
 };
 
-export const WOODFISH_SOUND_SRC = '/jing/audio/woodfish.ogg';
+export const WOODFISH_SOUND_SRC = '/jing/audio/woodfish.mp3';

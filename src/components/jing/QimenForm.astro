@@ -23,28 +23,62 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
   </fieldset>
 
   <div class="jing-qm-actions">
-    <button type="submit" class="jing-btn jing-btn-primary">排盘</button>
+    <button type="submit" id="qm-submit" class="jing-btn jing-btn-primary">排盘</button>
+    <button type="button" id="qm-now" class="jing-btn">填入此刻</button>
     <button type="reset" class="jing-btn">清空</button>
+    <span id="qm-status" class="jing-qm-status" role="status" aria-live="polite">填写公历时刻后排盘</span>
   </div>
 
   <p id="qm-error" class="jing-qm-error" role="alert" hidden></p>
 </form>
 
-<section id="qm-result" class="jing-qm-result" hidden aria-live="polite">
+<section id="qm-result" class="jing-qm-result" hidden aria-live="polite" tabindex="-1">
+  <h2 class="jing-qm-result-title">奇门排盘结果</h2>
+  <ol class="jing-qm-layer-progress" aria-label="起局层次">
+    <li data-qm-layer="九宫">九宫</li><li data-qm-layer="天地盘">天地盘</li><li data-qm-layer="八门">八门</li>
+    <li data-qm-layer="九星">九星</li><li data-qm-layer="八神">八神</li>
+  </ol>
+  <div class="jing-qm-viewbar" role="toolbar" aria-label="奇门盘面视图">
+    <div class="jing-qm-school-tabs" aria-label="主盘派别">
+      {SCHOOLS.map((school, index) => (
+        <button type="button" class="jing-btn" data-qm-school-tab={school} aria-pressed={index === 0 ? 'true' : 'false'}>{SCHOOL_LABEL[school]}</button>
+      ))}
+    </div>
+    <button type="button" id="qm-compare-toggle" class="jing-btn" aria-pressed="false">三派对照</button>
+  </div>
+  <p class="jing-qm-legend" aria-label="盘面图例"><span data-kind="god">八神</span><span data-kind="star">九星</span><span data-kind="door">八门</span><span data-kind="stem">天地盘干</span></p>
   <p id="qm-context" class="jing-qm-context"></p>
   <p id="qm-agree" class="jing-qm-agree"></p>
 
-  {SCHOOLS.map((school) => (
-    <details class="jing-qm-school" id={`qm-school-${school}`} open>
-      <summary>{SCHOOL_LABEL[school]}<span class="jing-qm-ju" id={`qm-ju-${school}`}></span></summary>
-      <div class="jing-qm-board" id={`qm-board-${school}`}></div>
-      <p class="jing-qm-meta" id={`qm-meta-${school}`}></p>
-      <details class="jing-qm-steps">
-        <summary>推演步骤</summary>
-        <ol class="jing-qm-derivation" id={`qm-derivation-${school}`}></ol>
-      </details>
-    </details>
-  ))}
+  <div class="jing-qm-results-grid">
+    <div class="jing-qm-schools">
+      {SCHOOLS.map((school) => (
+        <details class="jing-qm-school" id={`qm-school-${school}`} data-qm-school={school} open>
+          <summary>{SCHOOL_LABEL[school]}<span class="jing-qm-ju" id={`qm-ju-${school}`}></span></summary>
+          <div class="jing-qm-board" id={`qm-board-${school}`}></div>
+          <p class="jing-qm-meta" id={`qm-meta-${school}`}></p>
+          <details class="jing-qm-steps">
+            <summary>推演步骤</summary>
+            <ol class="jing-qm-derivation" id={`qm-derivation-${school}`}></ol>
+          </details>
+        </details>
+      ))}
+    </div>
+    <aside class="jing-qm-inspector" id="qm-inspector" aria-live="polite" tabindex="-1">
+      <p class="jing-eyebrow">宫位释读</p>
+      <h3 id="qm-inspector-title">点击任一宫位</h3>
+      <dl>
+        <div><dt>派别</dt><dd id="qm-inspector-school">—</dd></div>
+        <div><dt>宫位五行</dt><dd id="qm-inspector-element">—</dd></div>
+        <div><dt>八神</dt><dd id="qm-inspector-god">—</dd></div>
+        <div><dt>九星</dt><dd id="qm-inspector-star">—</dd></div>
+        <div><dt>八门</dt><dd id="qm-inspector-door">—</dd></div>
+        <div><dt>天地盘</dt><dd id="qm-inspector-stems">—</dd></div>
+      </dl>
+      <div id="qm-inspector-compare" class="jing-qm-inspector-compare" hidden></div>
+      <p>盘面结构用于对照各派排布规则，不作吉凶判断。</p>
+    </aside>
+  </div>
 
   <p class="jing-qm-hint">盘面仅作三派规则对照研习，不作吉凶断言。结果不保存，刷新即清。</p>
   <div class="jing-qm-actions">
@@ -55,13 +89,60 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
 
 <script>
   import { compareSchools } from '../../lib/jing/qimen/compare';
-  import type { QimenChart, SchoolId } from '../../lib/jing/qimen/types';
+  import { loadSettings } from '../../lib/jing/settings';
+  import { SCHOOL_LABEL, type QimenChart, type SchoolId } from '../../lib/jing/qimen/types';
 
   const form = document.getElementById('qimen-form') as HTMLFormElement | null;
   if (form) {
     const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
     const result = $('qm-result');
     const errorEl = $('qm-error');
+    const statusEl = $('qm-status');
+    const submitBtn = $('qm-submit') as HTMLButtonElement;
+    const timeFieldIds = ['qm-year', 'qm-month', 'qm-day', 'qm-hour', 'qm-minute'] as const;
+    const layerSteps = Array.from(result.querySelectorAll<HTMLElement>('[data-qm-layer]'));
+    const schoolPanels = Array.from(result.querySelectorAll<HTMLDetailsElement>('[data-qm-school]'));
+    const schoolTabs = Array.from(result.querySelectorAll<HTMLButtonElement>('[data-qm-school-tab]'));
+    const compareToggle = $('qm-compare-toggle') as HTMLButtonElement;
+    let activeSchool: SchoolId = 'chai-bu';
+    let compareMode = false;
+    let revealTimers: ReturnType<typeof setTimeout>[] = [];
+    const clearReveal = () => { revealTimers.forEach(clearTimeout); revealTimers = []; };
+    const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      || loadSettings(localStorage).settings.motion === 'reduce';
+
+    const applyView = () => {
+      result.dataset.view = compareMode ? 'compare' : 'focus';
+      schoolPanels.forEach((panel) => {
+        const selected = panel.dataset.qmSchool === activeSchool;
+        panel.hidden = !compareMode && !selected;
+        if (selected || compareMode) panel.open = true;
+      });
+      schoolTabs.forEach((tab) => tab.setAttribute('aria-pressed', String(tab.dataset.qmSchoolTab === activeSchool)));
+      compareToggle.setAttribute('aria-pressed', String(compareMode));
+      compareToggle.textContent = compareMode ? '返回单盘' : '三派对照';
+    };
+
+    schoolTabs.forEach((tab) => tab.addEventListener('click', () => {
+      activeSchool = tab.dataset.qmSchoolTab as SchoolId;
+      compareMode = false;
+      applyView();
+      statusEl.textContent = `主盘已切换为${SCHOOL_LABEL[activeSchool]}。`;
+    }));
+    compareToggle.addEventListener('click', () => {
+      compareMode = !compareMode;
+      applyView();
+      statusEl.textContent = compareMode ? '三派对照已展开；选择宫位可在右侧核对同宫。' : `已返回${SCHOOL_LABEL[activeSchool]}主盘。`;
+    });
+
+    $('qm-now').addEventListener('click', () => {
+      const now = new Date();
+      const values = [now.getFullYear(), now.getMonth() + 1, now.getDate(), now.getHours(), now.getMinutes()];
+      timeFieldIds.forEach((id, index) => { ($<HTMLInputElement>(id)).value = String(values[index]); });
+      errorEl.hidden = true;
+      statusEl.classList.remove('is-error');
+      statusEl.textContent = '已填入本机此刻 · 可按需要调整后起局';
+    });
 
     // 洛书九宫显示序：上排 巽4 离9 坤2，中排 震3 中5 兑7，下排 艮8 坎1 乾6
     const GRID_ORDER = [4, 9, 2, 3, 5, 7, 8, 1, 6];
@@ -70,19 +151,34 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     const renderBoard = (chart: QimenChart) =>
       GRID_ORDER.map((palaceNum, i) => {
         const cell = chart.palaces.find((p) => p.palace === palaceNum)!;
-        return `<div class="jing-qm-cell${palaceNum === 5 ? ' is-center' : ''}" style="animation-delay:${i * 70}ms">`
+        const palaceName = cell.name;
+        return `<button type="button" class="jing-qm-cell${palaceNum === 5 ? ' is-center' : ''}" style="animation-delay:${i * 70}ms"`
+          + ` aria-pressed="false"`
+          + ` aria-label="${SCHOOL_LABEL[chart.school]} ${palaceName}${palaceNum}宫" data-palace="${palaceNum}" data-name="${palaceName}"`
+          + ` data-school="${chart.school}" data-school-label="${SCHOOL_LABEL[chart.school]}" data-element="${cell.element}"`
+          + ` data-god="${cell.god}" data-star="${cell.star}" data-door="${cell.door}" data-stems="${cell.heavenStem || '—'} / ${cell.earthStem}">`
           + `<span class="jing-qm-cell-god">${cell.god}</span>`
           + `<span class="jing-qm-cell-star">${cell.star}</span>`
           + `<span class="jing-qm-cell-door">${cell.door}</span>`
           + `<span class="jing-qm-cell-stems"><b>${cell.heavenStem || '　'}</b><i>${cell.earthStem}</i></span>`
-          + `<span class="jing-qm-cell-name">${cell.name}${palaceNum === 5 ? '中' : ''}</span>`
-          + `</div>`;
+          + `<span class="jing-qm-cell-name">${cell.name}</span>`
+          + `</button>`;
       }).join('');
 
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       errorEl.hidden = true;
+      statusEl.classList.remove('is-error');
+      submitBtn.disabled = true;
+      submitBtn.textContent = '起局中…';
+      statusEl.textContent = '正在依次排布九宫、天地盘、八门、九星与八神…';
+      clearReveal();
       try {
+        const missing = timeFieldIds.find((id) => !$<HTMLInputElement>(id).value.trim());
+        if (missing) {
+          $<HTMLInputElement>(missing).focus();
+          throw new Error('请完整填写年、月、日、时、分后再起局。');
+        }
         const input = {
           year: Number(($('qm-year') as HTMLInputElement).value),
           month: Number(($('qm-month') as HTMLInputElement).value),
@@ -107,19 +203,99 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
           $(`qm-derivation-${school}`).innerHTML = chart.derivation
             .map((step) => `<li>${step}</li>`).join('');
         });
+        result.querySelectorAll('.jing-qm-cell.is-selected, .jing-qm-cell.is-corresponding')
+          .forEach((node) => node.classList.remove('is-selected', 'is-corresponding'));
+        $('qm-inspector-title').textContent = '点击任一宫位';
+        for (const id of ['school', 'element', 'god', 'star', 'door', 'stems']) $(`qm-inspector-${id}`).textContent = '—';
+        $('qm-inspector-compare').hidden = true;
+        compareMode = false;
+        applyView();
 
         result.hidden = false;
-        result.scrollIntoView({ block: 'nearest' });
+        const completeText = comparison.juAgree
+          ? '起局完成 · 三派本时同局，当前显示拆补法主盘'
+          : '起局完成 · 三派均已推演，当前显示拆补法主盘';
+        layerSteps.forEach((step) => step.classList.remove('is-active', 'is-done'));
+        result.classList.remove('is-revealing');
+        if (reducedMotion()) {
+          layerSteps.forEach((step) => step.classList.add('is-done'));
+          statusEl.textContent = completeText;
+        } else {
+          void result.offsetWidth;
+          result.classList.add('is-revealing');
+          layerSteps.forEach((step, index) => {
+            revealTimers.push(setTimeout(() => {
+              layerSteps.forEach((item, itemIndex) => {
+                item.classList.toggle('is-active', itemIndex === index);
+                item.classList.toggle('is-done', itemIndex < index);
+              });
+              statusEl.textContent = `起局中 · ${step.dataset.qmLayer}显位`;
+            }, index * 150));
+          });
+          revealTimers.push(setTimeout(() => {
+            result.classList.remove('is-revealing');
+            layerSteps.forEach((step) => { step.classList.remove('is-active'); step.classList.add('is-done'); });
+            statusEl.textContent = completeText;
+          }, layerSteps.length * 150 + 100));
+        }
+        result.focus({ preventScroll: true });
+        result.scrollIntoView({
+          block: 'start',
+          behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        });
       } catch (error) {
         errorEl.textContent = error instanceof Error ? error.message : '输入无法解析，请检查后重试。';
         errorEl.hidden = false;
         result.hidden = true;
+        statusEl.textContent = '起局未完成，请检查输入。';
+        statusEl.classList.add('is-error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '重新排盘';
       }
     });
 
     form.addEventListener('reset', () => {
+      clearReveal();
       errorEl.hidden = true;
       result.hidden = true;
+      result.classList.remove('is-revealing');
+      submitBtn.textContent = '排盘';
+      statusEl.textContent = '填写公历时刻后排盘';
+      statusEl.classList.remove('is-error');
+    });
+
+    result.addEventListener('click', (event) => {
+      const cell = (event.target as HTMLElement).closest<HTMLButtonElement>('.jing-qm-cell');
+      if (!cell) return;
+      result.querySelectorAll('.jing-qm-cell.is-selected, .jing-qm-cell.is-corresponding')
+        .forEach((node) => node.classList.remove('is-selected', 'is-corresponding'));
+      result.querySelectorAll<HTMLButtonElement>('.jing-qm-cell[aria-pressed="true"]')
+        .forEach((node) => node.setAttribute('aria-pressed', 'false'));
+      const palace = cell.dataset.palace ?? '';
+      const counterparts = Array.from(result.querySelectorAll<HTMLButtonElement>(`.jing-qm-cell[data-palace="${palace}"]`));
+      counterparts.forEach((node) => node.classList.add('is-corresponding'));
+      cell.classList.add('is-selected');
+      cell.classList.remove('is-corresponding');
+      cell.setAttribute('aria-pressed', 'true');
+      $('qm-inspector-title').textContent = `${cell.dataset.schoolLabel ?? ''} · ${cell.dataset.name ?? '宫位'}${palace}宫`;
+      $('qm-inspector-school').textContent = cell.dataset.schoolLabel ?? '—';
+      $('qm-inspector-element').textContent = cell.dataset.element ?? '—';
+      $('qm-inspector-god').textContent = cell.dataset.god ?? '—';
+      $('qm-inspector-star').textContent = cell.dataset.star ?? '—';
+      $('qm-inspector-door').textContent = cell.dataset.door ?? '—';
+      $('qm-inspector-stems').textContent = cell.dataset.stems ?? '—';
+      const compare = $('qm-inspector-compare');
+      compare.innerHTML = `<h4>${palace}宫 · 三派同位对照</h4>` + counterparts.map((node) =>
+        `<p><b>${node.dataset.schoolLabel}</b><span>${node.dataset.god} · ${node.dataset.star} · ${node.dataset.door}</span>`
+        + `<em>${node.dataset.stems}</em></p>`).join('');
+      compare.hidden = false;
+      statusEl.textContent = `已选 ${cell.dataset.schoolLabel ?? ''}${cell.dataset.name ?? '宫位'}${palace}宫 · 右侧显示三派同宫对照`;
+      if (window.matchMedia('(max-width: 900px)').matches) {
+        const inspector = $('qm-inspector');
+        inspector.focus({ preventScroll: true });
+        inspector.scrollIntoView({ block: 'start', behavior: reducedMotion() ? 'auto' : 'smooth' });
+      }
     });
 
     /* ---- 对照摘要复制：粘贴到笔记房 ---- */
@@ -144,9 +320,12 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     });
 
     window.addEventListener('pageshow', () => {
+      clearReveal();
       form.reset();
       errorEl.hidden = true;
       result.hidden = true;
+      submitBtn.textContent = '排盘';
+      statusEl.textContent = '填写公历时刻后排盘';
     });
   }
 </script>
@@ -166,6 +345,8 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
   }
   .jing-qm-hint { margin: 0.6rem 0 0; font-family: var(--jing-font-ui); font-size: 0.72rem; color: var(--jing-text-dim); }
   .jing-qm-actions { display: flex; gap: 0.8rem; }
+  .jing-qm-status { font-family: var(--jing-font-ui); font-size: 0.74rem; color: var(--jing-accent); align-self: center; }
+  .jing-qm-status.is-error { color: var(--jing-vermilion); }
   .jing-btn-primary { border-color: var(--jing-accent); color: var(--jing-accent); }
   .jing-qm-error {
     margin: 0; padding: 0.7rem 0.9rem;
@@ -175,6 +356,28 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
   .jing-qm-error[hidden], .jing-qm-result[hidden] { display: none; }
 
   .jing-qm-result { display: flex; flex-direction: column; gap: 0.9rem; margin-top: 1.75rem; }
+  .jing-qm-result-title { margin: 0; color: var(--jing-accent); font-size: 1rem; font-weight: 500; letter-spacing: 0.18em; }
+  .jing-qm-viewbar { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; }
+  .jing-qm-school-tabs { display: flex; gap: 0.45rem; flex-wrap: wrap; }
+  .jing-qm-viewbar .jing-btn[aria-pressed='true'] { border-color: var(--jing-accent); color: var(--jing-accent); background: var(--jing-accent-soft); }
+  .jing-qm-legend { display: flex; gap: 0.8rem; margin: -0.35rem 0 0; font-family: var(--jing-font-ui); font-size: 0.64rem; }
+  .jing-qm-legend span::before { content: ''; width: 0.55rem; height: 0.55rem; display: inline-block; margin-right: 0.3rem; border-radius: 50%; background: currentColor; }
+  .jing-qm-legend [data-kind='god'] { color: #a55740; }
+  .jing-qm-legend [data-kind='star'] { color: #8f9b86; }
+  .jing-qm-legend [data-kind='door'] { color: #d2b577; }
+  .jing-qm-legend [data-kind='stem'] { color: #c7b895; }
+  .jing-qm-layer-progress {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.35rem;
+    margin: 0; padding: 0; list-style: none;
+  }
+  .jing-qm-layer-progress li {
+    position: relative; padding: 0.35rem 0.25rem; text-align: center;
+    border: 1px solid var(--jing-border); color: var(--jing-text-dim);
+    font-family: var(--jing-font-ui); font-size: 0.68rem; letter-spacing: 0.08em;
+    transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
+  }
+  .jing-qm-layer-progress li.is-active { border-color: var(--jing-accent); color: var(--jing-accent); background: var(--jing-accent-soft); }
+  .jing-qm-layer-progress li.is-done { color: var(--jing-text); border-color: color-mix(in srgb, var(--jing-accent) 45%, var(--jing-border)); }
   .jing-qm-context { margin: 0; font-size: 0.95rem; }
   .jing-qm-agree { margin: 0; font-family: var(--jing-font-ui); font-size: 0.78rem; color: var(--jing-vermilion); }
 
@@ -196,6 +399,13 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
     font-size: 0.85rem; line-height: 1.5;
     animation: jing-cell-in 0.45s ease both;
   }
+  .jing-qm-result.is-revealing .jing-qm-cell { animation: jing-qm-palace-in 0.38s ease both; }
+  .jing-qm-result.is-revealing .jing-qm-cell-stems { animation: jing-qm-layer-in 0.22s ease 0.15s both; }
+  .jing-qm-result.is-revealing .jing-qm-cell-door { animation: jing-qm-layer-in 0.22s ease 0.3s both; }
+  .jing-qm-result.is-revealing .jing-qm-cell-star { animation: jing-qm-layer-in 0.22s ease 0.45s both; }
+  .jing-qm-result.is-revealing .jing-qm-cell-god { animation: jing-qm-layer-in 0.22s ease 0.6s both; }
+  @keyframes jing-qm-palace-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+  @keyframes jing-qm-layer-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
   @keyframes jing-cell-in {
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: none; }
@@ -220,7 +430,17 @@ const SCHOOLS = ['chai-bu', 'zhi-run', 'mao-shan'] as const;
 
   @media (max-width: 560px) {
     .jing-qm-grid { grid-template-columns: repeat(3, 1fr); }
+    .jing-qm-layer-progress { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; }
+    .jing-qm-layer-progress li { padding-inline: 1px; font-size: 0.58rem; letter-spacing: 0; }
     .jing-qm-board { gap: 2px; }
     .jing-qm-cell { font-size: 0.75rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .jing-qm-result.is-revealing .jing-qm-cell,
+    .jing-qm-result.is-revealing .jing-qm-cell-stems,
+    .jing-qm-result.is-revealing .jing-qm-cell-door,
+    .jing-qm-result.is-revealing .jing-qm-cell-star,
+    .jing-qm-result.is-revealing .jing-qm-cell-god { animation: none; }
   }
 </style>

@@ -1,0 +1,139 @@
+---
+import JingLayout from '../../layouts/JingLayout.astro';
+import SoundControl from '../../components/jing/SoundControl.astro';
+---
+
+<JingLayout title="静心" description="静心堂 · 呼吸与静坐">
+  <section class="jing-meditation-stage" id="meditation-stage" aria-labelledby="meditation-title">
+    <header class="jing-meditation-heading">
+      <p class="jing-eyebrow">少一分纷扰 · 多一分清明</p>
+      <h1 id="meditation-title">静心</h1>
+      <p>跟随一呼一吸，或只在这里安静坐一会儿。</p>
+    </header>
+
+    <div class="jing-breathing-space">
+      <button class="jing-breathing-ring" id="meditation-toggle" type="button" aria-pressed="false">
+        <span class="jing-breathing-halo" aria-hidden="true"></span>
+        <strong id="meditation-breath-label">开始静心</strong>
+        <small id="meditation-clock">05:00</small>
+      </button>
+      <p class="jing-breathing-guide" id="meditation-guide" aria-live="polite">轻触圆环，随自然呼吸开始</p>
+    </div>
+
+    <div class="jing-meditation-controls">
+      <fieldset>
+        <legend>静坐时长</legend>
+        <label><input type="radio" name="meditation-minutes" value="3" /> 三分钟</label>
+        <label><input type="radio" name="meditation-minutes" value="5" checked /> 五分钟</label>
+        <label><input type="radio" name="meditation-minutes" value="10" /> 十分钟</label>
+        <label><input type="radio" name="meditation-minutes" value="20" /> 二十分钟</label>
+      </fieldset>
+      <SoundControl layers={['water', 'rain', 'pine-wind']} />
+    </div>
+
+    <p class="jing-meditation-status" id="meditation-status" role="status"></p>
+  </section>
+</JingLayout>
+
+<script>
+  const stage = document.getElementById('meditation-stage');
+  const toggle = document.getElementById('meditation-toggle') as HTMLButtonElement | null;
+  const clock = document.getElementById('meditation-clock');
+  const label = document.getElementById('meditation-breath-label');
+  const guide = document.getElementById('meditation-guide');
+  const status = document.getElementById('meditation-status');
+  const sound = stage?.querySelector<HTMLElement>('[data-sound-control]');
+  let totalSeconds = 300;
+  let remaining = totalSeconds;
+  let timer: number | null = null;
+  let startedAt = 0;
+  let audio: HTMLAudioElement | null = null;
+  let soundVolume = 0.6;
+  const soundFiles: Record<string, string> = {
+    water: '/jing/audio/water.ogg',
+    rain: '/jing/audio/rain.mp3',
+    'pine-wind': '/jing/audio/pine-wind.ogg',
+  };
+
+  const renderTime = () => {
+    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+    const s = String(remaining % 60).padStart(2, '0');
+    if (clock) clock.textContent = `${m}:${s}`;
+  };
+
+  const savePractice = (seconds: number) => {
+    if (seconds <= 0) return;
+    try {
+      const raw = localStorage.getItem('jing.practice.v1');
+      const value = raw ? JSON.parse(raw) : {};
+      value.meditationSeconds = Number(value.meditationSeconds || 0) + seconds;
+      localStorage.setItem('jing.practice.v1', JSON.stringify(value));
+    } catch {}
+  };
+
+  const stop = (completed = false) => {
+    if (timer !== null) window.clearInterval(timer);
+    timer = null;
+    const elapsed = startedAt ? Math.min(totalSeconds, Math.max(0, Math.floor((Date.now() - startedAt) / 1000))) : 0;
+    savePractice(elapsed);
+    startedAt = 0;
+    stage?.classList.remove('is-meditating');
+    toggle?.setAttribute('aria-pressed', 'false');
+    if (label) label.textContent = completed ? '静心已毕' : '继续静心';
+    if (guide) guide.textContent = completed ? '愿此刻的清明，伴你回到日常' : '已暂停，随时可以继续';
+    if (status) status.textContent = completed ? `本次静坐 ${Math.round(totalSeconds / 60)} 分钟，已记入本机静心时长。` : '';
+    if (completed) remaining = totalSeconds;
+    renderTime();
+  };
+
+  const start = () => {
+    startedAt = Date.now();
+    stage?.classList.add('is-meditating');
+    toggle?.setAttribute('aria-pressed', 'true');
+    if (label) label.textContent = '随息安住';
+    if (guide) guide.textContent = '吸气 · 云起';
+    let phase = 0;
+    timer = window.setInterval(() => {
+      remaining -= 1;
+      phase += 1;
+      if (guide && phase % 4 === 0) guide.textContent = (phase / 4) % 2 ? '呼气 · 云散' : '吸气 · 云起';
+      renderTime();
+      if (remaining <= 0) stop(true);
+    }, 1000);
+  };
+
+  toggle?.addEventListener('click', () => timer === null ? start() : stop(false));
+
+  document.querySelectorAll<HTMLInputElement>('input[name="meditation-minutes"]').forEach((input) => {
+    input.addEventListener('change', () => {
+      if (timer !== null) return;
+      totalSeconds = Number(input.value) * 60;
+      remaining = totalSeconds;
+      renderTime();
+    });
+  });
+
+  sound?.addEventListener('jing:sound', ((event: CustomEvent) => {
+    const { enabled, volume, layer } = event.detail;
+    soundVolume = volume;
+    if (!enabled || !layer) {
+      audio?.pause();
+      audio = null;
+      return;
+    }
+    const src = soundFiles[layer];
+    if (!src) return;
+    if (!audio || !audio.src.endsWith(src)) {
+      audio?.pause();
+      audio = new Audio(src);
+      audio.loop = true;
+    }
+    audio.volume = soundVolume;
+    audio.play().catch(() => {});
+  }) as EventListener);
+
+  window.addEventListener('beforeunload', () => {
+    if (startedAt) savePractice(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
+  });
+  renderTime();
+</script>

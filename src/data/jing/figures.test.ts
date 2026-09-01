@@ -11,16 +11,16 @@ import {
 import { getSourceGate, sourceLedger } from './source-ledger';
 
 describe('sacred figures', () => {
-  it('contains exactly three figures per tradition with the approved ids', () => {
+  it('contains the approved figures for each tradition', () => {
     expect(BUDDHIST_FIGURES.map((f) => f.id)).toEqual(['shakyamuni', 'guanyin', 'ksitigarbha']);
-    expect(TAOIST_FIGURES.map((f) => f.id)).toEqual(['yuanshi', 'lingbao', 'daode']);
+    expect(TAOIST_FIGURES.map((f) => f.id)).toEqual(['yuanshi', 'lingbao', 'daode', 'luzu', 'guandi']);
   });
 
   it('never mixes traditions', () => {
     for (const f of BUDDHIST_FIGURES) expect(f.tradition).toBe('buddhist');
     for (const f of TAOIST_FIGURES) expect(f.tradition).toBe('taoist');
     const ids = new Set([...BUDDHIST_FIGURES, ...TAOIST_FIGURES].map((f) => f.id));
-    expect(ids.size).toBe(6);
+    expect(ids.size).toBe(8);
   });
 
   it('carries attribution, license, and an existing local image for every figure', () => {

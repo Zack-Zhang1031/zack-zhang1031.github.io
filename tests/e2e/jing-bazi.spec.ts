@@ -16,11 +16,11 @@ const GOLDEN = { year: '1986', month: '5', day: '29', hour: '0', minute: '0' };
 test.describe('Jingxin yixue reference room', () => {
   test('lists five elements and eight trigrams with cycle notes', async ({ page }) => {
     await page.goto('/jing/yixue/');
-    await expect(page.locator('.jing-table tbody tr')).toHaveCount(5);
+    await expect(page.locator('.jing-element-node')).toHaveCount(5);
     await expect(page.locator('.jing-gua')).toHaveCount(8);
     await expect(page.locator('.jing-gua').first()).toContainText('乾');
-    const body = await page.textContent('body');
-    expect(body).toContain('木生火');
+    await expect(page.locator('#wuxing-sheng')).toHaveText('火');
+    await expect(page.locator('#wuxing-ke')).toHaveText('土');
   });
 });
 
@@ -82,6 +82,19 @@ test.describe('Jingxin bazi room', () => {
     await expect(page.locator('#bazi-error')).toBeVisible();
     await expect(page.locator('#bazi-error')).toContainText('1900');
     await expect(page.locator('#bazi-result')).toBeHidden();
+  });
+
+  test('requires every time field and can fill the local current time', async ({ page }) => {
+    await page.goto('/jing/bazi/');
+    await fillBirth(page, { ...GOLDEN, minute: '' });
+    await page.locator('#bazi-submit').click();
+    await expect(page.locator('#bazi-error')).toContainText('完整填写');
+    await expect(page.locator('#bazi-result')).toBeHidden();
+
+    await page.locator('#bazi-now').click();
+    await expect(page.locator('#bazi-year')).not.toHaveValue('');
+    await expect(page.locator('#bazi-minute')).not.toHaveValue('');
+    await expect(page.locator('#bazi-status')).toContainText('本机此刻');
   });
 
   test('true-solar mode reveals place controls and labels the summary', async ({ page }) => {

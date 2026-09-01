@@ -3,14 +3,16 @@ import JingLayout from '../../layouts/JingLayout.astro';
 import LocalNotebook from '../../components/jing/LocalNotebook.astro';
 ---
 
-<JingLayout title="私人笔记" description="静心堂 · 密码加密的本地私人笔记">
-  <h1>私人笔记</h1>
-  <p class="jing-page-desc">
-    把想留住的推演片段或心得记在这里。笔记用你设置的密码在本机加密，
-    明文只存在于解锁期间，闲置自动锁定，可导出为 <code>.jing</code> 加密文件备份。
-  </p>
-  <p class="jing-notes-today" id="notes-today"></p>
-  <LocalNotebook />
+<JingLayout title="静心手札" description="静心堂 · 密码加密的本地静心手札">
+  <section class="jing-notebook-page">
+    <header class="jing-notebook-heading">
+      <p class="jing-eyebrow">一册私藏 · 只留本机</p>
+      <h1>静心手札</h1>
+      <p>明文只存在于解锁期间；闲置自动锁定，并可导出为 <code>.jing</code> 加密文件备份。</p>
+    </header>
+    <p class="jing-notes-today" id="notes-today"></p>
+    <LocalNotebook />
+  </section>
 </JingLayout>
 
 <script>

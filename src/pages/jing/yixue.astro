@@ -1,94 +1,201 @@
 ---
 import JingLayout from '../../layouts/JingLayout.astro';
+import StudyTabs from '../../components/jing/StudyTabs.astro';
 import { BAGUA, WUXING, WUXING_ORDER } from '../../data/jing/yixue';
+
+const elementClass: Record<string, string> = {
+  木: 'wood', 火: 'fire', 土: 'earth', 金: 'metal', 水: 'water',
+};
 ---
 
-<JingLayout title="易学" description="静心堂 · 易学资料">
-  <h1>易学</h1>
-  <p class="jing-page-desc">
-    五行与八卦的基础资料，供研习时随手查阅。相生：木生火、火生土、土生金、金生水、水生木；
-    相克：木克土、土克水、水克火、火克金、金克木。
-  </p>
+<JingLayout title="五行" description="静心堂 · 五行与八卦交互研习">
+  <StudyTabs current="yixue" />
 
-  <h2 class="jing-section-title">五行</h2>
-  <table class="jing-table">
-    <thead>
-      <tr><th>行</th><th>相生</th><th>相克</th><th>方位</th><th>时令</th><th>象</th></tr>
-    </thead>
-    <tbody>
-      {WUXING_ORDER.map((name) => (
-        <tr>
-          <th scope="row">{name}</th>
-          <td>生{WUXING[name].sheng}</td>
-          <td>克{WUXING[name].ke}</td>
-          <td>{WUXING[name].direction}</td>
-          <td>{WUXING[name].season}</td>
-          <td>{WUXING[name].note}</td>
-        </tr>
+  <section class="jing-wuxing-workbench" id="wuxing-workbench" data-selected="木" aria-labelledby="wuxing-title">
+    <header class="jing-study-heading">
+      <p class="jing-eyebrow">观其流转 · 知其制化</p>
+      <h1 id="wuxing-title">五行研习</h1>
+      <p>点击任一元素，高亮其相生相克关系与传统对应。</p>
+    </header>
+
+    <aside class="jing-wuxing-topics jing-scene-panel">
+      <h2 id="wuxing-topic-title">五行关系</h2>
+      <button type="button" class="is-selected" data-topic="relations" aria-pressed="true">五行关系</button>
+      <button type="button" data-topic="attributes" aria-pressed="false">五行属性</button>
+      <button type="button" data-topic="direction" aria-pressed="false">五行方位</button>
+      <button type="button" data-topic="season" aria-pressed="false">五行季节</button>
+      <button type="button" data-topic="color" aria-pressed="false">五行颜色</button>
+      <button type="button" data-topic="organs" aria-pressed="false">五行脏腑</button>
+      <p id="wuxing-topic-state" class="jing-wuxing-topic-state" role="status">点击中央五行，查看相生与相克。</p>
+    </aside>
+
+    <div class="jing-wuxing-diagram" aria-label="五行相生相克图">
+      <svg viewBox="0 0 560 560" aria-hidden="true">
+        <defs>
+          <marker id="arrow-sheng" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+          </marker>
+          <marker id="arrow-ke" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+          </marker>
+        </defs>
+        <g class="jing-sheng-lines">
+          <path data-from="木" data-to="火" d="M312 102 Q420 132 450 228" />
+          <path data-from="火" data-to="土" d="M464 298 Q432 410 338 448" />
+          <path data-from="土" data-to="金" d="M265 468 Q150 455 111 358" />
+          <path data-from="金" data-to="水" d="M90 286 Q88 170 196 122" />
+          <path data-from="水" data-to="木" d="M234 90 Q274 65 312 84" />
+        </g>
+        <g class="jing-ke-lines">
+          <path data-from="木" data-to="土" d="M278 116 L316 423" />
+          <path data-from="土" data-to="水" d="M291 431 L122 319" />
+          <path data-from="水" data-to="火" d="M133 278 L423 260" />
+          <path data-from="火" data-to="金" d="M424 286 L135 335" />
+          <path data-from="金" data-to="木" d="M134 314 L253 122" />
+        </g>
+      </svg>
+
+      {WUXING_ORDER.map((name) => {
+        const info = WUXING[name];
+        return (
+          <button
+            type="button"
+                class:list={[
+                  'jing-element-node',
+                  `jing-element-${elementClass[name]}`,
+                  name === '木' && 'is-selected',
+                ]}
+            data-element={name}
+            data-sheng={info.sheng}
+            data-ke={info.ke}
+            data-direction={info.direction}
+            data-season={info.season}
+            data-color={info.color}
+            data-organs={info.organs}
+            data-emotion={info.emotion}
+            data-stems={info.stems}
+            data-branches={info.branches}
+            data-note={info.note}
+            aria-pressed={name === '木' ? 'true' : 'false'}
+          >
+            <span aria-hidden="true">{name === '木' ? '♧' : name === '火' ? '♨' : name === '土' ? '山' : name === '金' ? '金' : '≈'}</span>
+            <b>{name}</b>
+          </button>
+        );
+      })}
+
+      <div class="jing-wuxing-legend"><span>—→ 相生</span><span>┄→ 相克</span></div>
+    </div>
+
+    <aside class="jing-wuxing-detail jing-scene-panel" aria-live="polite">
+      <header><h2><span id="wuxing-name">木</span> 行</h2><i>五行</i></header>
+      <p id="wuxing-note">{WUXING.木.note}</p>
+      <dl id="wuxing-fields">
+        <div data-field="relations"><dt>相生</dt><dd>生 <span id="wuxing-sheng">{WUXING.木.sheng}</span></dd></div>
+        <div data-field="relations"><dt>相克</dt><dd>克 <span id="wuxing-ke">{WUXING.木.ke}</span></dd></div>
+        <div data-field="direction"><dt>方位</dt><dd id="wuxing-direction">{WUXING.木.direction}</dd></div>
+        <div data-field="season"><dt>季节</dt><dd id="wuxing-season">{WUXING.木.season}</dd></div>
+        <div data-field="color"><dt>颜色</dt><dd id="wuxing-color">{WUXING.木.color}</dd></div>
+        <div data-field="organs"><dt>脏腑</dt><dd id="wuxing-organs">{WUXING.木.organs}</dd></div>
+        <div data-field="attributes"><dt>情志</dt><dd id="wuxing-emotion">{WUXING.木.emotion}</dd></div>
+        <div data-field="attributes"><dt>天干</dt><dd id="wuxing-stems">{WUXING.木.stems}</dd></div>
+        <div data-field="attributes"><dt>地支</dt><dd id="wuxing-branches">{WUXING.木.branches}</dd></div>
+      </dl>
+    </aside>
+  </section>
+
+  <details class="jing-bagua-reference">
+    <summary>展开八卦基础资料</summary>
+    <p>卦画自下而上读：初爻在最下，上爻在最上。</p>
+    <div class="jing-bagua">
+      {BAGUA.map((gua) => (
+        <div class="jing-gua">
+          <span class="jing-gua-symbol" aria-hidden="true">{gua.symbol}</span>
+          <h3>{gua.name}<span class="jing-gua-image">为{gua.image}</span></h3>
+          <p>其德{gua.nature} · 卦画 {gua.lines.join('')}</p>
+        </div>
       ))}
-    </tbody>
-  </table>
-
-  <h2 class="jing-section-title">八卦</h2>
-  <p class="jing-page-desc">卦画自下而上读：初爻在最下，上爻在最上。</p>
-  <div class="jing-bagua">
-    {BAGUA.map((gua) => (
-      <div class="jing-gua">
-        <span class="jing-gua-symbol" aria-hidden="true">{gua.symbol}</span>
-        <h3>{gua.name}<span class="jing-gua-image">为{gua.image}</span></h3>
-        <p>其德{gua.nature} · 卦画 {gua.lines.join('')}</p>
-      </div>
-    ))}
-  </div>
-
-  <p class="jing-note-block">
-    以上为基础名相整理。深入研习请以《周易》原文与可靠注本为准。
-  </p>
+    </div>
+  </details>
 </JingLayout>
 
-<style>
-  .jing-section-title {
-    margin: 2rem 0 0.8rem; font-size: 1.1rem;
-    letter-spacing: 0.35em; color: var(--jing-accent);
-  }
+<script>
+  const workbench = document.getElementById('wuxing-workbench');
+  const nodes = Array.from(document.querySelectorAll<HTMLButtonElement>('.jing-element-node'));
+  const topics = Array.from(document.querySelectorAll<HTMLButtonElement>('.jing-wuxing-topics [data-topic]'));
+  const relationLines = Array.from(document.querySelectorAll<SVGElement>('.jing-wuxing-diagram [data-from]'));
+  const fields = Array.from(document.querySelectorAll<HTMLElement>('#wuxing-fields [data-field]'));
+  let selectedElement = '木';
+  let selectedTopic = 'relations';
+  const topicCopy: Record<string, { title: string; state: string }> = {
+    relations: { title: '五行关系', state: '高亮相生相克；点击中央五行切换起点。' },
+    attributes: { title: '五行属性', state: '查看情志、天干与地支等传统对应。' },
+    direction: { title: '五行方位', state: '查看所选五行对应的传统方位。' },
+    season: { title: '五行季节', state: '查看所选五行对应的传统季节。' },
+    color: { title: '五行颜色', state: '查看所选五行对应的传统颜色。' },
+    organs: { title: '五行脏腑', state: '查看所选五行对应的传统脏腑。' },
+  };
+  const setText = (id: string, value: string) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  };
 
-  .jing-table {
-    width: 100%; border-collapse: collapse; font-size: 0.9rem;
-    background: var(--jing-bg-raised); border-radius: var(--jing-radius); overflow: hidden;
-  }
-  .jing-table th, .jing-table td {
-    border: 1px solid var(--jing-border); padding: 0.5rem 0.7rem; text-align: left;
-  }
-  .jing-table thead th {
-    font-family: var(--jing-font-ui); font-size: 0.72rem; letter-spacing: 0.2em;
-    color: var(--jing-text-dim); font-weight: normal;
-  }
-  .jing-table tbody th { color: var(--jing-accent); font-size: 1.05rem; }
+  const updateTopic = () => {
+    const copy = topicCopy[selectedTopic] ?? topicCopy.relations;
+    setText('wuxing-topic-title', copy.title);
+    setText('wuxing-topic-state', `${selectedElement}行 · ${copy.state}`);
+    workbench?.setAttribute('data-topic', selectedTopic);
+    topics.forEach((topic) => {
+      const active = topic.dataset.topic === selectedTopic;
+      topic.classList.toggle('is-selected', active);
+      topic.setAttribute('aria-pressed', String(active));
+    });
+    fields.forEach((field) => {
+      const active = selectedTopic === 'relations'
+        ? field.dataset.field === 'relations'
+        : selectedTopic === 'attributes'
+          ? field.dataset.field === 'attributes'
+          : field.dataset.field === selectedTopic;
+      field.classList.toggle('is-topic-active', active);
+      field.classList.toggle('is-topic-muted', !active);
+    });
+  };
 
-  .jing-bagua {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.7rem; margin-top: 0.8rem;
-  }
-  .jing-gua {
-    border: 1px solid var(--jing-border); border-radius: var(--jing-radius);
-    background: var(--jing-bg-raised); padding: 0.8rem 0.6rem;
-    display: flex; flex-direction: column; align-items: center; gap: 0.2rem; text-align: center;
-  }
-  .jing-gua-symbol { font-size: 1.9rem; color: var(--jing-text); line-height: 1.2; }
-  .jing-gua h3 { margin: 0; font-size: 1rem; letter-spacing: 0.3em; }
-  .jing-gua-image {
-    margin-left: 0.4em; font-family: var(--jing-font-ui);
-    font-size: 0.68rem; letter-spacing: 0; color: var(--jing-text-dim);
-  }
-  .jing-gua p { margin: 0; font-family: var(--jing-font-ui); font-size: 0.7rem; color: var(--jing-text-dim); }
+  const selectElement = (node: HTMLButtonElement) => {
+      const selected = node.dataset.element || '';
+      selectedElement = selected;
+      workbench?.setAttribute('data-selected', selected);
+      nodes.forEach((item) => {
+        const active = item === node;
+        item.classList.toggle('is-selected', active);
+        item.setAttribute('aria-pressed', String(active));
+      });
+      relationLines.forEach((line) => {
+        line.classList.toggle('is-related', line.dataset.from === selected || line.dataset.to === selected);
+        line.classList.toggle('is-origin', line.dataset.from === selected);
+      });
+      setText('wuxing-name', selected);
+      setText('wuxing-sheng', node.dataset.sheng || '');
+      setText('wuxing-ke', node.dataset.ke || '');
+      setText('wuxing-direction', node.dataset.direction || '');
+      setText('wuxing-season', node.dataset.season || '');
+      setText('wuxing-color', node.dataset.color || '');
+      setText('wuxing-organs', node.dataset.organs || '');
+      setText('wuxing-emotion', node.dataset.emotion || '');
+      setText('wuxing-stems', node.dataset.stems || '');
+      setText('wuxing-branches', node.dataset.branches || '');
+      setText('wuxing-note', node.dataset.note || '');
+      updateTopic();
+  };
 
-  .jing-note-block {
-    margin-top: 2rem; padding: 0.8rem 1rem;
-    border-left: 2px solid var(--jing-accent);
-    color: var(--jing-text-dim); font-size: 0.85rem;
-  }
-
-  @media (max-width: 560px) {
-    .jing-bagua { grid-template-columns: repeat(2, 1fr); }
-    .jing-table { font-size: 0.8rem; }
-  }
-</style>
+  nodes.forEach((node) => {
+    node.addEventListener('click', () => selectElement(node));
+  });
+  topics.forEach((topic) => {
+    topic.addEventListener('click', () => {
+      selectedTopic = topic.dataset.topic || 'relations';
+      updateTopic();
+    });
+  });
+  if (nodes[0]) selectElement(nodes[0]);
+</script>

@@ -1,10 +1,13 @@
 ---
 /**
- * SoundControl — opt-in sound toggle + volume for a room.
+ * SoundControl — room sound toggle + volume.
  *
  * It never creates Audio objects by itself. Room controllers listen for the
  * `jing:sound` CustomEvent on this root element and only then create or
- * start audio. Volume and enabled state persist via jing settings.
+ * start audio. Volume, master state and the preferred layer persist.
+ * New visitors start with sound enabled. Browsers may still defer looping
+ * ambience until the first trusted interaction; action sounds are triggered by
+ * their own buttons and therefore remain policy-compliant.
  * Rooms may pass `layers` (extra atmosphere ids) to offer an optional
  * second ambience layer; the chosen layer id rides on the same event.
  */
@@ -21,18 +24,18 @@ const { layers = [] } = Astro.props;
   <button
     type="button"
     class="jing-icon-btn jing-sound-toggle"
-    aria-pressed="false"
-    aria-label="开启环境音"
-    title="开启环境音"
+    aria-pressed="true"
+    aria-label="关闭声音"
+    title="关闭声音"
   >
-    <span aria-hidden="true">静音</span>
+    <span aria-hidden="true">有声</span>
   </button>
-  <label class="jing-sound-volume-wrap" hidden>
+  <label class="jing-sound-volume-wrap">
     音量
     <input type="range" class="jing-sound-volume" min="0" max="100" value="60" aria-label="音量" />
   </label>
   {layers.length > 0 && (
-    <label class="jing-sound-layer-wrap" hidden>
+    <label class="jing-sound-layer-wrap">
       氛围
       <select class="jing-sound-layer" aria-label="氛围音">
         <option value="">无</option>
@@ -44,6 +47,7 @@ const { layers = [] } = Astro.props;
 
 <script>
   import { loadSettings, saveSettings } from '../../lib/jing/settings';
+  import { sliderToGain } from '../../lib/jing/sound-fx';
 
   document.querySelectorAll<HTMLElement>('[data-sound-control]').forEach((root) => {
     const toggle = root.querySelector<HTMLButtonElement>('.jing-sound-toggle');
@@ -56,28 +60,47 @@ const { layers = [] } = Astro.props;
 
     const loaded = loadSettings(localStorage);
     volume.value = String(Math.round(loaded.settings.volume * 100));
-    let enabled = false;
+    const preferredLayer = loaded.settings.ambience[0];
+    if (layer && preferredLayer && Array.from(layer.options).some((option) => option.value === preferredLayer)) {
+      layer.value = preferredLayer;
+    }
+    let enabled = loaded.settings.soundEnabled;
+
+    const render = () => {
+      toggle.setAttribute('aria-pressed', String(enabled));
+      toggle.setAttribute('aria-label', enabled ? '关闭声音' : '开启声音');
+      toggle.title = enabled ? '关闭声音' : '开启声音';
+      toggleLabel.textContent = enabled ? '有声' : '静音';
+      volumeWrap.hidden = !enabled;
+      if (layerWrap) layerWrap.hidden = !enabled;
+      try { sessionStorage.setItem('jing.sound-on', enabled ? '1' : '0'); } catch { /* 静默 */ }
+    };
 
     const emit = () => {
       root.dispatchEvent(new CustomEvent('jing:sound', {
-        detail: { enabled, volume: Number(volume.value) / 100, layer: layer?.value || null },
+        detail: {
+          enabled,
+          volume: sliderToGain(Number(volume.value) / 100),
+          layer: layer?.value || null,
+        },
         bubbles: false,
       }));
     };
 
     toggle.addEventListener('click', () => {
       enabled = !enabled;
-      toggle.setAttribute('aria-pressed', String(enabled));
-      toggle.setAttribute('aria-label', enabled ? '关闭环境音' : '开启环境音');
-      toggleLabel.textContent = enabled ? '有声' : '静音';
-      volumeWrap.hidden = !enabled;
-      if (layerWrap) layerWrap.hidden = !enabled;
-      /* 供全堂翻页纸声判断「这位访客愿意听」 */
-      try { sessionStorage.setItem('jing.sound-on', enabled ? '1' : '0'); } catch { /* 静默 */ }
+      const current = loadSettings(localStorage);
+      saveSettings(localStorage, { ...current.settings, soundEnabled: enabled });
+      render();
       emit();
     });
 
     layer?.addEventListener('change', () => {
+      const current = loadSettings(localStorage);
+      saveSettings(localStorage, {
+        ...current.settings,
+        ambience: layer.value ? [layer.value] : [],
+      });
       if (enabled) emit();
     });
 
@@ -89,6 +112,13 @@ const { layers = [] } = Astro.props;
       });
       if (enabled) emit();
     });
+
+    render();
+    /* Parent room scripts are separate deferred modules. Emit after the page
+       load boundary so every controller is listening, independent of chunk
+       fetch order; interactive changes still emit immediately above. */
+    if (document.readyState === 'complete') window.setTimeout(emit, 0);
+    else window.addEventListener('load', emit, { once: true });
   });
 </script>
 

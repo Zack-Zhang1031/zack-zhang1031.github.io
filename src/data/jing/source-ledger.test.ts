@@ -3,8 +3,8 @@ import { getSourceGate, sourceLedger } from './source-ledger';
 
 const requiredIds = [
   'image-shakyamuni', 'image-guanyin', 'image-ksitigarbha',
-  'image-yuanshi', 'image-lingbao', 'image-daode',
-  'audio-woodfish', 'audio-chime', 'audio-bell',
+  'image-yuanshi', 'image-lingbao', 'image-daode', 'image-luzu', 'image-guandi',
+  'audio-woodfish', 'audio-lot-shake', 'audio-coins-toss', 'audio-chime', 'audio-bell',
   'audio-windchime', 'audio-water', 'audio-pine-wind',
   'lots-guanyin', 'lots-luzu', 'lots-guandi',
   'rules-calendar', 'rules-bazi', 'rules-yijing',

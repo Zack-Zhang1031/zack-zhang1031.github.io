@@ -35,6 +35,27 @@ const STEM_YIN_YANG: Record<string, '阳' | '阴'> = {
 const SHI_SHEN = ['比肩', '劫财', '食神', '伤官', '偏财', '正财', '七杀', '正官', '偏印', '正印'] as const;
 export type ShiShen = (typeof SHI_SHEN)[number];
 
+const HIDDEN_STEMS: Record<string, readonly string[]> = {
+  子: ['癸'], 丑: ['己', '癸', '辛'], 寅: ['甲', '丙', '戊'], 卯: ['乙'],
+  辰: ['戊', '乙', '癸'], 巳: ['丙', '戊', '庚'], 午: ['丁', '己'], 未: ['己', '丁', '乙'],
+  申: ['庚', '壬', '戊'], 酉: ['辛'], 戌: ['戊', '辛', '丁'], 亥: ['壬', '甲'],
+};
+
+const NA_YIN_PAIRS: ReadonlyArray<readonly [string, string, string]> = [
+  ['甲子', '乙丑', '海中金'], ['丙寅', '丁卯', '炉中火'], ['戊辰', '己巳', '大林木'],
+  ['庚午', '辛未', '路旁土'], ['壬申', '癸酉', '剑锋金'], ['甲戌', '乙亥', '山头火'],
+  ['丙子', '丁丑', '涧下水'], ['戊寅', '己卯', '城头土'], ['庚辰', '辛巳', '白蜡金'],
+  ['壬午', '癸未', '杨柳木'], ['甲申', '乙酉', '泉中水'], ['丙戌', '丁亥', '屋上土'],
+  ['戊子', '己丑', '霹雳火'], ['庚寅', '辛卯', '松柏木'], ['壬辰', '癸巳', '长流水'],
+  ['甲午', '乙未', '沙中金'], ['丙申', '丁酉', '山下火'], ['戊戌', '己亥', '平地木'],
+  ['庚子', '辛丑', '壁上土'], ['壬寅', '癸卯', '金箔金'], ['甲辰', '乙巳', '覆灯火'],
+  ['丙午', '丁未', '天河水'], ['戊申', '己酉', '大驿土'], ['庚戌', '辛亥', '钗钏金'],
+  ['壬子', '癸丑', '桑柘木'], ['甲寅', '乙卯', '大溪水'], ['丙辰', '丁巳', '沙中土'],
+  ['戊午', '己未', '天上火'], ['庚申', '辛酉', '石榴木'], ['壬戌', '癸亥', '大海水'],
+];
+
+const NA_YIN = new Map(NA_YIN_PAIRS.flatMap(([first, second, name]) => [[first, name], [second, name]]));
+
 const SHENG: Record<WuXing, WuXing> = { 木: '火', 火: '土', 土: '金', 金: '水', 水: '木' };
 const KE: Record<WuXing, WuXing> = { 木: '土', 土: '水', 水: '火', 火: '金', 金: '木' };
 
@@ -57,6 +78,12 @@ export interface BaziOutput {
   dayMaster: { stem: string; element: WuXing; yinYang: '阳' | '阴' };
   elements: Record<WuXing, number>;
   tenGods: { year: ShiShen; month: ShiShen; hour: ShiShen; day: '日主' };
+  pillarDetails: Record<'year' | 'month' | 'day' | 'hour', {
+    stem: string;
+    branch: string;
+    hiddenStems: Array<{ stem: string; tenGod: ShiShen }>;
+    naYin: string;
+  }>;
 }
 
 export interface CalculationEnvelope<T> {
@@ -78,6 +105,12 @@ export function calculateBazi(input: CalendarInput): CalculationEnvelope<BaziOut
   }
 
   const dayStem = pillars.day[0];
+  const detailFor = (pillar: string) => ({
+    stem: pillar[0],
+    branch: pillar[1],
+    hiddenStems: (HIDDEN_STEMS[pillar[1]] ?? []).map((stem) => ({ stem, tenGod: tenGod(dayStem, stem) })),
+    naYin: NA_YIN.get(pillar) ?? '—',
+  });
   const output: BaziOutput = {
     pillars,
     dayMaster: {
@@ -91,6 +124,12 @@ export function calculateBazi(input: CalendarInput): CalculationEnvelope<BaziOut
       month: tenGod(dayStem, pillars.month[0]),
       day: '日主',
       hour: tenGod(dayStem, pillars.hour[0]),
+    },
+    pillarDetails: {
+      year: detailFor(pillars.year),
+      month: detailFor(pillars.month),
+      day: detailFor(pillars.day),
+      hour: detailFor(pillars.hour),
     },
   };
 

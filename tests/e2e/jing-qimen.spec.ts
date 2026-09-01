@@ -25,9 +25,22 @@ test.describe('Jingxin qimen room', () => {
       await expect(page.locator(`#qm-ju-${school}`)).toContainText('阳遁 2 局');
       await expect(page.locator(`#qm-board-${school} .jing-qm-cell`)).toHaveCount(9);
       await expect(page.locator(`#qm-meta-${school}`)).toContainText('值符');
+      await page.locator(`[data-qm-school-tab="${school}"]`).click();
       await page.locator(`#qm-school-${school} .jing-qm-steps summary`).click();
       await expect(page.locator(`#qm-derivation-${school} li`).first()).toBeVisible();
     }
+
+    await expect(page.locator('.jing-qm-school:visible')).toHaveCount(1);
+    await page.locator('#qm-compare-toggle').click();
+    await expect(page.locator('.jing-qm-school:visible')).toHaveCount(3);
+    await expect(page.locator('#qm-compare-toggle')).toHaveAttribute('aria-pressed', 'true');
+
+    const palace = page.locator('#qm-board-chai-bu .jing-qm-cell[data-palace="4"]');
+    await palace.click();
+    await expect(page.locator('#qm-inspector-title')).toContainText('拆补法');
+    await expect(page.locator('#qm-inspector-element')).not.toHaveText('—');
+    await expect(page.locator('.jing-qm-cell.is-corresponding')).toHaveCount(2);
+    await expect(page.locator('#qm-inspector-compare p')).toHaveCount(3);
   });
 
   test('shows known inter-school divergence at 2024-12-21 20:00', async ({ page }) => {
@@ -39,6 +52,7 @@ test.describe('Jingxin qimen room', () => {
     await expect(page.locator('#qm-ju-chai-bu')).toContainText('阳遁 4 局');
     await expect(page.locator('#qm-ju-zhi-run')).toContainText('阴遁 1 局');
     await expect(page.locator('#qm-ju-mao-shan')).toContainText('阳遁 1 局');
+    await page.locator('[data-qm-school-tab="zhi-run"]').click();
     await page.locator('#qm-school-zhi-run .jing-qm-steps summary').click();
     await expect(page.locator('#qm-derivation-zhi-run')).toContainText('置闰');
   });
@@ -50,6 +64,23 @@ test.describe('Jingxin qimen room', () => {
 
     await expect(page.locator('#qm-error')).toBeVisible();
     await expect(page.locator('#qm-result')).toBeHidden();
+  });
+
+  test('requires every field, fills local current time, and reveals five layers', async ({ page }) => {
+    await page.goto('/jing/qimen/');
+    await fillTime(page, { year: '1986', month: '5', day: '29', hour: '0', minute: '' });
+    await page.locator('#qm-submit').click();
+    await expect(page.locator('#qm-error')).toContainText('完整填写');
+    await expect(page.locator('#qm-result')).toBeHidden();
+
+    await page.locator('#qm-now').click();
+    await expect(page.locator('#qm-year')).not.toHaveValue('');
+    await expect(page.locator('#qm-minute')).not.toHaveValue('');
+    await expect(page.locator('#qm-status')).toContainText('本机此刻');
+    await page.locator('#qm-submit').click();
+    await expect(page.locator('.jing-qm-layer-progress li')).toHaveCount(5);
+    await expect(page.locator('.jing-qm-layer-progress li.is-done')).toHaveCount(5, { timeout: 3000 });
+    await expect(page.locator('#qm-status')).toContainText('起局完成');
   });
 
   test('refresh clears inputs and results', async ({ page }) => {
@@ -73,6 +104,11 @@ test.describe('Jingxin qimen room', () => {
     await fillTime(page, { year: '1986', month: '5', day: '29', hour: '0', minute: '0' });
     await page.locator('button[type="submit"]').click();
     await expect(page.locator('#qm-result')).toBeVisible();
+    const mobilePalace = page.locator('#qm-board-chai-bu .jing-qm-cell[data-palace="4"]');
+    await mobilePalace.click();
+    await expect(mobilePalace).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('#qm-inspector')).toBeFocused();
+    await expect(page.locator('#qm-inspector-compare')).toBeInViewport();
 
     expect(external).toEqual([]);
     const overflow = await page.evaluate(

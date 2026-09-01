@@ -2,8 +2,9 @@
 /**
  * WoodfishPanel — quiet counting woodfish.
  *
- * Count, average rhythm, and elapsed time only; no merit points,
- * rankings, streaks, or rewards. Sound (woodfish strike + optional
+ * Count, local practice totals, average rhythm, and elapsed time. Merit is
+ * a private practice label only: there are no rankings, streaks, or rewards.
+ * Sound (woodfish strike + optional
  * water ambience) is created only after the user enables sound through
  * the SoundControl toggle. Keyboard (Space/Enter on the fish) and touch
  * are supported through the native button.
@@ -12,43 +13,65 @@ import SoundControl from './SoundControl.astro';
 ---
 
 <div class="jing-muyu" id="jing-muyu-app">
-  <div class="jing-muyu-stats" role="status" aria-live="polite">
-    <div class="jing-muyu-stat"><span class="jing-muyu-num" id="muyu-count">0</span><span class="jing-muyu-label">计数</span></div>
-    <div class="jing-muyu-stat"><span class="jing-muyu-num" id="muyu-rhythm">—</span><span class="jing-muyu-label">均速（次/分）</span></div>
-    <div class="jing-muyu-stat"><span class="jing-muyu-num" id="muyu-elapsed">00:00</span><span class="jing-muyu-label">时长</span></div>
-  </div>
+  <div class="jing-muyu-scene">
+    <aside class="jing-muyu-stats jing-scene-panel" role="status" aria-live="polite" aria-label="木鱼功德与本次记录">
+      <p class="jing-muyu-merit-flash" id="muyu-merit-flash">功德 +1</p>
+      <div class="jing-muyu-stat"><span class="jing-muyu-label">今日功德</span><span class="jing-muyu-num" id="muyu-today-merit">0</span></div>
+      <div class="jing-muyu-stat"><span class="jing-muyu-label">累计功德</span><span class="jing-muyu-num" id="muyu-total-merit">0</span></div>
+      <div class="jing-muyu-stat"><span class="jing-muyu-label">敲击次数</span><span class="jing-muyu-num" id="muyu-count">0</span></div>
+      <div class="jing-muyu-stat"><span class="jing-muyu-label">敲击时长</span><span class="jing-muyu-num" id="muyu-elapsed">00:00</span></div>
+      <div class="jing-muyu-stat"><span class="jing-muyu-label">平均速度</span><span><span class="jing-muyu-num" id="muyu-rhythm">—</span><small> 次/分</small></span></div>
+    </aside>
 
-  <div class="jing-muyu-stage">
-    <button type="button" id="muyu-fish" class="jing-muyu-fish" aria-label="敲一下木鱼">
-      <svg viewBox="0 0 120 96" aria-hidden="true" focusable="false">
-        <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-body" />
-        <ellipse cx="60" cy="52" rx="46" ry="38" class="fish-sheen" />
-        <circle cx="38" cy="40" r="5" class="fish-eye" />
-        <path d="M 78 30 Q 96 22 104 34 Q 96 40 84 40" class="fish-mouth" />
-        <path d="M 22 66 Q 60 84 98 66" class="fish-belly" />
-      </svg>
-    </button>
-  </div>
+    <div class="jing-muyu-stage">
+      <img class="jing-muyu-prop jing-muyu-prop--incense" src="/jing/generated/muyu/incense-burner.png" alt="" aria-hidden="true" />
+      <span class="jing-muyu-prop jing-muyu-prop--candle jing-muyu-prop--candle-left" aria-hidden="true">
+        <img src="/jing/generated/muyu/candle.png" alt="" />
+      </span>
+      <span class="jing-muyu-prop jing-muyu-prop--candle jing-muyu-prop--candle-right" aria-hidden="true">
+        <img src="/jing/generated/muyu/candle.png" alt="" />
+      </span>
+      <img class="jing-muyu-prop jing-muyu-prop--beads" src="/jing/generated/muyu/prayer-beads.png" alt="" aria-hidden="true" />
+      <button type="button" id="muyu-fish" class="jing-muyu-fish" aria-label="敲一下木鱼">
+        <span class="jing-muyu-strike-sprite" data-strike-frame="0" aria-hidden="true"></span>
+        <span class="jing-muyu-hit-label"><b aria-hidden="true">●</b> 敲一下</span>
+      </button>
+    </div>
 
-  <div class="jing-muyu-controls">
-    <button type="button" id="muyu-pause" class="jing-btn" aria-pressed="false">暂停</button>
-    <button type="button" id="muyu-reset" class="jing-btn">归零</button>
-    <SoundControl layers={['rain', 'insects', 'tea']} />
+    <aside class="jing-muyu-controls jing-scene-panel" aria-label="木鱼控制">
+      <h2>静心设置</h2>
+      <SoundControl layers={['rain', 'insects', 'tea']} />
+      <button type="button" id="muyu-pause" class="jing-btn" aria-pressed="false">暂停敲击</button>
+      <button type="button" id="muyu-auto" class="jing-btn" aria-pressed="false">自动敲击</button>
+      <label class="jing-muyu-tempo">自动节奏
+        <input id="muyu-tempo" type="range" min="30" max="90" step="3" value="36" aria-label="自动敲击速度" />
+        <output id="muyu-tempo-value" for="muyu-tempo">36 次/分</output>
+      </label>
+      <p id="muyu-mode-status" class="jing-muyu-mode-status" role="status" aria-live="polite">手动敲击</p>
+      <button type="button" id="muyu-reset" class="jing-btn">清零本次</button>
+      <div class="jing-muyu-sit">
+        <label class="jing-muyu-sit-label">安坐时长
+          <input id="muyu-sit-min" type="number" min="1" max="120" step="1" value="10" aria-label="安坐分钟数" />
+          分钟
+        </label>
+        <button type="button" id="muyu-sit-start" class="jing-btn">开始安坐</button>
+        <span id="muyu-sit-status" class="jing-muyu-sit-status" role="status"></span>
+      </div>
+    </aside>
+
+    <div class="jing-muyu-history jing-scene-panel" aria-label="最近十次敲击节奏">
+      <p>敲击记录 <small>最近 10 次</small></p>
+      <div id="muyu-history-bars" class="jing-muyu-history-bars" aria-hidden="true">
+        {Array.from({ length: 10 }, (_, index) => <i style={`--bar: ${18 + index * 2}%`}></i>)}
+      </div>
+    </div>
   </div>
-  <div class="jing-muyu-sit">
-    <label class="jing-muyu-sit-label">安坐
-      <input id="muyu-sit-min" type="number" min="1" max="120" step="1" value="10" aria-label="安坐分钟数" />
-      分钟
-    </label>
-    <button type="button" id="muyu-sit-start" class="jing-btn">开始安坐</button>
-    <span id="muyu-sit-status" class="jing-muyu-sit-status" role="status"></span>
-  </div>
-  <p class="jing-muyu-hint">点击、轻触或按空格键敲击。声音默认关闭，需手动开启。安坐只是倒计时，到时一记引磬，别无他物。</p>
+  <p class="jing-muyu-hint">轻触木鱼或按空格键敲击。功德仅为本机静修计数，不作排行、奖励或任何现实判断。</p>
 </div>
 
 <script>
   import { AMBIENCE_SRC, WOODFISH_SOUND_SRC } from '../../data/jing/figures';
-  import { LAYER_SRC, playFx, registerAmbience } from '../../lib/jing/sound-fx';
+  import { LAYER_SRC, playFx, registerAmbience, setAmbienceVolume } from '../../lib/jing/sound-fx';
 
   const app = document.getElementById('jing-muyu-app');
   if (app) {
@@ -58,6 +81,15 @@ import SoundControl from './SoundControl.astro';
     const fish = document.getElementById('muyu-fish') as HTMLButtonElement;
     const pauseBtn = document.getElementById('muyu-pause') as HTMLButtonElement;
     const resetBtn = document.getElementById('muyu-reset') as HTMLButtonElement;
+    const autoBtn = document.getElementById('muyu-auto') as HTMLButtonElement;
+    const todayMeritEl = document.getElementById('muyu-today-merit')!;
+    const totalMeritEl = document.getElementById('muyu-total-merit')!;
+    const meritFlash = document.getElementById('muyu-merit-flash')!;
+    const historyBars = Array.from(document.querySelectorAll<HTMLElement>('#muyu-history-bars i'));
+    const strikeSprite = fish.querySelector<HTMLElement>('.jing-muyu-strike-sprite');
+    const tempo = document.getElementById('muyu-tempo') as HTMLInputElement;
+    const tempoValue = document.getElementById('muyu-tempo-value') as HTMLOutputElement;
+    const modeStatus = document.getElementById('muyu-mode-status')!;
 
     let count = 0;
     let intervals: number[] = [];
@@ -65,9 +97,44 @@ import SoundControl from './SoundControl.astro';
     let elapsedSec = 0;
     let paused = false;
     let timer: ReturnType<typeof setInterval> | null = null;
+    let autoTimer: ReturnType<typeof setInterval> | null = null;
+    let strikeTimes: number[] = [];
+    let strikeFrameTimers: ReturnType<typeof setTimeout>[] = [];
+
+    const playStrikeFrames = () => {
+      strikeFrameTimers.forEach(clearTimeout);
+      strikeFrameTimers = [];
+      if (!strikeSprite) return;
+      const setFrame = (frame: number) => { strikeSprite.dataset.strikeFrame = String(frame); };
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setFrame(3);
+        strikeFrameTimers.push(setTimeout(() => setFrame(0), 140));
+        return;
+      }
+      [1, 2, 3, 4, 5, 0].forEach((frame, index) => {
+        strikeFrameTimers.push(setTimeout(() => setFrame(frame), [0, 55, 112, 180, 255, 360][index]));
+      });
+    };
+
+    const todayKey = () => new Date().toISOString().slice(0, 10);
+    type Practice = { date?: string; todayMerit?: number; totalMerit?: number; meditationSeconds?: number };
+    const loadPractice = (): Practice => {
+      try {
+        const raw = localStorage.getItem('jing.practice.v1');
+        const value = raw ? JSON.parse(raw) as Practice : {};
+        if (value.date !== todayKey()) {
+          value.date = todayKey();
+          value.todayMerit = 0;
+        }
+        return value;
+      } catch { return { date: todayKey(), todayMerit: 0, totalMerit: 0 }; }
+    };
+    let practice = loadPractice();
+    const savePractice = () => {
+      try { localStorage.setItem('jing.practice.v1', JSON.stringify(practice)); } catch {}
+    };
 
     /* audio is created only after explicit opt-in via SoundControl */
-    let strikeAudio: HTMLAudioElement | null = null;
     let waterAudio: HTMLAudioElement | null = null;
     let layerAudio: HTMLAudioElement | null = null;
     let layerId: string | null = null;
@@ -80,16 +147,13 @@ import SoundControl from './SoundControl.astro';
         { enabled: boolean; volume: number; layer: string | null };
       soundOn = enabled;
       soundVol = volume;
-      if (enabled && !strikeAudio) {
-        strikeAudio = new Audio(WOODFISH_SOUND_SRC);
-        strikeAudio.preload = 'auto';
+      if (enabled && !waterAudio) {
         waterAudio = new Audio(AMBIENCE_SRC.water);
         waterAudio.loop = true;
         registerAmbience(waterAudio);
       }
-      if (strikeAudio) strikeAudio.volume = volume;
       if (waterAudio) {
-        waterAudio.volume = volume * 0.5;
+        setAmbienceVolume(waterAudio, volume * 0.5);
         if (enabled) void waterAudio.play().catch(() => {});
         else waterAudio.pause();
       }
@@ -104,7 +168,7 @@ import SoundControl from './SoundControl.astro';
           layerId = layer;
           registerAmbience(layerAudio);
         }
-        layerAudio.volume = volume * 0.35;
+        setAmbienceVolume(layerAudio, volume * 0.35);
         void layerAudio.play().catch(() => {});
       }
     });
@@ -115,6 +179,8 @@ import SoundControl from './SoundControl.astro';
     const render = () => {
       countEl.textContent = String(count);
       elapsedEl.textContent = fmt(elapsedSec);
+      todayMeritEl.textContent = String(Number(practice.todayMerit || 0));
+      totalMeritEl.textContent = String(Number(practice.totalMerit || 0));
       if (intervals.length >= 2) {
         const recent = intervals.slice(-8);
         const avgMs = recent.reduce((a, b) => a + b, 0) / recent.length;
@@ -127,6 +193,15 @@ import SoundControl from './SoundControl.astro';
         rhythmEl.textContent = '—';
         fish.classList.remove('is-steady');
       }
+      const recentTimes = strikeTimes.slice(-10);
+      historyBars.forEach((bar, index) => {
+        const time = recentTimes[index];
+        const previous = index > 0 ? recentTimes[index - 1] : undefined;
+        const delta = time && previous ? Math.max(180, time - previous) : 1800;
+        const height = time ? Math.max(22, Math.min(92, 100 - delta / 22)) : 12;
+        bar.style.setProperty('--bar', `${height}%`);
+        bar.classList.toggle('is-active', Boolean(time));
+      });
     };
 
     const startTimer = () => {
@@ -145,13 +220,20 @@ import SoundControl from './SoundControl.astro';
       if (lastStrike > 0) intervals.push(now - lastStrike);
       lastStrike = now;
       count += 1;
+      strikeTimes.push(Date.now());
+      practice = loadPractice();
+      practice.todayMerit = Number(practice.todayMerit || 0) + 1;
+      practice.totalMerit = Number(practice.totalMerit || 0) + 1;
+      savePractice();
       startTimer();
       render();
 
-      if (strikeAudio) {
-        strikeAudio.currentTime = 0;
-        void strikeAudio.play().catch(() => {});
-      }
+      meritFlash.classList.remove('is-visible');
+      void meritFlash.offsetWidth;
+      meritFlash.classList.add('is-visible');
+
+      if (soundOn) playFx(WOODFISH_SOUND_SRC, soundVol, 0, 0.98 + Math.random() * 0.04);
+      app.classList.add('is-practicing');
       /* 鱼身向敲击侧微倾（键盘敲击居中不倾） */
       const fishRect = fish.getBoundingClientRect();
       const rel = e.clientX
@@ -161,6 +243,10 @@ import SoundControl from './SoundControl.astro';
       fish.classList.remove('is-hit');
       void fish.offsetWidth;
       fish.classList.add('is-hit');
+      playStrikeFrames();
+      modeStatus.textContent = autoTimer
+        ? `自动敲击 · ${tempo.value} 次/分`
+        : `手动敲击 · 第 ${count} 声`;
 
       /* 涟漪自敲击点荡开 */
       const stage = fish.parentElement!;
@@ -170,16 +256,20 @@ import SoundControl from './SoundControl.astro';
       ripple.setAttribute('aria-hidden', 'true');
       ripple.style.left = `${e.clientX ? e.clientX - stageRect.left : stageRect.width / 2}px`;
       ripple.style.top = `${e.clientY ? e.clientY - stageRect.top : stageRect.height / 2}px`;
-      ripple.style.width = '40%';
-      ripple.style.height = '42%';
+      ripple.style.width = '32%';
+      ripple.style.height = '34%';
       stage.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 1000);
+      setTimeout(() => ripple.remove(), 820);
     });
 
     pauseBtn.addEventListener('click', () => {
       paused = !paused;
-      pauseBtn.textContent = paused ? '继续' : '暂停';
+      pauseBtn.textContent = paused ? '继续敲击' : '暂停敲击';
       pauseBtn.setAttribute('aria-pressed', String(paused));
+      fish.setAttribute('aria-disabled', String(paused));
+      modeStatus.textContent = paused
+        ? '已暂停 · 计时与敲击均停下'
+        : (autoTimer ? `自动敲击 · ${tempo.value} 次/分` : '手动敲击');
       if (waterAudio) {
         if (paused) waterAudio.pause();
         else if (soundControl?.querySelector('.jing-sound-toggle')?.getAttribute('aria-pressed') === 'true') {
@@ -189,15 +279,51 @@ import SoundControl from './SoundControl.astro';
     });
 
     resetBtn.addEventListener('click', () => {
+      if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
+      autoBtn.textContent = '自动敲击';
+      autoBtn.setAttribute('aria-pressed', 'false');
       count = 0;
       intervals = [];
       lastStrike = 0;
       elapsedSec = 0;
+      strikeTimes = [];
       paused = false;
-      pauseBtn.textContent = '暂停';
+      pauseBtn.textContent = '暂停敲击';
       pauseBtn.setAttribute('aria-pressed', 'false');
+      fish.setAttribute('aria-disabled', 'false');
       if (timer) { clearInterval(timer); timer = null; }
+      modeStatus.textContent = '本次已清零 · 可重新开始';
+      app.classList.remove('is-practicing');
       render();
+    });
+
+    const autoIntervalMs = () => Math.round(60_000 / Number(tempo.value));
+    const startAuto = (strikeNow: boolean) => {
+      if (autoTimer) clearInterval(autoTimer);
+      if (strikeNow) fish.click();
+      autoTimer = setInterval(() => fish.click(), autoIntervalMs());
+      autoBtn.textContent = '停止自动';
+      autoBtn.setAttribute('aria-pressed', 'true');
+      modeStatus.textContent = `自动敲击 · ${tempo.value} 次/分`;
+    };
+
+    autoBtn.addEventListener('click', () => {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+        autoBtn.textContent = '自动敲击';
+        autoBtn.setAttribute('aria-pressed', 'false');
+        modeStatus.textContent = '自动敲击已停止 · 可手动继续';
+        return;
+      }
+      if (paused) pauseBtn.click();
+      startAuto(true);
+    });
+
+    tempo.addEventListener('input', () => {
+      tempoValue.value = `${tempo.value} 次/分`;
+      if (autoTimer) startAuto(false);
+      else modeStatus.textContent = `自动节奏已设为 ${tempo.value} 次/分`;
     });
 
     /* ---- 安坐计时：纯倒计时，到时一记引磬 ---- */
@@ -241,7 +367,7 @@ import SoundControl from './SoundControl.astro';
 </script>
 
 <style>
-  .jing-muyu { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+  .jing-muyu { display: block; width: 100%; }
 
   .jing-muyu-stats { display: flex; gap: 2.5rem; }
   .jing-muyu-stat { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; }
@@ -266,14 +392,14 @@ import SoundControl from './SoundControl.astro';
   .fish-belly { fill: none; stroke: rgba(45, 29, 14, 0.55); stroke-width: 2.5; stroke-linecap: round; }
 
   /* 敲击反馈：压扁而非缩小——木鱼被敲是形变，不是体积变化 */
-  .jing-muyu-fish.is-hit svg { animation: muyu-hit 0.16s ease; }
+  .jing-muyu-fish.is-hit .jing-muyu-strike-sprite { animation: muyu-hit 0.16s ease; }
   @keyframes muyu-hit {
-    0% { transform: scale(1) scaleY(1) rotate(0deg); }
-    45% { transform: scale(0.99) scaleY(0.93) rotate(var(--hit-tilt, 0deg)); }
-    100% { transform: scale(1) scaleY(1) rotate(0deg); }
+    0% { transform: translate(-50%, -50%) scale(1) scaleY(1) rotate(0deg); }
+    45% { transform: translate(-50%, -50%) scale(0.99) scaleY(0.93) rotate(var(--hit-tilt, 0deg)); }
+    100% { transform: translate(-50%, -50%) scale(1) scaleY(1) rotate(0deg); }
   }
   /* 稳定辉光与敲击反馈同存时叠加（transform 与 filter 互不干扰） */
-  .jing-muyu-fish.is-hit.is-steady svg { animation: muyu-hit 0.16s ease, muyu-steady 4.5s ease-in-out infinite; }
+  .jing-muyu-fish.is-hit.is-steady .jing-muyu-strike-sprite { animation: muyu-hit 0.16s ease, muyu-steady 4.5s ease-in-out infinite; }
 
   /* 敲击涟漪：动画禁用时保持不可见 */
   .jing-muyu-stage { position: relative; display: flex; justify-content: center; }
@@ -293,22 +419,33 @@ import SoundControl from './SoundControl.astro';
   }
 
   /* 节奏稳定时的呼吸微光（收着点，别让光晕读作体积膨胀） */
-  .jing-muyu-fish.is-steady svg { animation: muyu-steady 4.5s ease-in-out infinite; }
+  .jing-muyu-fish.is-steady .jing-muyu-strike-sprite { animation: muyu-steady 4.5s ease-in-out infinite; }
   @keyframes muyu-steady {
     0%, 100% { filter: drop-shadow(0 0 3px rgba(184, 147, 74, 0.22)); }
     50% { filter: drop-shadow(0 0 9px rgba(184, 147, 74, 0.38)); }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .jing-muyu-fish.is-hit svg,
-    .jing-muyu-fish.is-hit.is-steady svg,
+    .jing-muyu-fish.is-hit .jing-muyu-strike-sprite,
+    .jing-muyu-fish.is-hit.is-steady .jing-muyu-strike-sprite,
     .jing-muyu-ripple,
-    .jing-muyu-fish.is-steady svg { animation: none; }
+    .jing-muyu-fish.is-steady .jing-muyu-strike-sprite { animation: none; }
     .jing-muyu-ripple { opacity: 0; }
-    .jing-muyu-fish.is-steady svg { filter: drop-shadow(0 0 8px rgba(184, 147, 74, 0.35)); }
+    .jing-muyu-fish.is-steady .jing-muyu-strike-sprite { filter: drop-shadow(0 0 8px rgba(184, 147, 74, 0.35)); }
   }
 
   .jing-muyu-controls { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
+
+  .jing-muyu-tempo {
+    display: grid; grid-template-columns: 1fr auto; gap: 0.3rem 0.55rem; align-items: center;
+    font-family: var(--jing-font-ui); font-size: 0.72rem; color: var(--jing-text-dim);
+  }
+  .jing-muyu-tempo input { grid-column: 1 / -1; width: 100%; accent-color: var(--jing-accent); }
+  .jing-muyu-tempo output { color: var(--jing-accent); font-variant-numeric: tabular-nums; }
+  .jing-muyu-mode-status {
+    min-height: 1.35em; margin: 0; text-align: center;
+    font-family: var(--jing-font-ui); font-size: 0.7rem; color: var(--jing-text-dim);
+  }
 
   .jing-muyu-sit { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; justify-content: center; }
   .jing-muyu-sit-label {

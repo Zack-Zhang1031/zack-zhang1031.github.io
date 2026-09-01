@@ -1,0 +1,15 @@
+---
+const { current } = Astro.props as { current: 'yixue' | 'bazi' | 'yijing' | 'qimen' };
+const tabs = [
+  { id: 'yixue', href: '/jing/yixue/', label: '五行' },
+  { id: 'bazi', href: '/jing/bazi/', label: '八字' },
+  { id: 'yijing', href: '/jing/yijing/', label: '周易' },
+  { id: 'qimen', href: '/jing/qimen/', label: '奇门' },
+] as const;
+---
+
+<nav class="jing-study-tabs" aria-label="研习主题">
+  {tabs.map((tab) => (
+    <a href={tab.href} aria-current={current === tab.id ? 'page' : undefined}>{tab.label}</a>
+  ))}
+</nav>
