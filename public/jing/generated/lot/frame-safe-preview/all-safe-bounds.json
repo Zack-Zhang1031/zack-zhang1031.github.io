@@ -1,0 +1,131 @@
+{
+  "scale": 2.364741641337386,
+  "reports": {
+    "guanyin": {
+      "sourceUnion": {
+        "left": 28,
+        "top": 48,
+        "right": 313,
+        "bottom": 362,
+        "width": 286,
+        "height": 315
+      },
+      "sourceAnchor": {
+        "x": 191,
+        "y": 361
+      },
+      "maximumScale": 2.3865030674846626,
+      "appliedScale": 2.364741641337386,
+      "masterSize": {
+        "width": 1024,
+        "height": 1536
+      },
+      "webSize": {
+        "width": 768,
+        "height": 1152
+      },
+      "safeInsets": {
+        "left": 123,
+        "right": 123,
+        "top": 276,
+        "bottom": 154
+      },
+      "anchor": {
+        "x": 512,
+        "y": 1200
+      },
+      "minimumMargins": {
+        "left": 127,
+        "top": 460,
+        "right": 221,
+        "bottom": 331
+      },
+      "contactSheet": "public/jing/generated/lot/frame-safe-preview/guanyin-safe-contact.png",
+      "gif": "public/jing/generated/lot/frame-safe-preview/guanyin-safe-preview.gif"
+    },
+    "luzu": {
+      "sourceUnion": {
+        "left": 3,
+        "top": 42,
+        "right": 304,
+        "bottom": 389,
+        "width": 302,
+        "height": 348
+      },
+      "sourceAnchor": {
+        "x": 139.5,
+        "y": 382
+      },
+      "maximumScale": 2.364741641337386,
+      "appliedScale": 2.364741641337386,
+      "masterSize": {
+        "width": 1024,
+        "height": 1536
+      },
+      "webSize": {
+        "width": 768,
+        "height": 1152
+      },
+      "safeInsets": {
+        "left": 123,
+        "right": 123,
+        "top": 276,
+        "bottom": 154
+      },
+      "anchor": {
+        "x": 512,
+        "y": 1200
+      },
+      "minimumMargins": {
+        "left": 189,
+        "top": 396,
+        "right": 121,
+        "bottom": 317
+      },
+      "contactSheet": "public/jing/generated/lot/frame-safe-preview/luzu-safe-contact.png",
+      "gif": "public/jing/generated/lot/frame-safe-preview/luzu-safe-preview.gif"
+    },
+    "guandi": {
+      "sourceUnion": {
+        "left": 38,
+        "top": 46,
+        "right": 294,
+        "bottom": 366,
+        "width": 257,
+        "height": 321
+      },
+      "sourceAnchor": {
+        "x": 169.5,
+        "y": 366
+      },
+      "maximumScale": 2.8875,
+      "appliedScale": 2.364741641337386,
+      "masterSize": {
+        "width": 1024,
+        "height": 1536
+      },
+      "webSize": {
+        "width": 768,
+        "height": 1152
+      },
+      "safeInsets": {
+        "left": 123,
+        "right": 123,
+        "top": 276,
+        "bottom": 154
+      },
+      "anchor": {
+        "x": 512,
+        "y": 1200
+      },
+      "minimumMargins": {
+        "left": 201,
+        "top": 445,
+        "right": 215,
+        "bottom": 334
+      },
+      "contactSheet": "public/jing/generated/lot/frame-safe-preview/guandi-safe-contact.png",
+      "gif": "public/jing/generated/lot/frame-safe-preview/guandi-safe-preview.gif"
+    }
+  }
+}

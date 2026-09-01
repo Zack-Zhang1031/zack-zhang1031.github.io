@@ -51,11 +51,18 @@ test.describe('Jingxin lot room', () => {
   test('switches the transparent frame sequence with the selected collection', async ({ page }) => {
     await page.goto('/jing/chouqian/');
     const tube = page.locator('#lot-tube-image');
-    await expect(tube).toHaveAttribute('src', '/jing/generated/lot/frames-v3/guanyin/frame-0.png');
+    await expect(tube).toHaveAttribute('src', '/jing/generated/lot/frames-safe/guanyin/frame-0.png');
+    await expect(tube).toHaveAttribute('width', '768');
+    await expect(tube).toHaveAttribute('height', '1152');
     await page.locator('#lot-tab-luzu').click();
-    await expect(tube).toHaveAttribute('src', '/jing/generated/lot/frames-v3/luzu/frame-0.png');
+    await expect(tube).toHaveAttribute('src', '/jing/generated/lot/frames-safe/luzu/frame-0.png');
     await page.locator('#lot-tab-guandi').click();
-    await expect(tube).toHaveAttribute('src', '/jing/generated/lot/frames-v3/guandi/frame-0.png');
+    await expect(tube).toHaveAttribute('src', '/jing/generated/lot/frames-safe/guandi/frame-0.png');
+    const stageSize = await page.locator('.jing-lot-visual').evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    });
+    expect(stageSize.width / stageSize.height).toBeCloseTo(2 / 3, 2);
   });
 
   test('uses a code-built shrine instead of the retired scene background', async ({ page }) => {

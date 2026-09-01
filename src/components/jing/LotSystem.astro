@@ -42,7 +42,7 @@ import SoundControl from './SoundControl.astro';
   <div class="jing-lot-stage" id="lot-stage" data-phase="idle" aria-live="polite">
     <div class="jing-lot-visual" id="lot-visual" data-frame="0" data-collection="guanyin" role="img" aria-label="观音灵签签筒摇签动画">
       <div class="jing-lot-contact-shadow" aria-hidden="true"></div>
-      <img id="lot-tube-image" class="jing-lot-frame-image" src="/jing/generated/lot/frames-v3/guanyin/frame-0.png" alt="" />
+      <img id="lot-tube-image" class="jing-lot-frame-image" src="/jing/generated/lot/frames-safe/guanyin/frame-0.png" width="768" height="1152" alt="" />
       <canvas id="lot-animation-canvas" class="jing-lot-animation-canvas" width="768" height="1152" hidden aria-hidden="true"></canvas>
       <div id="lot-falling-stick" class="jing-lot-falling-stick" hidden aria-hidden="true">
         <img id="lot-falling-stick-image" src="/jing/generated/lot/selected-sticks/guanyin.png" alt="" />
@@ -205,7 +205,7 @@ import SoundControl from './SoundControl.astro';
     const hasIntegratedStickSequence = (collectionId: string) =>
       collectionId === 'guanyin' || collectionId === 'luzu' || collectionId === 'guandi';
     const frameSrc = (collectionId: string, frame: number) =>
-      `/jing/generated/lot/frames-v3/${collectionId}/frame-${frame}.png`;
+      `/jing/generated/lot/frames-safe/${collectionId}/frame-${frame}.png`;
     const frameCache = new Map<string, Promise<HTMLImageElement[]>>();
     const decodeImage = async (image: HTMLImageElement) => {
       try {
@@ -1024,9 +1024,9 @@ import SoundControl from './SoundControl.astro';
   }
   .jing-lot-stage[hidden] { display: none; }
   .jing-lot-visual {
-    position: relative; width: min(430px, 78vw); height: min(580px, 68vh);
+    position: relative; width: min(500px, 78vw, 46.667vh); height: auto; aspect-ratio: 2 / 3;
     isolation: isolate; filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.58));
-    transform-origin: 50% 70%;
+    transform-origin: 50% 78%;
   }
   .jing-lot-stage.is-playing .jing-lot-visual { will-change: transform; }
   .jing-lot-visual img { position: absolute; object-fit: contain; pointer-events: none; user-select: none; }
@@ -1039,7 +1039,7 @@ import SoundControl from './SoundControl.astro';
   .jing-lot-visual[data-canvas-ready='true'] .jing-lot-frame-image { opacity: 0; }
   .jing-lot-visual[data-canvas-ready='true'] .jing-lot-animation-canvas { opacity: 1; }
   .jing-lot-contact-shadow {
-    position: absolute; z-index: 1; left: 50%; bottom: 6.5%; width: 38%; height: 3.5%;
+    position: absolute; z-index: 1; left: 50%; bottom: 18%; width: 38%; height: 3.5%;
     border-radius: 50%;
     background: radial-gradient(ellipse, rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0) 72%);
     filter: blur(5px);

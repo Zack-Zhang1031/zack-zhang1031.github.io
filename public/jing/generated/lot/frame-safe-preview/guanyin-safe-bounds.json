@@ -1,0 +1,47 @@
+{
+  "scale": 2.364741641337386,
+  "reports": {
+    "guanyin": {
+      "sourceUnion": {
+        "left": 28,
+        "top": 48,
+        "right": 313,
+        "bottom": 362,
+        "width": 286,
+        "height": 315
+      },
+      "sourceAnchor": {
+        "x": 191,
+        "y": 361
+      },
+      "maximumScale": 2.3865030674846626,
+      "appliedScale": 2.364741641337386,
+      "masterSize": {
+        "width": 1024,
+        "height": 1536
+      },
+      "webSize": {
+        "width": 768,
+        "height": 1152
+      },
+      "safeInsets": {
+        "left": 123,
+        "right": 123,
+        "top": 276,
+        "bottom": 154
+      },
+      "anchor": {
+        "x": 512,
+        "y": 1200
+      },
+      "minimumMargins": {
+        "left": 127,
+        "top": 460,
+        "right": 221,
+        "bottom": 331
+      },
+      "contactSheet": "public/jing/generated/lot/frame-safe-preview/guanyin-safe-contact.png",
+      "gif": "public/jing/generated/lot/frame-safe-preview/guanyin-safe-preview.gif"
+    }
+  }
+}
